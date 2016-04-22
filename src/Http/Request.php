@@ -13,13 +13,8 @@ namespace Nekland\Woketo\Http;
 
 use Nekland\Woketo\Exception\HttpException;
 
-class Request
+class Request extends AbstractHttpMessage
 {
-    /**
-     * @var string[]
-     */
-    private $headers;
-
     /**
      * @var string
      */
@@ -30,15 +25,7 @@ class Request
      */
     private $uri;
 
-    /**
-     * @var string for example "HTTP/1.1"
-     */
-    private $httpVersion;
-
-    private function __construct()
-    {
-        $this->headers = [];
-    }
+    private function __construct() {}
 
     /**
      * @return Request
@@ -62,29 +49,6 @@ class Request
     }
 
     /**
-     * @param string $httpVersion
-     * @return Request
-     */
-    private function setHttpVersion($httpVersion)
-    {
-        $this->httpVersion = $httpVersion;
-
-        return $this;
-    }
-
-    /**
-     * @param string $name
-     * @param string $value
-     * @return Request
-     */
-    public function addHeader(string $name, string $value)
-    {
-        $this->headers[$name] = $value;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getUri()
@@ -98,22 +62,6 @@ class Request
     public function getMethod()
     {
         return $this->method;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHttpVersion()
-    {
-        return $this->httpVersion;
-    }
-
-    /**
-     * @return array|\string[]
-     */
-    public function getHeaders()
-    {
-        return $this->headers;
     }
 
     /**
