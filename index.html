@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test websocket</title>
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <pre id="content"></pre>
+        <script>
+        var ws = new WebSocket("ws://127.0.0.1:8088/foobar");
+        ws.onmessage = function (event) {
+            var pre = document.getElementById('content');
+            pre.innerHTML = pre.innerHTML + event.data + "\n\n";
+        };
+        </script>
+    </body>
+</html>
