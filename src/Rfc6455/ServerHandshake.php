@@ -12,6 +12,7 @@
 namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
+use Nekland\Woketo\Http\Response;
 
 /**
  * Class ServerHandshake
@@ -24,13 +25,23 @@ class ServerHandshake
 
     /**
      * Used when doing the handshake to encode the key, verifying client/server are speaking the same language
-     * @param  string $key
+     * @param string   $key
+     * @param Response $response
      * @return string
-     * @internal
      */
-    public function sign($key)
+    public function sign($key, Response $response = null)
     {
-        return base64_encode(sha1($key . ServerHandshake::GUID, true));
+        if ($key instanceof Request) {
+            $key = $key->getHeader('Sec-WebSocket-Key');
+        }
+
+        $sign = base64_encode(sha1($key . ServerHandshake::GUID, true));
+
+        if (null !== $response) {
+            $response->addHeader('Sec-WebSocket-Accept', $sign);
+        }
+
+        return $sign;
     }
 
     /**

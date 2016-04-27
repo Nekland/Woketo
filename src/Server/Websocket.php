@@ -12,6 +12,9 @@
 namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\SocketException;
+use Nekland\Woketo\Http\Request;
+use Nekland\Woketo\Http\Response;
+use Nekland\Woketo\Rfc6455\ServerHandshake;
 
 class Websocket
 {
@@ -26,6 +29,21 @@ class Websocket
     private $port;
 
     /**
+     * @var string
+     */
+    private $address;
+
+    /**
+     * @var Request
+     */
+    private $request;
+
+    /**
+     * @var ServerHandshake
+     */
+    private $handshake;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
@@ -33,27 +51,38 @@ class Websocket
      */
     public function __construct($port, $address = '127.0.0.1')
     {
-        set_time_limit(0);
-
-        if (false === $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
-            throw new SocketException('Impossible to create a new socket', $this->socket);
-        }
-
-        if (false === socket_bind($this->socket, $address, $port)) {
-            throw new SocketException('Impossible to bind the socket', $this->socket);
-        }
-
-        if (false === socket_listen($this->socket, 5)) {
-            throw new SocketException('Impossible to listen on ' . $address . ':' . $port, $this->socket);
-        }
-
+        $this->address = $address;
         $this->port = $port;
+        $this->handshake = new ServerHandshake();
     }
 
     public function start()
     {
-        $loop = new Loop($this);
+        $loop = \React\EventLoop\Factory::create();
 
-        return $loop->start();
+        $socket = new \React\Socket\Server($loop);
+        $socket->on('connection', function ($conn) {
+//            $conn->write("Hello there!\n");
+//            $conn->write("Welcome to this amazing server!\n");
+//            $conn->write("Here's a tip: don't say anything.\n");
+//
+//            $conn->on('data', function ($data) use ($conn) {
+//                $conn->close();
+//            });
+            $conn->on('data', function ($data) use ($conn) {
+                echo $data . "\n\n";
+                if (null === $this->request) {
+                    $this->request = Request::create($data);
+                    $this->handshake->verify($this->request);
+                    $response = new Response();
+                    $response->setHttpResponse(Response::SWITCHING_PROTOCOLS);
+                    $this->handshake->sign($response);
+                    $response->send($conn);
+                }
+            });
+        });
+        $socket->listen($this->port);
+
+        $loop->run();
     }
 }

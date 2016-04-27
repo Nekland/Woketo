@@ -47,6 +47,15 @@ abstract class AbstractHttpMessage
     }
 
     /**
+     * @param string $header
+     * @return string
+     */
+    public function getHeader($header)
+    {
+        return $this->headers[$header];
+    }
+
+    /**
      * @return string
      */
     public function getHttpVersion()

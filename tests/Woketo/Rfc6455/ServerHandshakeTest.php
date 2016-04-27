@@ -11,6 +11,8 @@
 
 namespace Test\Woketo\Rfc6455;
 
+use Nekland\Woketo\Http\Request;
+use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 
 class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
@@ -21,6 +23,17 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
 
         // From https://tools.ietf.org/html/rfc6455#section-1.3
         $this->assertEquals($handshake->sign('dGhlIHNhbXBsZSBub25jZQ=='), 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
+    }
+
+    public function testItSignResponse()
+    {
+        $response = $this->prophesize(Response::class);
+        $response->addHeader('Sec-WebSocket-Accept', 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=')->shouldBeCalled();
+        $request = $this->prophesize(Request::class);
+        $request->getHeader('Sec-WebSocket-Key')->willReturn('dGhlIHNhbXBsZSBub25jZQ==');
+
+        $handshake = new ServerHandshake();
+        $handshake->sign($request->reveal(), $response->reveal());
     }
 
     /**

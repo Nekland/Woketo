@@ -13,7 +13,7 @@ namespace Nekland\Woketo\Http;
 
 use React\Stream\Stream;
 
-final class Response extends AbstractHttpMessage
+class Response extends AbstractHttpMessage
 {
     const SWITCHING_PROTOCOLS = '101 Switching Protocols';
 
@@ -52,6 +52,18 @@ final class Response extends AbstractHttpMessage
         // No content to concatenate
 
         $stringResponse .= "\r\n";
+
+        echo "SEND: \n" . $stringResponse . "\n\n";
         $stream->write($stringResponse);
+    }
+
+    public static function createSwitchProtocolResponse()
+    {
+        $response = new Response();
+
+        $response->addHeader('Upgrade', 'websocket');
+        $response->addHeader('Connection', 'Upgrade');
+
+        return $response;
     }
 }
