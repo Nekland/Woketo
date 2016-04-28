@@ -74,9 +74,8 @@ class Websocket
                 if (null === $this->request) {
                     $this->request = Request::create($data);
                     $this->handshake->verify($this->request);
-                    $response = new Response();
-                    $response->setHttpResponse(Response::SWITCHING_PROTOCOLS);
-                    $this->handshake->sign($response);
+                    $response = Response::createSwitchProtocolResponse();
+                    $this->handshake->sign($this->request, $response);
                     $response->send($conn);
                 }
             });

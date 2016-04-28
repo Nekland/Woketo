@@ -17,7 +17,7 @@ use Nekland\Woketo\Rfc6455\ServerHandshake;
 
 class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
 {
-    public function testItSignWebsocket()
+    public function testItSignWebSocket()
     {
         $handshake = new ServerHandshake();
 
@@ -39,7 +39,7 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getWrongWebsocketRequests
      */
-    public function testItInvalidWrongRequests($headers, $method, $uri, $httpVersion)
+    public function testItInvalidWrongRequests($headers, $method, $uri, $httpVersion, $exception = 'Nekland\Woketo\Exception\WebSocketException')
     {
         $request = $this->prophesize('Nekland\Woketo\Http\Request');
         $request->getHeaders()->willReturn($headers);
@@ -48,7 +48,7 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
         $request->getHttpVersion()->willReturn($httpVersion);
 
 
-        $this->expectException('Nekland\Woketo\Exception\WebsocketException');
+        $this->expectException($exception);
 
         $handshake = new ServerHandshake();
         $handshake->verify($request->reveal());
@@ -63,6 +63,7 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 13,
                     "Upgrade" => "websocket",
                 ],
                 'POST',
@@ -75,6 +76,7 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 13,
                     "Upgrade" => "websocket",
                 ],
                 'GET',
@@ -87,6 +89,7 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 13,
                 ],
                 'GET',
                 '/foo',
@@ -98,10 +101,26 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Upgrade" => "websocket",
+                    "Sec-WebSocket-Version" => 13,
                 ],
                 'GET',
                 '/foo',
                 'HTTP/1.1'
+            ],
+            // Unsupported version
+            // https://tools.ietf.org/html/rfc6455#section-4.4
+            [
+                [
+                    "Host" => "127.0.0.1:8088",
+                    "Sec-WebSocket-Extensions"=> "permessage-deflate",
+                    "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 2,
+                    "Upgrade" => "websocket",
+                ],
+                'GET',
+                '/foo',
+                'HTTP/1.1',
+                'Nekland\Woketo\Exception\VersionWebSocketException'
             ],
         ];
     }

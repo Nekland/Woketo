@@ -16,6 +16,7 @@ use React\Stream\Stream;
 class Response extends AbstractHttpMessage
 {
     const SWITCHING_PROTOCOLS = '101 Switching Protocols';
+    const BAD_REQUEST = '400 Bad Request';
 
     /**
      * @var string For example "404 Not Found"
@@ -53,7 +54,6 @@ class Response extends AbstractHttpMessage
 
         $stringResponse .= "\r\n";
 
-        echo "SEND: \n" . $stringResponse . "\n\n";
         $stream->write($stringResponse);
     }
 
@@ -61,6 +61,7 @@ class Response extends AbstractHttpMessage
     {
         $response = new Response();
 
+        $response->setHttpResponse(Response::SWITCHING_PROTOCOLS);
         $response->addHeader('Upgrade', 'websocket');
         $response->addHeader('Connection', 'Upgrade');
 

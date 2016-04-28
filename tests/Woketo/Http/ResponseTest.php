@@ -12,16 +12,27 @@ use Nekland\Woketo\Http\Response;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
-    public function testItGenerateString()
+    /**
+     * @var \React\Stream\Stream
+     */
+    private $stream;
+
+    public function setUp()
     {
-        $stream = $this->prophesize('React\Stream\Stream');
-        $stream->write(
+        $httpResponse =
             "HTTP/1.1 101 Switching Protocols\r\n"
             . "Upgrade: websocket\r\n"
             . "Connection: Upgrade\r\n"
-            . "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
-        );
+            . "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"
+        ;
 
+        $stream = $this->prophesize('React\Stream\Stream');
+        $stream->write($httpResponse)->shouldBeCalled();
+        $this->stream = $stream->reveal();
+    }
+
+    public function testItGenerateString()
+    {
         $response = new Response();
 
         $response->addHeader('Upgrade', 'websocket');
@@ -29,6 +40,14 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response->addHeader('Sec-WebSocket-Accept', 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
         $response->setHttpResponse(Response::SWITCHING_PROTOCOLS);
 
-        $response->send($stream->reveal());
+        $response->send($this->stream);
+    }
+
+    public function testItGenerateResponseForWebsocket()
+    {
+        $response = Response::createSwitchProtocolResponse();
+        $response->addHeader('Sec-WebSocket-Accept', 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
+
+        $response->send($this->stream);
     }
 }
