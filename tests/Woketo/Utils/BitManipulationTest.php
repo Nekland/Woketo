@@ -18,8 +18,8 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider bitInBytesDataProvider
      *
-     * @param int $byte
-     * @param int $n
+     * @param int      $byte
+     * @param int      $n
      * @param int|null $res
      */
     public function testItRetrieveNthBit($byte, $n, $res = null)
@@ -31,6 +31,43 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $realRes = BitManipulation::nthBit($byte, $n);
 
         $this->assertEquals($realRes, $res);
+    }
+
+    /**
+     * @dataProvider bytesInFramesDataProvider
+     *
+     * @param int      $bytes
+     * @param int      $n
+     * @param int|null $res
+     */
+    public function testItRetrieveNthByte($bytes, $n, $res = null)
+    {
+        if ($res === null) {
+            $this->expectException('\InvalidArgumentException');
+        }
+
+        $realRes = BitManipulation::nthByte($bytes, $n);
+
+        $this->assertEquals($realRes, $res);
+    }
+
+    public function bytesInFramesDataProvider()
+    {
+        return [
+            // Success
+            [34815, 1, 135],
+            [34815, 2, 255],
+            ['_7P!gij', 1, 95],
+            ['_7P!gij', 2, 55],
+            ['_7P!gij', 7, 106],
+
+            // Failure
+            [-10, 1],
+            [new \SplObjectStorage, 2],
+            ['gdgdf_7P)', 10],
+            ['gdgdf_7P)', -10],
+            [128, 2],
+        ];
     }
 
     public function bitInBytesDataProvider()

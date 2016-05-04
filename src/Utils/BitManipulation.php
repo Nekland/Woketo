@@ -39,4 +39,50 @@ class BitManipulation
 
         return (int) ($realNth === ($byte & $realNth));
     }
+
+    /**
+     * @param string $frame iso-8859-1 string
+     * @param int $byteNumber
+     * @return int
+     */
+    public static function nthByte($frame, int $byteNumber) : int
+    {
+        if (is_string($frame)) {
+            $len = strlen($frame);
+
+            if ($byteNumber < 1 || $byteNumber > $len) {
+                throw new \InvalidArgumentException(
+                    sprintf('The frame is only %s bytes larges but you tried to get the %sth byte.', $len, $byteNumber)
+                );
+            }
+
+            return ord($frame[$byteNumber-1]);
+        }
+
+        if (is_int($frame)) {
+            if ($frame < 0) {
+                throw new \InvalidArgumentException(
+                    sprintf('This method does not support negative ints as parameter for now. %s given.', $byteNumber)
+                );
+            }
+            $hex = dechex($frame);
+            $len = strlen($hex);
+
+            // Index of the first octal of the wanted byte
+            $realByteNth = ($byteNumber - 1) * 2;
+
+            if ($byteNumber < 1 || ($realByteNth + 1) > $len) {
+                throw new \InvalidArgumentException(
+                    sprintf('Impossible to get the byte %s from the frame %s.', $byteNumber, $frame)
+                );
+            }
+
+
+            return (hexdec($hex[$realByteNth]) << 4) + hexdec($hex[$realByteNth + 1]);
+        }
+
+        throw new \InvalidArgumentException(
+            sprintf('The frame must be an int or string, %s given.', gettype($frame))
+        );
+    }
 }
