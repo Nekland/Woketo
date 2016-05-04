@@ -14,6 +14,7 @@ namespace Nekland\Woketo\Server;
 use Nekland\Woketo\Exception\SocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
+use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 
 class Websocket
@@ -44,6 +45,11 @@ class Websocket
     private $handshake;
 
     /**
+     * @var MessageHandlerInterface
+     */
+    private $messageHandler;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
@@ -56,8 +62,14 @@ class Websocket
         $this->handshake = new ServerHandshake();
     }
 
+    public function setMessageHandler(MessageHandlerInterface $messageHandler)
+    {
+        $this->messageHandler = $messageHandler;
+    }
+
     public function start()
     {
+        $this->messageBuffer = new MessageBuffer($this->messageHandler);
         $loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($loop);
@@ -78,6 +90,8 @@ class Websocket
                     $this->handshake->sign($this->request, $response);
                     $response->send($conn);
                 }
+
+                $this->messageBuffer->data($data);
             });
         });
         $socket->listen($this->port);
