@@ -85,4 +85,21 @@ class BitManipulation
             sprintf('The frame must be an int or string, %s given.', gettype($frame))
         );
     }
+
+    public static function partOfByte(int $byte, int $part) : int
+    {
+        if ($byte < 0 || $byte > 255) {
+            throw new \InvalidArgumentException(sprintf('%s is not a byte', $byte));
+        }
+
+        if ($part === 1) {
+            return ($byte & 240) >> 4;
+        }
+
+        if ($part === 2) {
+            return $byte & 15;
+        }
+
+        throw new \InvalidArgumentException(sprintf('A byte have only 2 parts. %s asked.', $part));
+    }
 }

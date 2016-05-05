@@ -51,6 +51,31 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($realRes, $res);
     }
 
+    /**
+     * @dataProvider partInBytesDataProvider
+     *
+     * @param int      $byte
+     * @param int      $n
+     * @param null|int $res
+     */
+    public function testItRetrieveNthOctal($byte, $n, $res = null)
+    {
+        if ($res === null) {
+            $this->expectException('\InvalidArgumentException');
+        }
+
+        $this->assertEquals(BitManipulation::partOfByte($byte, $n), $res);
+    }
+
+    public function partInBytesDataProvider()
+    {
+        return [
+            [135, 1, 8],
+            [135, 2, 7],
+            [135, 10],
+        ];
+    }
+
     public function bytesInFramesDataProvider()
     {
         return [
