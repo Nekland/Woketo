@@ -55,7 +55,7 @@ class Frame
      * As a message is composed by many frames, the frame have the information of "last" or not.
      * The frame is final if the first bit is 0.
      */
-    public function isFinal()
+    public function isFinal() : bool
     {
         return $this->final;
     }
@@ -63,7 +63,7 @@ class Frame
     /**
      * @return boolean
      */
-    public function getRsv1()
+    public function getRsv1() : bool
     {
         return BitManipulation::nthBit($this->firstByte, 2);
     }
@@ -71,7 +71,7 @@ class Frame
     /**
      * @return boolean
      */
-    public function getRsv2()
+    public function getRsv2() : bool
     {
         return BitManipulation::nthBit($this->firstByte, 3);
     }
@@ -79,14 +79,32 @@ class Frame
     /**
      * @return boolean
      */
-    public function getRsv3()
+    public function getRsv3() : bool
     {
         return BitManipulation::nthBit($this->firstByte, 4);
     }
 
-    public function getOpcode()
+    /**
+     * @return int
+     */
+    public function getOpcode() : int
     {
-        //return $this->firstByte
+        return BitManipulation::partOfByte($this->firstByte, 2);
+    }
+
+    public function getMask() : string
+    {
+        if (!$this->isMasked()) {
+            return '';
+        }
+        // TODO
+
+        return $mask;
+    }
+
+    public function isMasked() : bool
+    {
+        return (bool) BitManipulation::nthBit($this->secondByte, 1);
     }
 
     private function getInformationFromRawData()
