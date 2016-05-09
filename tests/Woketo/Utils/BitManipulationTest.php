@@ -67,6 +67,29 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(BitManipulation::partOfByte($byte, $n), $res);
     }
 
+    /**
+     * @dataProvider arrayOfHexProvider
+     *
+     * @param string[] $hexParts
+     * @param string   $result
+     */
+    public function testItTransformsArrayOfHexToString(array $hexParts, string $result)
+    {
+        $this->assertEquals(BitManipulation::hexArrayToString($hexParts), $result);
+    }
+
+    //
+    // Providers
+    //
+
+    public function arrayOfHexProvider()
+    {
+        return [
+            [['6c'], 'l'],
+            [['21', '51', '6f'], '!Qo'],
+        ];
+    }
+
     public function partInBytesDataProvider()
     {
         return [

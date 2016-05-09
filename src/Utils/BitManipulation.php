@@ -102,4 +102,22 @@ class BitManipulation
 
         throw new \InvalidArgumentException(sprintf('A byte have only 2 parts. %s asked.', $part));
     }
+
+    /**
+     * Because strings are the best way to store many bytes in PHP it can
+     * be useful to make the conversion between hex (which are strings)
+     * array to string.
+     *
+     * @param array $hexArray
+     * @return string
+     */
+    public static function hexArrayToString(array $hexArray) : string
+    {
+        $res = '';
+        foreach ($hexArray as $hexNum) {
+            $res .= chr(hexdec($hexNum));
+        }
+
+        return $res;
+    }
 }
