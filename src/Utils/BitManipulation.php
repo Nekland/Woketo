@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Nekland\Woketo\Utils;
 
+use Nekland\Woketo\Exception\PhpLimitationException;
+
 class BitManipulation
 {
     /**
@@ -116,6 +118,44 @@ class BitManipulation
         $res = '';
         foreach ($hexArray as $hexNum) {
             $res .= chr(hexdec($hexNum));
+        }
+
+        return $res;
+    }
+
+    public static function bytesFromTo($frame, $from, $to) : int
+    {
+        // support only 7 bytes. But from and to are inclusive.
+        if (($to - $from) > 6) {
+            throw new PhpLimitationException('PHP does not supports more than 63b in an unsigned int.');
+        }
+
+        if (is_string($frame)) {
+            $subString = substr($frame, $from-1, $from + $to);
+            $res = 0;
+
+            for($i = $from-1; $i < $to; $i++) {
+                $res <<= 8;
+                $res += ord($subString[$i]);
+            }
+
+            return $res;
+        }
+
+        if (!is_int($frame)) {
+            throw new \InvalidArgumentException(
+                sprintf('A frame can only be a string or int. %s given', gettype($frame))
+            );
+        }
+
+        if ($frame < 0) {
+            throw new \InvalidArgumentException('The frame cannot be a nevative number');
+        }
+
+        $res = 0;
+        for ($i = $from; $i <= $to; $i++) {
+            $res <<= 8;
+            $res += BitManipulation::nthByte($frame, $i);
         }
 
         return $res;

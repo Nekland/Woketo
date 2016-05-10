@@ -78,9 +78,40 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(BitManipulation::hexArrayToString($hexParts), $result);
     }
 
+    /**
+     * @dataProvider bytesFromToProvider
+     *
+     * @param int      $frame
+     * @param int      $from
+     * @param int      $to
+     * @param null|int $res
+     */
+    public function testItGetBytesFromToByteNumber($frame, $from, $to, $res = null)
+    {
+        if (!is_int($res)) {
+            $this->expectException($res);
+        }
+
+        $this->assertSame(BitManipulation::bytesFromTo($frame, $from, $to), $res);
+    }
+
     //
     // Providers
     //
+
+    public function bytesFromToProvider()
+    {
+        return [
+            [16711850, 2, 3, 170],
+            [16711850, 1, 2, 65280],
+            [16711850, 1, 3, 16711850],
+            [16711850, -1, 2, '\InvalidArgumentException'],
+            [-16711850, 1, 2, '\InvalidArgumentException'],
+            [16711850, 1, 8, '\Nekland\Woketo\Exception\PhpLimitationException'],
+            ['abcdef', 1, 2, 24930],
+            [new \SplObjectStorage, 1, 2, '\InvalidArgumentException'],
+        ];
+    }
 
     public function arrayOfHexProvider()
     {
