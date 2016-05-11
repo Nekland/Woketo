@@ -95,6 +95,16 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(BitManipulation::bytesFromTo($frame, $from, $to), $res);
     }
 
+    public function testItTransformIntFrameToString()
+    {
+        $this->assertSame(BitManipulation::intToString(6382179), 'abc');
+    }
+
+    public function testItTransformStringFrameToInt()
+    {
+        $this->assertSame(BitManipulation::stringToInt('abc'), 6382179);
+    }
+
     //
     // Providers
     //
@@ -110,6 +120,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             [16711850, 1, 9, '\InvalidArgumentException'],
             ['abcdef', 1, 2, 24930],
             [new \SplObjectStorage, 1, 2, '\InvalidArgumentException'],
+            ['abc', 2, 5, '\InvalidArgumentException']
         ];
     }
 

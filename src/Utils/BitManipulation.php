@@ -131,6 +131,9 @@ class BitManipulation
         }
 
         if (is_string($frame)) {
+            if (strlen($frame) < $to) {
+                throw new \InvalidArgumentException('The frame is not long enough.');
+            }
             $subString = substr($frame, $from-1, $from + $to);
             $res = 0;
 
@@ -156,6 +159,45 @@ class BitManipulation
         for ($i = $from; $i <= $to; $i++) {
             $res <<= 8;
             $res += BitManipulation::nthByte($frame, $i);
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param int $frame
+     * @return string
+     */
+    public static function intToString(int $frame) : string
+    {
+        $res = '';
+        for ($i = 8; $i >= 0; $i--) {
+            $code = ($frame & (255 << ($i * 8))) >> ($i * 8);
+            if ($code !== 0) {
+                $res .= chr($code);
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param string $frame
+     * @return int
+     */
+    public static function stringToInt(string $frame) : int
+    {
+        $len = strlen($frame);
+        $res = 0;
+
+        if ($len > 8) {
+            throw new \InvalidArgumentException(
+                sprintf('The string %s cannot be converted to int because an int cannot be more than 8 bytes (64b).', $frame)
+            );
+        }
+
+        for ($i = $len - 1; $i >= 0; $i--) {
+            $res += ord($frame[$len - $i - 1]) << ($i * 8);
         }
 
         return $res;
