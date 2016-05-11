@@ -125,9 +125,9 @@ class BitManipulation
 
     public static function bytesFromTo($frame, $from, $to) : int
     {
-        // support only 7 bytes. But from and to are inclusive.
-        if (($to - $from) > 6) {
-            throw new PhpLimitationException('PHP does not supports more than 63b in an unsigned int.');
+        // No more than 64b (which return negative number when the first bit is specified)
+        if (($to - $from) > 7) {
+            throw new \InvalidArgumentException('An int is only 64b large.');
         }
 
         if (is_string($frame)) {

@@ -107,7 +107,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             [16711850, 1, 3, 16711850],
             [16711850, -1, 2, '\InvalidArgumentException'],
             [-16711850, 1, 2, '\InvalidArgumentException'],
-            [16711850, 1, 8, '\Nekland\Woketo\Exception\PhpLimitationException'],
+            [16711850, 1, 9, '\InvalidArgumentException'],
             ['abcdef', 1, 2, 24930],
             [new \SplObjectStorage, 1, 2, '\InvalidArgumentException'],
         ];
