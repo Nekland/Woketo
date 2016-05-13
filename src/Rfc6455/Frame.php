@@ -11,10 +11,21 @@
 namespace Nekland\Woketo\Rfc6455;
 
 
+use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 class Frame
 {
+    /**
+     * The payload size can be specified on 64b unsigned int according to the RFC. That means that maximum data
+     * inside the payload is 0b1111111111111111111111111111111111111111111111111111111111111111 bits. In
+     * decimal and GB, that means 2147483647 GB. As this is a bit too much for the memory of your computer or
+     * server, we specified a max size to
+     *
+     * @var int
+     */
+    private static $maxPayloadSize = 1024;
+
     private $rawData;
     private $frameSize;
 
@@ -33,6 +44,16 @@ class Frame
      * @var bool
      */
     private $final;
+
+    /**
+     * @var int
+     */
+    private $payloadLen;
+
+    /**
+     * @var int Number of bits representing the payload length in the current frame.
+     */
+    private $payloadLenSize;
 
     public function __construct($data)
     {
@@ -92,19 +113,95 @@ class Frame
         return BitManipulation::partOfByte($this->firstByte, 2);
     }
 
-    public function getMask() : string
+    public function getMaskingKey() : string
     {
         if (!$this->isMasked()) {
             return '';
         }
-        // TODO
 
-        return $mask;
+        if (null === $this->payloadLenSize) {
+            throw new \LogicException('The payload length size must be load before anything.');
+        }
+
+        // 8 is the numbers of bits before the payload len.
+        $start = ((9 + $this->payloadLenSize) / 8) + 1;
+
+        $value = BitManipulation::bytesFromTo($this->rawData, $start, $start + 3);
+
+        return BitManipulation::intToString($value);
+    }
+
+    public function getPayload()
+    {
+        $infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
+        if (strlen($this->rawData) < $infoBytesLen + $this->payloadLen) {
+            throw new \LogicException(
+                sprintf('Impossible to retrieve %s of payload when the full frame is %s bytes long.', $this->payloadLen, strlen($this->rawData))
+            );
+        }
+
+        $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
+
+        if ($this->isMasked()) {
+            return $this->applyMask($payload);
+        }
+
+        return $payload;
+    }
+
+    public function getPayloadLength() : int
+    {
+        if (null !== $this->payloadLen) {
+            return $this->payloadLen;
+        }
+
+        // Get the first part of the payload length by removing mask information from the second byte
+        $payloadLen = $this->secondByte & 127;
+        $this->payloadLenSize = 7;
+
+        if ($payloadLen === 126) {
+            $this->payloadLenSize += 16;
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 4);
+        }
+
+        if ($payloadLen === 127) {
+            $this->payloadLenSize += 48;
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11);
+        }
+
+        if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
+            throw new LimitationException;
+        }
+
+        return $this->payloadLen = $payloadLen;
     }
 
     public function isMasked() : bool
     {
         return (bool) BitManipulation::nthBit($this->secondByte, 1);
+    }
+
+    public function applyMask(string $payload) : string
+    {
+        $res = '';
+        $mask = $this->getMaskingKey();
+        $maskBytes = [];
+
+//        for ($i = 1; $i <= 4; $i++) {
+//            $maskBytes[] = BitManipulation::bytesFromTo($mask, $i, $i+1);
+//        }
+
+        for ($i = 0; $i < $this->payloadLen; $i++) {
+//            $maskingKeyByte = $i % 4;
+//            $payloadByte = BitManipulation::bytesFromTo($payload, $i+1, $i+2);
+//            $res .= BitManipulation::intToString($payloadByte ^ $maskBytes[$maskingKeyByte]);
+
+            $payloadByte = $payload[$i];
+            $res .= $payloadByte ^ $mask[$i % 4];
+//            var_dump($mask[$i % 4]);
+        }
+
+        return $res;
     }
 
     private function getInformationFromRawData()
@@ -113,5 +210,6 @@ class Frame
         $this->secondByte = BitManipulation::nthByte($this->rawData, 2);
 
         $this->final = (bool) BitManipulation::nthBit($this->firstByte, 1);
+        $this->payloadLen = $this->getPayloadLength();
     }
 }

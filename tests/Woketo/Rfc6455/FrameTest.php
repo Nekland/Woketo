@@ -1,0 +1,56 @@
+<?php
+/**
+ * This file is a part of a nekland library
+ *
+ * (c) Nekland <nekland.fr@gmail.fr>
+ *
+ * For the full license, take a look to the LICENSE file
+ * on the root directory of this project
+ */
+
+namespace Test\Woketo\Rfc6455;
+
+
+use Nekland\Woketo\Rfc6455\Frame;
+use Nekland\Woketo\Utils\BitManipulation;
+
+/**
+ * Class FrameTest
+ *
+ * These tests uses examples from the RFC:
+ * https://tools.ietf.org/html/rfc6455#section-5.7
+ */
+class FrameTest extends \PHPUnit_Framework_TestCase
+{
+    public function setUp()
+    {
+        parent::setUp();
+    }
+
+    public function testUnmaskedFrameContainingHello()
+    {
+        $helloUnmaskedFrame = new Frame(
+            BitManipulation::hexArrayToString(['81', '05', '48', '65', '6c', '6c', '6f'])
+        );
+
+        $this->assertSame($helloUnmaskedFrame->getPayloadLength(), 5);
+        $this->assertSame($helloUnmaskedFrame->isMasked(), false);
+        $this->assertSame($helloUnmaskedFrame->isFinal(), true);
+        $this->assertSame($helloUnmaskedFrame->getPayload(), 'Hello');
+    }
+
+    public function testMaskedFrameContainingHello()
+    {
+        // Note : there is an error in the RFC on the 8th bit !
+        $helloMaskedFrame = new Frame(
+            BitManipulation::hexArrayToString(
+                ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
+            )
+        );
+
+        $this->assertSame($helloMaskedFrame->isMasked(), true);
+        $this->assertSame($helloMaskedFrame->isFinal(), true);
+        $this->assertSame(BitManipulation::stringToInt($helloMaskedFrame->getMaskingKey()), 939139389);
+        $this->assertSame($helloMaskedFrame->getPayload(), 'Hello');
+    }
+}
