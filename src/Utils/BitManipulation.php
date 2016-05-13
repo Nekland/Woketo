@@ -134,10 +134,14 @@ class BitManipulation
             if (strlen($frame) < $to) {
                 throw new \InvalidArgumentException('The frame is not long enough.');
             }
-            $subString = substr($frame, $from-1, $from + $to);
+
+            $subStringLength = $to - $from + 1;
+            // Getting responsible bytes
+            $subString = substr($frame, $from-1, $subStringLength);
             $res = 0;
 
-            for($i = $from-1; $i < $to; $i++) {
+            // for each byte, getting ord
+            for($i = 0; $i < $subStringLength; $i++) {
                 $res <<= 8;
                 $res += ord($subString[$i]);
             }

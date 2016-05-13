@@ -124,7 +124,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             [
                 BitManipulation::hexArrayToString(
                     ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
-                ), 3, 5, 939139389
+                ), 3, 6, 939139389
             ]
         ];
     }
