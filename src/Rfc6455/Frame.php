@@ -185,20 +185,11 @@ class Frame
     {
         $res = '';
         $mask = $this->getMaskingKey();
-        $maskBytes = [];
 
-//        for ($i = 1; $i <= 4; $i++) {
-//            $maskBytes[] = BitManipulation::bytesFromTo($mask, $i, $i+1);
-//        }
 
         for ($i = 0; $i < $this->payloadLen; $i++) {
-//            $maskingKeyByte = $i % 4;
-//            $payloadByte = BitManipulation::bytesFromTo($payload, $i+1, $i+2);
-//            $res .= BitManipulation::intToString($payloadByte ^ $maskBytes[$maskingKeyByte]);
-
             $payloadByte = $payload[$i];
             $res .= $payloadByte ^ $mask[$i % 4];
-//            var_dump($mask[$i % 4]);
         }
 
         return $res;
