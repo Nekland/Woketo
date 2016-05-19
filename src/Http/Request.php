@@ -64,6 +64,11 @@ class Request extends AbstractHttpMessage
         return $this->method;
     }
 
+    public function getVersion()
+    {
+        return $this->getHeaders()->get('Sec-WebSocket-Version');
+    }
+
     /**
      * @param string $requestString
      * @return Request

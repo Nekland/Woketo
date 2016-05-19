@@ -1,5 +1,4 @@
 <?php
-use Nekland\Woketo\Http\Request;
 
 /**
  * This file is a part of a nekland library
@@ -9,6 +8,11 @@ use Nekland\Woketo\Http\Request;
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
  */
+
+namespace Test\Woketo\Http;
+
+use Nekland\Woketo\Http\Request;
+
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
     public function testAccessors()

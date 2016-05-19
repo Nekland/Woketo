@@ -1,5 +1,4 @@
 <?php
-use Nekland\Woketo\Http\Response;
 
 /**
  * This file is a part of a nekland library
@@ -9,6 +8,10 @@ use Nekland\Woketo\Http\Response;
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
  */
+
+namespace Test\Woketo\Http;
+
+use Nekland\Woketo\Http\Response;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
