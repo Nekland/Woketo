@@ -53,4 +53,28 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(BitManipulation::stringToInt($helloMaskedFrame->getMaskingKey()), 939139389);
         $this->assertSame($helloMaskedFrame->getPayload(), 'Hello');
     }
+
+    public function testPingUnmaskedFrameContainingHello()
+    {
+        $helloUnmaskedPingFrame = new Frame(
+            BitManipulation::hexArrayToString('89', '05', '48', '65', '6c', '6c', '6f')
+        );
+
+        $this->assertSame($helloUnmaskedPingFrame->isMasked(), false);
+        $this->assertSame($helloUnmaskedPingFrame->isFinal(), true);
+        $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
+        $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PING);
+    }
+
+    public function testPongMaskedFrameContainingHello()
+    {
+        $helloUnmaskedPingFrame = new Frame(
+            BitManipulation::hexArrayToString('8a', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58')
+        );
+
+        $this->assertSame($helloUnmaskedPingFrame->isMasked(), true);
+        $this->assertSame($helloUnmaskedPingFrame->isFinal(), true);
+        $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
+        $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PONG);
+    }
 }

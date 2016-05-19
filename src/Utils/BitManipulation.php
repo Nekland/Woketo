@@ -113,8 +113,12 @@ class BitManipulation
      * @param array $hexArray
      * @return string
      */
-    public static function hexArrayToString(array $hexArray) : string
+    public static function hexArrayToString(...$hexArray) : string
     {
+        if (is_array($hexArray[0])) {
+            $hexArray = $hexArray[0];
+        }
+        
         $res = '';
         foreach ($hexArray as $hexNum) {
             $res .= chr(hexdec($hexNum));

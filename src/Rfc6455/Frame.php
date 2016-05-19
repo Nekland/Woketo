@@ -10,23 +10,47 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-
+use Nekland\Woketo\Exception\InvalidFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Utils\BitManipulation;
 
+/**
+ * Class Frame
+ *
+ * @TODO: add support for extensions.
+ */
 class Frame
 {
+    const OP_CONTINUE =  0;
+    const OP_TEXT     =  1;
+    const OP_BINARY   =  2;
+    const OP_CLOSE    =  8;
+    const OP_PING     =  9;
+    const OP_PONG     = 10;
+
     /**
      * The payload size can be specified on 64b unsigned int according to the RFC. That means that maximum data
      * inside the payload is 0b1111111111111111111111111111111111111111111111111111111111111111 bits. In
      * decimal and GB, that means 2147483647 GB. As this is a bit too much for the memory of your computer or
-     * server, we specified a max size to
+     * server, we specified a max size to.
+     *
+     * Notice that to support larger transfer we need to implemente a cache strategy on the harddrive. It also suggest
+     * to have a threaded environment as the task of retrieving the data and treat it will be long.
      *
      * @var int
      */
     private static $maxPayloadSize = 1024;
 
+    /**
+     * Complete string representing data collected from socket
+     *
+     * @var string
+     */
     private $rawData;
+
+    /**
+     * @var int
+     */
     private $frameSize;
 
     // Some cached data
@@ -51,9 +75,18 @@ class Frame
     private $payloadLen;
 
     /**
-     * @var int Number of bits representing the payload length in the current frame.
+     * Number of bits representing the payload length in the current frame.
+     *
+     * @var int
      */
     private $payloadLenSize;
+
+    /**
+     * Cache variable for the payload.
+     *
+     * @var string
+     */
+    private $payload;
 
     public function __construct($data)
     {
@@ -133,6 +166,10 @@ class Frame
 
     public function getPayload()
     {
+        if ($this->payload) {
+            return $this->payload;
+        }
+
         $infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
         if (strlen($this->rawData) < $infoBytesLen + $this->payloadLen) {
             throw new \LogicException(
@@ -143,10 +180,10 @@ class Frame
         $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
 
         if ($this->isMasked()) {
-            return $this->applyMask($payload);
+            return $this->payload = $this->applyMask($payload);
         }
 
-        return $payload;
+        return $this->payload = $payload;
     }
 
     public function getPayloadLength() : int
@@ -202,5 +239,14 @@ class Frame
 
         $this->final = (bool) BitManipulation::nthBit($this->firstByte, 1);
         $this->payloadLen = $this->getPayloadLength();
+
+        Frame::checkFrame($this);
+    }
+
+    public static function checkFrame(Frame $frame)
+    {
+        if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload())) {
+            throw new InvalidFrameException('The text is not encoded in UTF-8.');
+        }
     }
 }

@@ -64,7 +64,9 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $this->expectException('\Nekland\Woketo\Exception\LimitationException');
 
         for($i = 0; $i < 20; $i++) {
-            $message->addFrame($this->prophesize('\Nekland\Woketo\Rfc6455\Frame')->reveal());
+            $frame = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
+            $frame->isFinal()->willReturn(false);
+            $message->addFrame($frame->reveal());
         }
     }
 }
