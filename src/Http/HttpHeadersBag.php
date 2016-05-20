@@ -11,7 +11,7 @@
 namespace Nekland\Woketo\Http;
 
 
-class HttpHeadersBag
+class HttpHeadersBag implements \ArrayAccess
 {
     private $headers;
 
@@ -63,5 +63,48 @@ class HttpHeadersBag
         $this->headers[$name][] = $value;
 
         return $this;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function remove(string $name)
+    {
+        $name = strtolower($name);
+        unset($this->headers[$name]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetExists($offset)
+    {
+        $offset = strtolower($offset);
+
+        return isset($this->headers[$offset]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetGet($offset)
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw new \Exception('You must use either add or set method to update the header bag.');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function offsetUnset($offset)
+    {
+        $this->remove($offset);
     }
 }

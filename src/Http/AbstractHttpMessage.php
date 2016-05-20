@@ -14,9 +14,9 @@ namespace Nekland\Woketo\Http;
 abstract class AbstractHttpMessage
 {
     /**
-     * @var string[]
+     * @var HttpHeadersBag
      */
-    private $headers = [];
+    private $headers;
 
     /**
      * @var string for example "HTTP/1.1"
@@ -41,7 +41,10 @@ abstract class AbstractHttpMessage
      */
     public function addHeader(string $name, string $value)
     {
-        $this->headers[$name] = $value;
+        if (null === $this->headers) {
+            $this->headers = new HttpHeadersBag();
+        }
+        $this->headers->add($name, $value);
 
         return $this;
     }
@@ -64,7 +67,7 @@ abstract class AbstractHttpMessage
     }
 
     /**
-     * @return array|\string[]
+     * @return array|HttpHeadersBag
      */
     public function getHeaders()
     {
