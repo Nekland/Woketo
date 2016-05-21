@@ -11,9 +11,19 @@
 namespace Nekland\Woketo\Http;
 
 
-class HttpHeadersBag implements \ArrayAccess
+class HttpHeadersBag implements \ArrayAccess, \Iterator
 {
+    /**
+     * @var string[]
+     */
     private $headers;
+
+    /**
+     * Is used by the iterator feature to store a possible "false" value when the loop over the array is finished.
+     *
+     * @var mixed
+     */
+    private $next;
 
     public function __construct()
     {
@@ -27,7 +37,6 @@ class HttpHeadersBag implements \ArrayAccess
      */
     public function set(string $name, $value)
     {
-        $name = strtolower($name);
         $this->headers[$name] = $value;
 
         return $this;
@@ -39,9 +48,9 @@ class HttpHeadersBag implements \ArrayAccess
      */
     public function get(string $name)
     {
-        $name = strtolower($name);
+        $headersLower = array_change_key_case($this->headers);
 
-        return $this->headers[$name];
+        return $headersLower[strtolower($name)];
     }
 
     /**
@@ -51,7 +60,6 @@ class HttpHeadersBag implements \ArrayAccess
      */
     public function add(string $name, $value)
     {
-        $name = strtolower($name);
         if (!empty($this->headers[$name])) {
             if (!is_array($this->headers[$name])){
                 $this->headers[$name] = [$this->headers[$name]];
@@ -69,7 +77,6 @@ class HttpHeadersBag implements \ArrayAccess
      */
     public function remove(string $name)
     {
-        $name = strtolower($name);
         unset($this->headers[$name]);
     }
 
@@ -78,8 +85,6 @@ class HttpHeadersBag implements \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        $offset = strtolower($offset);
-
         return isset($this->headers[$offset]);
     }
 
@@ -105,5 +110,30 @@ class HttpHeadersBag implements \ArrayAccess
     public function offsetUnset($offset)
     {
         $this->remove($offset);
+    }
+
+    public function current()
+    {
+        return $this->next ?: current($this->headers);
+    }
+
+    public function next()
+    {
+        $this->next = next($this->headers);
+    }
+
+    public function key()
+    {
+        return key($this->headers);
+    }
+
+    public function valid()
+    {
+        return $this->next !== false;
+    }
+
+    public function rewind()
+    {
+        $this->current = 0;
     }
 }

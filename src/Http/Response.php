@@ -49,9 +49,8 @@ class Response extends AbstractHttpMessage
         foreach ($this->getHeaders() as $name => $content) {
             $stringResponse .= $name . ': '. $content . "\r\n";
         }
-
+        
         // No content to concatenate
-
         $stringResponse .= "\r\n";
 
         $stream->write($stringResponse);

@@ -26,7 +26,7 @@ class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
     {
         $bag = new HttpHeadersBag();
         $bag->set('Custom-Header', 'foobar');
-        $this->assertSame($bag->get('custom-header'), 'foobar');
+        $this->assertSame($bag->get('Custom-Header'), 'foobar');
     }
 
     public function testItSupportsManytimesSameHeader()
