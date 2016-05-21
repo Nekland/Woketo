@@ -56,12 +56,11 @@ class HttpHeadersBag implements \ArrayAccess
             if (!is_array($this->headers[$name])){
                 $this->headers[$name] = [$this->headers[$name]];
             }
+            $this->headers[$name][] = $value;
         } else {
-            $this->headers[$name] = [];
+            $this->headers[$name] = $value;
         }
-
-        $this->headers[$name][] = $value;
-
+        
         return $this;
     }
 

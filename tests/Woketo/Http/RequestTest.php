@@ -26,19 +26,20 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $headers = $request->getHeaders();
         $headersToCheck = [
             'Host' => '127.0.0.1:8088',
-             'User-Agent' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
-             'Sec-WebSocket-Key' => 'nm7Ml8Q7dGJGWWdqnfM7AQ==',
-             'Sec-WebSocket-Extensions' => 'permessage-deflate',
-             'Upgrade' => 'websocket'
+            'User-Agent' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
+            'Sec-WebSocket-Key' => 'nm7Ml8Q7dGJGWWdqnfM7AQ==',
+            'Sec-WebSocket-Extensions' => 'permessage-deflate',
+            'Upgrade' => 'websocket'
         ];
 
         foreach($headersToCheck as $key => $item) {
-            $this->assertEquals($headers[$key], $item);
+            $this->assertEquals($headers->get($key), $item);
         }
 
         $this->assertSame(13, $request->getVersion());
         $this->assertSame(['permessage-deflate' => []], $request->getExtensions());
     }
+
     /**
      * @dataProvider getWrongWebsocketRequests
      * @param $request

@@ -64,9 +64,45 @@ class Request extends AbstractHttpMessage
         return $this->method;
     }
 
-    public function getVersion()
+    public function getVersion() : int
     {
-        return $this->getHeaders()->get('Sec-WebSocket-Version');
+        return (int) $this->getHeaders()->get('Sec-WebSocket-Version');
+    }
+
+    public function getExtensions()
+    {
+        $originalHeaders = $this->getHeaders()->get('Sec-WebSocket-Extensions');
+        if (!is_array($originalHeaders)) {
+            $originalHeaders = [$originalHeaders];
+        }
+
+        $extensionHeaders = [];
+        $extensions = [];
+
+        foreach ($originalHeaders as $extensionHeader) {
+            $extensionHeaders = array_merge($extensionHeaders, array_map('trim', explode(',', $extensionHeader)));
+        }
+
+        foreach ($extensionHeaders as $extension) {
+            $explodingHeader = explode(';', $extension);
+            $extensionName = trim($explodingHeader[0]);
+            $extensions[$extensionName] = [];
+
+            if (count($explodingHeader)) {
+                unset($explodingHeader[0]); // removing the name of the extension
+                foreach($explodingHeader as $variable) {
+                    $explodeVariable = explode('=', $variable);
+
+                    // The value can be with or without quote. We need to remove extra quotes.
+                    $value = preg_replace('/^"(.+)"$/', '$1', trim($explodeVariable[1]));
+                    $value = str_replace('\\"', '"', $value);
+
+                    $extensions[$extensionName][trim($explodeVariable[0])] = $value;
+                }
+            }
+        }
+
+        return $extensions;
     }
 
     /**
@@ -84,7 +120,7 @@ class Request extends AbstractHttpMessage
         unset($lines[0]);
         Request::initHeaders($lines, $request);
 
-        if (empty($request->getHeaders()['Sec-WebSocket-Key']) || empty($request->getHeaders()['Upgrade']) || $request->getHeaders()['Upgrade'] !== 'websocket') {
+        if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || $request->getHeaders()->get('Upgrade') !== 'websocket') {
             throw new HttpException(sprintf("The request is not a websocket upgrade request, received:\n%s", $requestString));
         }
 
@@ -127,7 +163,7 @@ class Request extends AbstractHttpMessage
         );
     }
 
-    protected static function initHeaders(array $headers, $request)
+    protected static function initHeaders(array $headers, Request $request)
     {
         foreach ($headers as $header) {
             $cuttedHeader = explode(':', $header);
