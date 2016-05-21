@@ -64,11 +64,17 @@ class Request extends AbstractHttpMessage
         return $this->method;
     }
 
+    /**
+     * @return int
+     */
     public function getVersion() : int
     {
         return (int) $this->getHeaders()->get('Sec-WebSocket-Version');
     }
 
+    /**
+     * @return array
+     */
     public function getExtensions()
     {
         $originalHeaders = $this->getHeaders()->get('Sec-WebSocket-Extensions');
