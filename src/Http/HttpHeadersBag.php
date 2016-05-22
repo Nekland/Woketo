@@ -25,9 +25,9 @@ class HttpHeadersBag implements \ArrayAccess, \Iterator
      */
     private $next;
 
-    public function __construct()
+    public function __construct(array $headers = null)
     {
-        $this->headers = [];
+        $this->headers = $headers ?: [];
     }
 
     /**
@@ -44,13 +44,15 @@ class HttpHeadersBag implements \ArrayAccess, \Iterator
 
     /**
      * @param string $name
+     * @param mixed  $default
      * @return mixed
      */
-    public function get(string $name)
+    public function get(string $name, $default = null)
     {
         $headersLower = array_change_key_case($this->headers);
+        $name = strtolower($name);
 
-        return $headersLower[strtolower($name)];
+        return isset($headersLower[$name]) ? $headersLower[$name] : $default;
     }
 
     /**

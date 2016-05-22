@@ -43,4 +43,22 @@ class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
         $bag->add('Sec-WebSocket-Extensions', 'yolo');
         $this->assertSame($bag->get('Sec-WebSocket-Extensions'), ['oups', 'yolo']);
     }
+    
+    public function testItCanBeInitializedWithArrayOfHeaders()
+    {
+        $bag = new HttpHeadersBag([
+            'Content-Type' => 'text/javascript',
+            'Sec-WebSocket-Extensions' => 'test'
+        ]);
+        
+        $this->assertSame($bag->get('Content-Type'), 'text/javascript');
+    }
+    
+    public function testItReturnDefaultValueWhenSpecifiedIfHeaderDoesNotExists()
+    {
+        $bag = new HttpHeadersBag();
+        
+        $this->assertSame($bag->get('Content-Not-Specified'), null);
+        $this->assertSame($bag->get('Content-Specified', 'Hello'), 'Hello');
+    }
 }

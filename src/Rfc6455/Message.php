@@ -74,4 +74,9 @@ class Message
 
         return $res;
     }
+    
+    public function isComplete()
+    {
+        return $this->isComplete;
+    }
 }

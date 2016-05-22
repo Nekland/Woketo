@@ -11,6 +11,7 @@
 
 namespace Test\Woketo\Rfc6455;
 
+use Nekland\Woketo\Http\HttpHeadersBag;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
@@ -59,50 +60,50 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
         return [
             // wrong method
             [
-                [
+                new HttpHeadersBag([
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
                     "Sec-WebSocket-Version" => 13,
                     "Upgrade" => "websocket",
-                ],
+                ]),
                 'POST',
                 '/foo',
                 'HTTP/1.1'
             ],
             // Wrong http version
             [
-                [
+                new HttpHeadersBag([
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
                     "Sec-WebSocket-Version" => 13,
                     "Upgrade" => "websocket",
-                ],
+                ]),
                 'GET',
                 '/foo',
                 'HTTP/1.0'
             ],
             // Missing upgrade
             [
-                [
+                new HttpHeadersBag([
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
                     "Sec-WebSocket-Version" => 13,
-                ],
+                ]),
                 'GET',
                 '/foo',
                 'HTTP/1.1'
             ],
             // Missing key
             [
-                [
+                new HttpHeadersBag([
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Upgrade" => "websocket",
                     "Sec-WebSocket-Version" => 13,
-                ],
+                ]),
                 'GET',
                 '/foo',
                 'HTTP/1.1'
@@ -110,17 +111,17 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
             // Unsupported version
             // https://tools.ietf.org/html/rfc6455#section-4.4
             [
-                [
+                new HttpHeadersBag([
                     "Host" => "127.0.0.1:8088",
                     "Sec-WebSocket-Extensions"=> "permessage-deflate",
                     "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
                     "Sec-WebSocket-Version" => 2,
                     "Upgrade" => "websocket",
-                ],
+                ]),
                 'GET',
                 '/foo',
                 'HTTP/1.1',
-                'Nekland\Woketo\Exception\VersionWebSocketException'
+                'Nekland\Woketo\Exception\WebsocketVersionException'
             ],
         ];
     }

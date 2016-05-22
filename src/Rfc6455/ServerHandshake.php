@@ -11,6 +11,7 @@
 
 namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\WebsocketException;
+use Nekland\Woketo\Exception\WebsocketVersionException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 
@@ -22,6 +23,7 @@ use Nekland\Woketo\Http\Response;
 class ServerHandshake
 {
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+    const SUPPORTED_VERSIONS = [12];
 
     /**
      * Used when doing the handshake to encode the key, verifying client/server are speaking the same language
@@ -74,6 +76,11 @@ class ServerHandshake
             throw new WebsocketException(
                 sprintf('Wrong or missing upgrade header.')
             );
+        }
+        
+        $version = $headers->get('Sec-WebSocket-Version');
+        if (!in_array($version, ServerHandshake::SUPPORTED_VERSIONS)) {
+            throw new WebsocketVersionException(sprintf('Version %s not supported by Woketo for now.', $version));
         }
 
         return true;

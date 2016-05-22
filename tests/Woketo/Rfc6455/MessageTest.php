@@ -52,6 +52,8 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message->addFrame($frame1->reveal());
         $message->addFrame($frame2->reveal());
 
+        $this->assertSame($message->isComplete(), false);
+        
         $this->expectException('\Nekland\Woketo\Exception\MissingDataException');
 
         $message->getContent();
