@@ -97,12 +97,13 @@ class Websocket
                     $response = Response::createSwitchProtocolResponse();
                     $this->handshake->sign($this->request, $response);
                     $response->send($conn);
+                } else {
+                    $this->message->addFrame(new Frame($data));
+                    if ($this->message->isComplete()) {
+                        var_dump($this->message->getContent());
+                    }  
                 }
 
-                $this->message->addFrame(new Frame($data));
-                if ($this->message->isComplete()) {
-                    var_dump($this->message->getContent());
-                }
             });
         });
         $socket->listen($this->port);
