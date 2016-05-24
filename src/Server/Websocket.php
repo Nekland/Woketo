@@ -15,6 +15,8 @@ use Nekland\Woketo\Exception\SocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\Frame;
+use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 
 class Websocket
@@ -50,6 +52,12 @@ class Websocket
     private $messageHandler;
 
     /**
+     * tmp var for test purpose
+     * @var Message
+     */
+    private $message;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
@@ -69,7 +77,7 @@ class Websocket
 
     public function start()
     {
-        $this->messageBuffer = new MessageBuffer($this->messageHandler);
+        $this->message = new Message();
         $loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($loop);
@@ -91,7 +99,10 @@ class Websocket
                     $response->send($conn);
                 }
 
-                $this->messageBuffer->data($data);
+                $this->message->addFrame(new Frame($data));
+                if ($this->message->isComplete()) {
+                    var_dump($this->message->getContent());
+                }
             });
         });
         $socket->listen($this->port);

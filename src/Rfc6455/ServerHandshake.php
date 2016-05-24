@@ -23,7 +23,7 @@ use Nekland\Woketo\Http\Response;
 class ServerHandshake
 {
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-    const SUPPORTED_VERSIONS = [12];
+    const SUPPORTED_VERSIONS = [13];
 
     /**
      * Used when doing the handshake to encode the key, verifying client/server are speaking the same language
