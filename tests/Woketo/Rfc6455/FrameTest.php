@@ -77,4 +77,39 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
         $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PONG);
     }
+
+    /**
+     * @dataProvider frameDataGenerationTestProvider
+     *
+     * @param string $maskingKey
+     * @param string $payload
+     * @param int    $opcode
+     * @param string $expected
+     */
+    public function testItGeneratesFrameData($maskingKey, $payload, $opcode, $expected)
+    {
+        $frame = new Frame();
+        
+        $frame->setFinal(true);
+        $frame->setMasked(!empty($maskingKey));
+        $frame->setMaskingKey($maskingKey);
+        $frame->setPayload($payload);
+        $frame->setOpcode($opcode);
+        
+        $this->assertSame($expected, $frame->getPayload());
+    }
+
+    public function frameDataGenerationTestProvider()
+    {
+        return [
+            [
+                BitManipulation::intToString(939139389),
+                'Hello',
+                Frame::OP_TEXT,
+                BitManipulation::hexArrayToString(
+                    ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
+                )
+            ]
+        ];
+    }
 }

@@ -36,6 +36,16 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
         $handshake = new ServerHandshake();
         $handshake->sign($request->reveal(), $response->reveal());
     }
+    
+    public function itShouldProcessHandshake()
+    {
+        throw new class extends \Exception {
+            public function __construct($message, $code, Exception $previous)
+            {
+                parent::__construct('TODO !');
+            }
+        };
+    }
 
     /**
      * @dataProvider getWrongWebsocketRequests
