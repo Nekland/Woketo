@@ -89,13 +89,13 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     public function testItGeneratesFrameData($maskingKey, $payload, $opcode, $expected)
     {
         $frame = new Frame();
-        
+
         $frame->setFinal(true);
-        $frame->setMasked(!empty($maskingKey));
+        $frame->setMasked(null !== $maskingKey);
         $frame->setMaskingKey($maskingKey);
         $frame->setPayload($payload);
         $frame->setOpcode($opcode);
-        
+
         $this->assertSame($expected, $frame->getPayload());
     }
 

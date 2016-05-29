@@ -53,7 +53,8 @@ class Frame
      */
     private $frameSize;
 
-    // Some cached data
+    // In case of enter request the following data is cache.
+    // Otherwise it's data used to generate "rawData".
 
     /**
      * @var int
@@ -88,15 +89,27 @@ class Frame
      */
     private $payload;
 
-    public function __construct($data)
+    /**
+     * @var
+     */
+    private $mask;
+
+    public function __construct($data=null)
     {
-        $this->setRawData($data);
-        $this->frameSize = strlen($data);
-        if ($this->frameSize < 2) {
-            throw new \InvalidArgumentException('Not enough data to be a frame.');
+        if (null !== $data) {
+            $this->setRawData($data);
+            $this->frameSize = strlen($data);
+
+            if ($this->frameSize < 2) {
+                throw new \InvalidArgumentException('Not enough data to be a frame.');
+            }
         }
     }
 
+    /**
+     * @param string|int $rawData Probably more likely a string than an int, but well... why not.
+     * @return $this
+     */
     public function setRawData($rawData)
     {
         $this->rawData = $rawData;
@@ -112,6 +125,17 @@ class Frame
     public function isFinal() : bool
     {
         return $this->final;
+    }
+
+    /**
+     * @param bool $final
+     * @return Frame
+     */
+    public function setFinal(bool $final) : Frame
+    {
+        $this->final = $final;
+
+        return $this;
     }
 
     /**
@@ -146,6 +170,16 @@ class Frame
         return BitManipulation::partOfByte($this->firstByte, 2);
     }
 
+    public function setMaskingKey(string $mask) : Frame
+    {
+        if (null === $mask) {
+            $this->isMasked()
+        }
+        $this->mask = $mask;
+
+        return $this;
+    }
+
     public function getMaskingKey() : string
     {
         if (!$this->isMasked()) {
@@ -161,7 +195,7 @@ class Frame
 
         $value = BitManipulation::bytesFromTo($this->rawData, $start, $start + 3);
 
-        return BitManipulation::intToString($value);
+        return $this->mask = BitManipulation::intToString($value);
     }
 
     public function getPayload()
