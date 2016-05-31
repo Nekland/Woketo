@@ -65,6 +65,7 @@ class Frame
      * @var int
      */
     private $secondByte;
+    
     /**
      * @var bool
      */
@@ -94,6 +95,11 @@ class Frame
      */
     private $mask;
 
+    /**
+     * @var int
+     */
+    private $opcode;
+
     public function __construct($data=null)
     {
         if (null !== $data) {
@@ -116,6 +122,45 @@ class Frame
         $this->getInformationFromRawData();
 
         return $this;
+    }
+
+    public function getRawData() : string
+    {
+        if (null !== $this->rawData) {
+            return $this->rawData;
+        }
+
+        if (!$this->isValid()) {
+            throw new InvalidFrameException('The frame you composed is not valid !');
+        }
+        $data = '';
+
+        $secondLen = null;
+        if ($this->payloadLen < 126) {
+            $firstLen = $this->payloadLen;
+
+        } else {
+            // As the payload cannot be bigger than self::$maxPayloadSize. It will always be less than 65535
+            // and so will never take more than 2 bytes.
+            $firstLen = 126;
+            $secondLen = $this->payloadLen;
+        }
+
+        $data .= BitManipulation::intToString(
+            (((null === $this->final ? 1 : (int) $this->final) << 7) + $this->opcode) << 8
+            + ($this->isMasked() << 7) + $firstLen
+        );
+        if (null !== $secondLen) {
+            $data .= BitManipulation::intToString($secondLen);
+        }
+        if ($this->isMasked()) {
+            $data .= $this->getMaskingKey();
+            $data .= $this->applyMask($this->getPayload());
+            
+            return $data;
+        }
+        
+        return $data . $this->getPayload();
     }
 
     /**
@@ -169,11 +214,22 @@ class Frame
     {
         return BitManipulation::partOfByte($this->firstByte, 2);
     }
+    
+    public function setOpcode(int $opcode) : Frame
+    {
+        if (!in_array($opcode, [Frame::OP_TEXT, Frame::OP_BINARY, Frame::OP_CLOSE, Frame::OP_CONTINUE, Frame::OP_PING, Frame::OP_PONG])) {
+            throw new \InvalidArgumentException('Wrong opcode !');
+        }
+        
+        $this->opcode = $opcode;
+        
+        return $this;
+    }
 
     public function setMaskingKey(string $mask) : Frame
     {
         if (null === $mask) {
-            $this->isMasked()
+            $this->isMasked();
         }
         $this->mask = $mask;
 
@@ -182,6 +238,9 @@ class Frame
 
     public function getMaskingKey() : string
     {
+        if (null !== $this->mask) {
+            return $this->mask;
+        }
         if (!$this->isMasked()) {
             return '';
         }
@@ -219,6 +278,19 @@ class Frame
 
         return $this->payload = $payload;
     }
+    
+    public function setPayload(string $payload) : Frame
+    {
+        $this->payload = $payload;
+        $this->payloadLen = strlen($this->payload);
+        $this->payloadLenSize = 7;
+        
+        if ($this->payloadLen > 126) {
+            $this->payloadLenSize += 16;
+        }
+        
+        return $this;
+    }
 
     public function getPayloadLength() : int
     {
@@ -240,6 +312,7 @@ class Frame
             $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11);
         }
 
+        // Check < 0 because 64th bit is the negative one in PHP.
         if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
             throw new LimitationException;
         }
@@ -249,7 +322,15 @@ class Frame
 
     public function isMasked() : bool
     {
-        return (bool) BitManipulation::nthBit($this->secondByte, 1);
+        if ($this->mask !== null) {
+            return true;
+        }
+        
+        if ($this->rawData !== null) {
+            return (bool) BitManipulation::nthBit($this->secondByte, 1);
+        }
+        
+        return false;
     }
 
     public function applyMask(string $payload) : string
@@ -282,5 +363,15 @@ class Frame
         if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload())) {
             throw new InvalidFrameException('The text is not encoded in UTF-8.');
         }
+    }
+
+    /**
+     * You can call this method to be sure your frame is valid before trying to get the raw data.
+     * 
+     * @return bool
+     */
+    public function isValid() : bool
+    {
+        return !empty($this->opcode) && !empty($this->payload);
     }
 }
