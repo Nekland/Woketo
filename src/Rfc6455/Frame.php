@@ -147,7 +147,7 @@ class Frame
         }
 
         $data .= BitManipulation::intToString(
-            (((null === $this->final ? 1 : (int) $this->final) << 7) + $this->opcode) << 8
+            ((((null === $this->final ? 1 : (int) $this->final) << 7) + $this->opcode) << 8)
             + ($this->isMasked() << 7) + $firstLen
         );
         if (null !== $secondLen) {
