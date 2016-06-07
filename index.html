@@ -9,7 +9,7 @@
         <script>
         var ws = new WebSocket("ws://127.0.0.1:8088/foobar");
         ws.onopen = function (event) {
-            ws.send("Here's some text that the server is urgently awaiting!");
+            ws.send("yolo");
         };
         ws.onmessage = function (event) {
             var pre = document.getElementById('content');

@@ -18,6 +18,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
+use React\Socket\ConnectionInterface;
 
 class Websocket
 {
@@ -70,8 +71,21 @@ class Websocket
         $this->handshake = new ServerHandshake();
     }
 
-    public function setMessageHandler(MessageHandlerInterface $messageHandler)
+    public function setMessageHandler($messageHandler)
     {
+        if (!$messageHandler instanceof MessageHandlerInterface &&  !is_string($messageHandler)) {
+            throw new \InvalidArgumentException('The message handler must be an instance of MessageHandlerInterface or a string.');
+        }
+        if (is_string($messageHandler)) {
+            try {
+                $reflection = new \ReflectionClass($messageHandler);
+                if(!$reflection->implementsInterface('Nekland\Woketo\Message\MessageHandlerInterface')) {
+                    throw new \InvalidArgumentException('The messageHandler must implement MessageHandlerInterface');
+                }
+            } catch (\ReflectionException $e) {
+                throw new \InvalidArgumentException('The messageHandler must be a string representing a class.');
+            }
+        }
         $this->messageHandler = $messageHandler;
     }
 
@@ -81,33 +95,19 @@ class Websocket
         $loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($loop);
-        $socket->on('connection', function ($conn) {
-//            $conn->write("Hello there!\n");
-//            $conn->write("Welcome to this amazing server!\n");
-//            $conn->write("Here's a tip: don't say anything.\n");
-//
-//            $conn->on('data', function ($data) use ($conn) {
-//                $conn->close();
-//            });
-            $conn->on('data', function ($data) use ($conn) {
-                echo $data . "\n\n";
-                if (null === $this->request) {
-                    $this->request = Request::create($data);
-                    $this->handshake->verify($this->request);
-                    $response = Response::createSwitchProtocolResponse();
-                    $this->handshake->sign($this->request, $response);
-                    $response->send($conn);
-                } else {
-                    $this->message->addFrame(new Frame($data));
-                    if ($this->message->isComplete()) {
-                        var_dump($this->message->getContent());
-                    }  
-                }
-
-            });
-        });
+        $socket->on('connection', [$this, 'newConnection']);
         $socket->listen($this->port);
 
         $loop->run();
+    }
+
+    public function newConnection(ConnectionInterface $socketStream)
+    {
+        $messageHandler = $this->messageHandler;
+        if (is_string($messageHandler)) {
+            $messageHandler = new $messageHandler;
+        }
+        
+        $this->connections[] = new Connection($socketStream, $messageHandler);
     }
 }

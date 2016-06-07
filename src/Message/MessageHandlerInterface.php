@@ -10,7 +10,27 @@
  */
 namespace Nekland\Woketo\Message;
 
+use Nekland\Woketo\Server\Connection;
+
+/**
+ * Interface MessageHandlerInterface
+ *
+ * If there is only one message handler object (that *you* instanciate) you can guess what is the current client using the spl hash of the connection.
+ */
 interface MessageHandlerInterface
 {
-    public function onData($data);
+    /**
+     * Is called when a new connection is established.
+     *
+     * @param Connection $connection
+     */
+    public function onConnection(Connection $connection);
+
+    /**
+     * Is called on new data.
+     *
+     * @param string $data
+     * @param Connection $connection
+     */
+    public function onData($data, Connection $connection);
 }
