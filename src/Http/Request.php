@@ -126,7 +126,7 @@ class Request extends AbstractHttpMessage
         unset($lines[0]);
         Request::initHeaders($lines, $request);
 
-        if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || $request->getHeaders()->get('Upgrade') !== 'websocket') {
+        if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || strtolower($request->getHeaders()->get('Upgrade')) !== 'websocket') {
             throw new HttpException(sprintf("The request is not a websocket upgrade request, received:\n%s", $requestString));
         }
 

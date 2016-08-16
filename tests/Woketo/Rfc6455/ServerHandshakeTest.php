@@ -65,6 +65,52 @@ class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
         $handshake->verify($request->reveal());
     }
 
+    /**
+     * @dataProvider getGoodWebsocketRequests
+     */
+    public function testItvalidGoodRequests($headers, $method, $uri, $httpVersion)
+    {
+
+        $request = $this->prophesize('Nekland\Woketo\Http\Request');
+        $request->getHeaders()->willReturn($headers);
+        $request->getMethod()->willReturn($method);
+        $request->getUri()->willReturn($uri);
+        $request->getHttpVersion()->willReturn($httpVersion);
+
+        $handshake = new ServerHandshake();
+        $this->assertEquals($handshake->verify($request->reveal()), true);
+    }
+
+    public function getGoodWebsocketRequests()
+    {
+        return [
+            [
+                new HttpHeadersBag([
+                    "Host" => "127.0.0.1:8088",
+                    "Sec-WebSocket-Extensions"=> "permessage-deflate",
+                    "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 13,
+                    "Upgrade" => "websocket",
+                ]),
+                'GET',
+                '/foo',
+                'HTTP/1.1'
+            ],
+            [
+                new HttpHeadersBag([
+                    "Host" => "127.0.0.1:8088",
+                    "Sec-WebSocket-Extensions"=> "permessage-deflate",
+                    "Sec-WebSocket-Key" => "nm7Ml8Q7dGJGWWdqnfM7AQ==",
+                    "Sec-WebSocket-Version" => 13,
+                    "Upgrade" => "Websocket",
+                ]),
+                'GET',
+                '/foo',
+                'HTTP/1.1'
+            ],
+        ];
+    }
+
     public function getWrongWebsocketRequests()
     {
         return [

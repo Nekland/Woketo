@@ -72,7 +72,7 @@ class ServerHandshake
             );
         }
 
-        if (empty($headers['Upgrade']) || 'websocket' !== $headers['Upgrade']) {
+        if (empty($headers['Upgrade']) || 'websocket' !== strtolower($headers['Upgrade'])) {
             throw new WebsocketException(
                 sprintf('Wrong or missing upgrade header.')
             );
