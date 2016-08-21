@@ -10,6 +10,7 @@
  */
 namespace Nekland\Woketo\Message;
 
+use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Server\Connection;
 
 /**
@@ -33,4 +34,11 @@ interface MessageHandlerInterface
      * @param Connection $connection
      */
     public function onData($data, Connection $connection);
+
+    /**
+     * This callback is call when there is an error on the websocket protocol communication.
+     *
+     * @param WebsocketException $e
+     */
+    public function onError(WebsocketException $e, Connection $connection);
 }

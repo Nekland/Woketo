@@ -11,6 +11,7 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Message\MessageHandlerInterface;
@@ -60,8 +61,6 @@ class Connection
      */
     protected function processMessage($data)
     {
-
-        
         if ($this->currentMessage === null || $this->currentMessage->isComplete()) {
             $this->currentMessage = new Message();
         }
@@ -74,11 +73,17 @@ class Connection
 
     public function processData($data)
     {
-        if (!$this->handshakeDone) {
-            $this->processHandcheck($data);
-        } else {
-            $this->processMessage($data);
+        try {
+            if (!$this->handshakeDone) {
+                $this->processHandcheck($data);
+            } else {
+                $this->processMessage($data);
+            }
+        } catch (WebsocketException $e) {
+            $this->socketStream->close();
+            $this->handler->onError($e, $this);
         }
+
     }
 
     /**
