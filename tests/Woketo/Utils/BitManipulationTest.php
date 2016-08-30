@@ -98,6 +98,9 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     public function testItTransformIntFrameToString()
     {
         $this->assertSame(BitManipulation::intToString(6382179), 'abc');
+        $this->assertSame(BitManipulation::intToString(1000), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToString(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToString(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
     }
 
     public function testItTransformStringFrameToInt()
@@ -134,6 +137,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         return [
             [['6c'], 'l'],
             [['21', '51', '6f'], '!Qo'],
+            [['00', '00', '6c'], chr(0) . chr(0) . 'l']
         ];
     }
 

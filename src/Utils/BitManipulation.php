@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace Nekland\Woketo\Utils;
 
-use Nekland\Woketo\Exception\PhpLimitationException;
-
 class BitManipulation
 {
     /**
@@ -173,10 +171,14 @@ class BitManipulation
     }
 
     /**
-     * @param int $frame
+     * Take a frame represented by a decimal int to transform it in a string.
+     * Notice that any int is a frame and may noy
+     *
+     * @param int      $frame
+     * @param int|null $size
      * @return string
      */
-    public static function intToString(int $frame) : string
+    public static function intToString(int $frame, int $size = null) : string
     {
         $res = '';
         for ($i = 8; $i >= 0; $i--) {
@@ -186,10 +188,24 @@ class BitManipulation
             }
         }
 
+        if ($size !== null) {
+            $actualSize = strlen($res);
+            if ($size < $actualSize) {
+                $res = substr($res, $size - $actualSize);
+            } else if ($size > $actualSize) {
+                $missingChars = $size - $actualSize;
+                for ($i = 0; $i < $missingChars; $i++) {
+                    $res = chr(0) . $res;
+                }
+            }
+        }
+
         return $res;
     }
 
     /**
+     * Take an string frame and transform it to a decimal frame (inside an int).
+     *
      * @param string $frame
      * @return int
      */
