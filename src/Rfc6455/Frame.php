@@ -28,6 +28,20 @@ class Frame
     const OP_PING     =  9;
     const OP_PONG     = 10;
 
+    // To understand codes, please refer to RFC:
+    // https://tools.ietf.org/html/rfc6455#section-7.4
+    const CLOSE_NORMAL                  = 1000;
+    const CLOSE_GOING_AWAY              = 1001;
+    const CLOSE_PROTOCOL_ERROR          = 1002;
+    const CLOSE_WRONG_DATA              = 1003;
+    // 1004-1006 are reserved
+    const CLOSE_INCOHERENT_DATA         = 1007;
+    const CLOSE_POLICY_VIOLATION        = 1008;
+    const CLOSE_TOO_BIG_TO_PROCESS      = 1009;
+    const CLOSE_MISSING_EXTENSION       = 1010; // In this case you should precise a reason
+    const CLOSE_UNEXPECTING_CONDITION   = 1011;
+    // 1015 is reserved
+
     /**
      * The payload size can be specified on 64b unsigned int according to the RFC. That means that maximum data
      * inside the payload is 0b1111111111111111111111111111111111111111111111111111111111111111 bits. In
@@ -104,11 +118,6 @@ class Frame
     {
         if (null !== $data) {
             $this->setRawData($data);
-            $this->frameSize = strlen($data);
-
-            if ($this->frameSize < 2) {
-                throw new \InvalidArgumentException('Not enough data to be a frame.');
-            }
         }
     }
 
@@ -119,6 +128,11 @@ class Frame
     public function setRawData($rawData)
     {
         $this->rawData = $rawData;
+        $this->frameSize = strlen($rawData);
+
+        if ($this->frameSize < 2) {
+            throw new \InvalidArgumentException('Not enough data to be a frame.');
+        }
         $this->getInformationFromRawData();
 
         return $this;
