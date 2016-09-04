@@ -86,7 +86,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
      * @param int      $to
      * @param null|int $res
      */
-    public function testItGetBytesFromToByteNumber($frame, $from, $to, $res = null)
+    public function testItGetBytesFromToByteNumber($frame, $from, $to, $force8bytes = false, $res = null)
     {
         if (!is_int($res)) {
             $this->expectException($res);
@@ -115,19 +115,24 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     public function bytesFromToProvider()
     {
         return [
-            [16711850, 2, 3, 170],
-            [16711850, 1, 2, 65280],
-            [16711850, 1, 3, 16711850],
-            [16711850, -1, 2, '\InvalidArgumentException'],
-            [-16711850, 1, 2, '\InvalidArgumentException'],
-            [16711850, 1, 9, '\InvalidArgumentException'],
-            ['abcdef', 1, 2, 24930],
-            [new \SplObjectStorage, 1, 2, '\InvalidArgumentException'],
-            ['abc', 2, 5, '\InvalidArgumentException'],
+            [16711850, 2, 3, false, 170],
+            [16711850, 1, 2, false, 65280],
+            [16711850, 1, 3, false, 16711850],
+            [16711850, -1, 2, false, '\InvalidArgumentException'],
+            [-16711850, 1, 2, false, '\InvalidArgumentException'],
+            [16711850, 1, 9, false, '\InvalidArgumentException'],
+            ['abcdef', 1, 2, false, 24930],
+            [new \SplObjectStorage, 1, 2, false, '\InvalidArgumentException'],
+            ['abc', 2, 5, false, '\InvalidArgumentException'],
             [
                 BitManipulation::hexArrayToString(
                     ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
-                ), 3, 6, 939139389
+                ), 3, 6, false, 939139389
+            ],
+            [
+                BitManipulation::hexArrayToString(
+                    ['80', '00', '00', '00', '00', '00', '00', '00', 'a5', '45']
+                ), 1, 9, true, (int) -9223372036854775808
             ]
         ];
     }

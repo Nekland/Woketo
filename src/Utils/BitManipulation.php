@@ -125,11 +125,14 @@ class BitManipulation
         return $res;
     }
 
-    public static function bytesFromTo($frame, $from, $to) : int
+    public static function bytesFromTo($frame, $from, $to, $force8bytes=false) : int
     {
         // No more than 64b (which return negative number when the first bit is specified)
-        if (($to - $from) > 7) {
-            throw new \InvalidArgumentException('An int is only 64b large.');
+        if (($to - $from) > 7 && (!$force8bytes && ($to - $from) !== 8)) {
+            if ($force8bytes) {
+                throw new \InvalidArgumentException(sprintf('Not more than 8 bytes (64bit) is supported by this method and you asked for %s bytes.', $to - $from));
+            }
+            throw new \InvalidArgumentException('PHP limitation: getting more than 7 bytes will return a negative number because unsigned int does not exist.');
         }
 
         if (is_string($frame)) {

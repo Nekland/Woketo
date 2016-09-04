@@ -11,7 +11,7 @@
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\InvalidFrameException;
-use Nekland\Woketo\Exception\LimitationException;
+use Nekland\Woketo\Exception\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -51,9 +51,11 @@ class Frame
      * Notice that to support larger transfer we need to implemente a cache strategy on the harddrive. It also suggest
      * to have a threaded environment as the task of retrieving the data and treat it will be long.
      *
+     * This value is in bytes. Here we allow 1MiB.
+     *
      * @var int
      */
-    private static $maxPayloadSize = 1024;
+    private static $maxPayloadSize = 1049000;
 
     /**
      * Complete string representing data collected from socket
@@ -306,10 +308,18 @@ class Frame
         return $this;
     }
 
+    /**
+     * @return int
+     * @throws TooBigFrameException
+     */
     public function getPayloadLength() : int
     {
         if (null !== $this->payloadLen) {
             return $this->payloadLen;
+        }
+
+        if ($this->secondByte === null) {
+            throw new \RuntimeException('Impossible to get the payload length at this state of the frame, there is no data.');
         }
 
         // Get the first part of the payload length by removing mask information from the second byte
@@ -323,12 +333,13 @@ class Frame
 
         if ($payloadLen === 127) {
             $this->payloadLenSize += 48;
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11);
+
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11, true);
         }
 
         // Check < 0 because 64th bit is the negative one in PHP.
         if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
-            throw new LimitationException;
+            throw new TooBigFrameException;
         }
 
         return $this->payloadLen = $payloadLen;

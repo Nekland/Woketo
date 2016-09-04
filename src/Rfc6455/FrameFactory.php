@@ -23,16 +23,16 @@ use Nekland\Woketo\Utils\BitManipulation;
 class FrameFactory
 {
     /**
-     * @param int    $status
-     * @param string $reason
+     * @param int    $status One of the close constant code of Frame class.
+     * @param string $reason A little message that explain why closing.
      * @return Frame
      */
-    public function createCloseFrame(int $status, string $reason = null) : Frame
+    public function createCloseFrame(int $status = Frame::CLOSE_NORMAL, string $reason = null) : Frame
     {
         $frame = $this->createNewFrame();
 
         $frame->setOpcode(Frame::OP_CLOSE);
-        $content = BitManipulation::intToString(Frame::CLOSE_NORMAL);
+        $content = BitManipulation::intToString($status);
         if (null !== $reason) {
             $content .= $reason;
         }
