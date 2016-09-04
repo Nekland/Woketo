@@ -126,7 +126,8 @@ class Frame
 
     /**
      * @param string|int $rawData Probably more likely a string than an int, but well... why not.
-     * @return $this
+     * @return self
+     * @throws InvalidFrameException
      */
     public function setRawData($rawData)
     {
@@ -134,7 +135,7 @@ class Frame
         $this->frameSize = strlen($rawData);
 
         if ($this->frameSize < 2) {
-            throw new \InvalidArgumentException('Not enough data to be a frame.');
+            throw new InvalidFrameException('Not enough data to be a frame.');
         }
         $this->getInformationFromRawData();
 
