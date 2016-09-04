@@ -10,8 +10,9 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-use Nekland\Woketo\Exception\InvalidFrameException;
-use Nekland\Woketo\Exception\TooBigFrameException;
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\InvalidFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -279,11 +280,18 @@ class Frame
             return $this->payload;
         }
 
+        // Calculate headers (infos) length
+        // which can depend on mask and payload length information size
         $infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
-        if (strlen($this->rawData) < $infoBytesLen + $this->payloadLen) {
-            throw new \LogicException(
-                sprintf('Impossible to retrieve %s of payload when the full frame is %s bytes long.', $this->payloadLen, strlen($this->rawData))
+        $realDataLength = strlen($this->rawData);
+        $theoricDataLength = $infoBytesLen + $this->payloadLen;
+        if ($realDataLength < $theoricDataLength) {
+            throw new IncompleteFrameException(
+                sprintf('Impossible to retrieve %s bytes of payload when the full frame is %s bytes long.', $theoricDataLength, $realDataLength)
             );
+        }
+        if ($realDataLength > $theoricDataLength) {
+            throw new TooBigFrameException();
         }
 
         $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);

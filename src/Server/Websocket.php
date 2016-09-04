@@ -18,6 +18,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
+use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
 class Websocket
@@ -59,6 +60,16 @@ class Websocket
     private $message;
 
     /**
+     * @var array
+     */
+    private $connections;
+
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
@@ -69,6 +80,7 @@ class Websocket
         $this->address = $address;
         $this->port = $port;
         $this->handshake = new ServerHandshake();
+        $this->connections = [];
     }
 
     public function setMessageHandler($messageHandler)
@@ -92,13 +104,13 @@ class Websocket
     public function start()
     {
         $this->message = new Message();
-        $loop = \React\EventLoop\Factory::create();
+        $this->loop = \React\EventLoop\Factory::create();
 
-        $socket = new \React\Socket\Server($loop);
+        $socket = new \React\Socket\Server($this->loop);
         $socket->on('connection', [$this, 'newConnection']);
         $socket->listen($this->port);
 
-        $loop->run();
+        $this->loop->run();
     }
 
     public function newConnection(ConnectionInterface $socketStream)
@@ -108,6 +120,6 @@ class Websocket
             $messageHandler = new $messageHandler;
         }
         
-        $this->connections[] = new Connection($socketStream, $messageHandler);
+        $this->connections[] = new Connection($socketStream, $messageHandler, $this->loop);
     }
 }

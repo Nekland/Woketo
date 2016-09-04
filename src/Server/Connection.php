@@ -11,7 +11,8 @@
 
 namespace Nekland\Woketo\Server;
 
-use Nekland\Woketo\Exception\TooBigFrameException;
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
@@ -20,10 +21,17 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 
 class Connection
 {
+    /**
+     * 5 seconds
+     */
+    const DEFAULT_TIMEOUT = 5;
+
     /**
      * @var ConnectionInterface
      */
@@ -53,8 +61,23 @@ class Connection
      * @var FrameFactory
      */
     private $frameFactory;
+
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    /**
+     * @var string
+     */
+    private $buffer;
+
+    /**
+     * @var TimerInterface
+     */
+    private $timeout;
     
-    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, ServerHandshake $handshake = null, FrameFactory $frameFactory = null)
+    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, ServerHandshake $handshake = null, FrameFactory $frameFactory = null)
     {
         $this->socketStream = $socketStream;
         $this->socketStream->on('data', [$this, 'processData']);
@@ -62,6 +85,8 @@ class Connection
         $this->handler = $messageHandler;
         $this->handshake = $handshake ?: new ServerHandshake;
         $this->frameFactory = $frameFactory ?: new FrameFactory();
+        $this->loop = $loop;
+        $this->buffer = null;
     }
 
     /**
@@ -72,10 +97,29 @@ class Connection
         if ($this->currentMessage === null || $this->currentMessage->isComplete()) {
             $this->currentMessage = new Message();
         }
+        if (null === $this->buffer) {
+            $this->buffer = $data;
+        } else {
+            $this->buffer .= $data;
+        }
 
-        $this->currentMessage->addFrame(new Frame($data));
-        if ($this->currentMessage->isComplete()) {
-            $this->handler->onData($this->currentMessage->getContent(), $this);
+        try {
+            if ($this->timeout !== null) {
+                $this->timeout->cancel();
+                $this->timeout = null;
+            }
+
+            $this->currentMessage->addFrame(new Frame($this->buffer));
+            $this->buffer = null;
+            if ($this->currentMessage->isComplete()) {
+                $this->handler->onData($this->currentMessage->getContent(), $this);
+            }
+        } catch (IncompleteFrameException $e) {
+
+            $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
+                $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR));
+                $this->socketStream->close();
+            });
         }
     }
 
@@ -102,7 +146,7 @@ class Connection
 
     /**
      * @param string $frame
-     * @throws \Nekland\Woketo\Exception\InvalidFrameException
+     * @throws \Nekland\Woketo\Exception\Frame\InvalidFrameException
      */
     public function write($frame)
     {

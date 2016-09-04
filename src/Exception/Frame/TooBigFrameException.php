@@ -8,8 +8,10 @@
  * on the root directory of this project
  */
 
-namespace Nekland\Woketo\Exception;
+namespace Nekland\Woketo\Exception\Frame;
 
+
+use Nekland\Woketo\Exception\WebsocketException;
 
 class TooBigFrameException extends WebsocketException
 {
