@@ -44,8 +44,8 @@ class Message
             throw new \InvalidArgumentException('The message is already complete.');
         }
 
-        if (count($this->frames) > 9) {
-            throw new LimitationException('We don\'t accept more than 10 frame by message. This is a security limitation.');
+        if (count($this->frames) > 19) {
+            throw new LimitationException('We don\'t accept more than 20 frame by message. This is a security limitation.');
         }
 
         $this->isComplete = $frame->isFinal();

@@ -13,6 +13,7 @@ namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
+use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
@@ -120,6 +121,9 @@ class Connection
                 $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR));
                 $this->socketStream->close();
             });
+        } catch (LimitationException $e) {
+            $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS));
+            $this->socketStream->close();
         }
     }
 
