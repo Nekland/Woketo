@@ -406,6 +406,6 @@ class Frame
      */
     public function isValid() : bool
     {
-        return !empty($this->opcode) && !empty($this->payload);
+        return !empty($this->opcode);
     }
 }

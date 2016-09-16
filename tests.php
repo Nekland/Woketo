@@ -16,7 +16,6 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
 
     public function onData($data, \Nekland\Woketo\Server\Connection $connection)
     {
-        //echo $data;
         $connection->write($data);
     }
 

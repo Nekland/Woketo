@@ -91,6 +91,8 @@ class Connection
     }
 
     /**
+     * This method build a message and buffer data in case of incomplete data.
+     *
      * @param string $data
      */
     protected function processMessage($data)
