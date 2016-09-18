@@ -30,9 +30,12 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $message = new Message();
         $message->addFrame($frame1->reveal());
+
+        $this->assertSame($message->isComplete(), false);
+
         $message->addFrame($frame2->reveal());
 
-
+        $this->assertSame($message->isComplete(), true);
         $this->assertSame($message->getContent(), 'foo bar baz');
     }
 

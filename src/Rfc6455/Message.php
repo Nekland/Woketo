@@ -55,6 +55,19 @@ class Message
     }
 
     /**
+     * @return Frame
+     * @throws MissingDataException
+     */
+    public function getFirstFrame() : Frame
+    {
+        if (empty($this->frames[0])) {
+            throw new MissingDataException('There is no first frame for now.');
+        }
+
+        return $this->frames[0];
+    }
+
+    /**
      * This could in the future be deprecated in favor of a stream object.
      *
      * @return string

@@ -115,7 +115,9 @@ class Connection
             $this->currentMessage->addFrame(new Frame($this->buffer));
             $this->buffer = null;
             if ($this->currentMessage->isComplete()) {
-                $this->handler->onData($this->currentMessage->getContent(), $this);
+                if (!in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
+                    $this->handler->onData($this->currentMessage->getContent(), $this);
+                }
             }
         } catch (IncompleteFrameException $e) {
 
