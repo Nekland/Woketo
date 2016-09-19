@@ -74,11 +74,9 @@ class Connection
      */
     private $timeout;
     
-    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, ServerHandshake $handshake = null, MessageProcessor $messageProcessor)
+    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, MessageProcessor $messageProcessor, ServerHandshake $handshake = null)
     {
         $this->socketStream = $socketStream;
-        $this->socketStream->on('data', [$this, 'processData']);
-        $this->socketStream->on('error', [$this, 'error']);
         $this->initListeners();
         $this->handler = $messageHandler;
         $this->handshake = $handshake ?: new ServerHandshake;
@@ -91,6 +89,7 @@ class Connection
         $this->socketStream->on('data', function ($data) {
             $this->processData($data);
         });
+        $this->socketStream->on('error', [$this, 'error']);
     }
 
     private function processData($data)
@@ -116,30 +115,22 @@ class Connection
      */
     protected function processMessage($data)
     {
-        try {
-            // It may be a timeout going (we were waiting for data), let's clear it.
-            if ($this->timeout !== null) {
-                $this->timeout->cancel();
-                $this->timeout = null;
+        // It may be a timeout going (we were waiting for data), let's clear it.
+        if ($this->timeout !== null) {
+            $this->timeout->cancel();
+            $this->timeout = null;
+        }
+
+        $this->currentMessage = $this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage);
+
+        if (null !== $this->currentMessage && $this->currentMessage->isComplete()) {
+            if (in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
+                // Sending the message throw the woketo API.
+                $this->handler->onData($this->currentMessage->getContent(), $this);
             }
-
-            $this->currentMessage = $this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage);
-
-            if (null !== $this->currentMessage && $this->currentMessage->isComplete()) {
-                if (!in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
-
-                    // Sending the message throw the woketo API.
-                    $this->handler->onData($this->currentMessage->getContent(), $this);
-                    $this->currentMessage = null;
-                }
-            } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
-
-                // We wait for more data so we start a timeout.
-                $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
-                    $this->messageProcessor->timeout($this->socketStream);
-                });
-            }
-        } catch (IncompleteFrameException $e) {
+            $this->currentMessage = null;
+            var_dump($this->currentMessage);
+        } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
 
             // We wait for more data so we start a timeout.
             $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {

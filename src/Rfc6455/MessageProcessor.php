@@ -38,6 +38,12 @@ class MessageProcessor
         $this->handlers = [];
     }
 
+    /**
+     * @param string              $data
+     * @param ConnectionInterface $socket
+     * @param Message|null        $message
+     * @return Message|null
+     */
     public function onData($data, ConnectionInterface $socket, Message $message = null)
     {
         if (null === $message) {
@@ -50,7 +56,7 @@ class MessageProcessor
                 foreach ($this->handlers as $handler) {
                     if ($handler->supports($message)) {
                         $handler->process($message, $this, $socket);
-                        return;
+                        return null;
                     }
                 }
             }
@@ -60,6 +66,8 @@ class MessageProcessor
             $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS), $socket);
             $socket->close();
         }
+
+        return null;
     }
 
     /**
@@ -106,6 +114,9 @@ class MessageProcessor
         $socket->close();
     }
 
+    /**
+     * @param ConnectionInterface $socket
+     */
     public function close(ConnectionInterface $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(), $socket);

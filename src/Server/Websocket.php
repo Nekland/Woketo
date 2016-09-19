@@ -17,6 +17,8 @@ use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
+use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
@@ -70,6 +72,11 @@ class Websocket
     private $loop;
 
     /**
+     * @var MessageProcessor
+     */
+    private $messageProcessor;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
@@ -81,6 +88,7 @@ class Websocket
         $this->port = $port;
         $this->handshake = new ServerHandshake();
         $this->connections = [];
+        $this->buildMessageProcessor();
     }
 
     public function setMessageHandler($messageHandler)
@@ -120,6 +128,12 @@ class Websocket
             $messageHandler = new $messageHandler;
         }
         
-        $this->connections[] = new Connection($socketStream, $messageHandler, $this->loop);
+        $this->connections[] = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
+    }
+
+    private function buildMessageProcessor()
+    {
+        $this->messageProcessor = new MessageProcessor();
+        $this->messageProcessor->addHandler(new CloseFrameHandler());
     }
 }

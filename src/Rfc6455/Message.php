@@ -36,15 +36,21 @@ class Message
     {
         $this->frames = [];
         $this->isComplete = false;
+        $this->buffer = '';
     }
 
     public function addData($data)
     {
         try {
-            $this->addFrame(new Frame($data));
-            $this->buffer = null;
+            if ('' === $this->buffer) {
+                $this->addFrame(new Frame($data));
+            } else {
+                $this->addFrame(new Frame($this->buffer . $data));
+            }
+            $this->buffer = '';
 
         } catch (IncompleteFrameException $e) {
+            var_dump('ça devrait catch putain !');
             $this->buffer .= $data;
         }
     }

@@ -117,10 +117,16 @@ class Frame
      */
     private $opcode;
 
+    /**
+     * @var string
+     */
+    private $infoBytesLen;
+
     public function __construct($data=null)
     {
         if (null !== $data) {
             $this->setRawData($data);
+            $this->checkFrameSize();
         }
     }
 
@@ -281,9 +287,32 @@ class Frame
             return $this->payload;
         }
 
+        $this->checkFrameSize();
+
+        $infoBytesLen = $this->getInfoBytesLen();
+        $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
+
+        if ($this->isMasked()) {
+            return $this->payload = $this->applyMask($payload);
+        }
+
+        return $this->payload = $payload;
+    }
+
+    public function getInfoBytesLen()
+    {
+        if ($this->infoBytesLen) {
+            return $this->infoBytesLen;
+        }
+
         // Calculate headers (infos) length
         // which can depend on mask and payload length information size
-        $infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
+        return $this->infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
+    }
+
+    public function checkFrameSize()
+    {
+        $infoBytesLen = $this->getInfoBytesLen();
         $realDataLength = strlen($this->rawData);
         $theoricDataLength = $infoBytesLen + $this->payloadLen;
         if ($realDataLength < $theoricDataLength) {
@@ -294,14 +323,6 @@ class Frame
         if ($realDataLength > $theoricDataLength) {
             throw new TooBigFrameException();
         }
-
-        $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
-
-        if ($this->isMasked()) {
-            return $this->payload = $this->applyMask($payload);
-        }
-
-        return $this->payload = $payload;
     }
     
     public function setPayload(string $payload) : Frame
