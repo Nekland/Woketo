@@ -11,6 +11,7 @@
 namespace Nekland\Woketo\Rfc6455;
 
 
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
 
@@ -26,10 +27,26 @@ class Message
      */
     private $isComplete;
 
+    /**
+     * @var string
+     */
+    private $buffer;
+
     public function __construct()
     {
         $this->frames = [];
         $this->isComplete = false;
+    }
+
+    public function addData($data)
+    {
+        try {
+            $this->addFrame(new Frame($data));
+            $this->buffer = null;
+
+        } catch (IncompleteFrameException $e) {
+            $this->buffer .= $data;
+        }
     }
 
     /**
@@ -87,9 +104,20 @@ class Message
 
         return $res;
     }
-    
+
+    /**
+     * @return bool
+     */
     public function isComplete()
     {
         return $this->isComplete;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOperation()
+    {
+        return in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
     }
 }

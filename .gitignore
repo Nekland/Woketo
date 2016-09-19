@@ -1,3 +1,5 @@
 bin
 vendor
 composer.lock
+reports/
+fuzzingclient.json

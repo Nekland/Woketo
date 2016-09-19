@@ -3,7 +3,9 @@
 namespace Nekland\Woketo\Rfc6455\MessageHandler;
 
 use Nekland\Woketo\Rfc6455\Frame;
+use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use React\Socket\ConnectionInterface;
 
 /**
  * This file is a part of Woketo package.
@@ -16,15 +18,16 @@ use Nekland\Woketo\Rfc6455\MessageProcessor;
 interface Rfc6455MessageHandlerInterface
 {
     /**
-     * @param Frame $frame
+     * @param Message $message
      * @return boolean
      */
-    public function supports(Frame $frame);
+    public function supports(Message $message);
 
     /**
-     * @param Frame $frame
-     * @param MessageProcessor $messageProcessor
+     * @param Message             $message
+     * @param MessageProcessor    $messageProcessor
+     * @param ConnectionInterface $socket
      * @return null
      */
-    public function process(Frame $frame, MessageProcessor $messageProcessor);
+    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket);
 }

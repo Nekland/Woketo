@@ -21,6 +21,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
@@ -59,9 +60,9 @@ class Connection
     private $currentMessage;
 
     /**
-     * @var FrameFactory
+     * @var MessageProcessor
      */
-    private $frameFactory;
+    private $messageProcessor;
 
     /**
      * @var LoopInterface
@@ -69,69 +70,30 @@ class Connection
     private $loop;
 
     /**
-     * @var string
-     */
-    private $buffer;
-
-    /**
      * @var TimerInterface
      */
     private $timeout;
     
-    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, ServerHandshake $handshake = null, FrameFactory $frameFactory = null)
+    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, ServerHandshake $handshake = null, MessageProcessor $messageProcessor)
     {
         $this->socketStream = $socketStream;
         $this->socketStream->on('data', [$this, 'processData']);
         $this->socketStream->on('error', [$this, 'error']);
+        $this->initListeners();
         $this->handler = $messageHandler;
         $this->handshake = $handshake ?: new ServerHandshake;
-        $this->frameFactory = $frameFactory ?: new FrameFactory();
         $this->loop = $loop;
-        $this->buffer = null;
+        $this->messageProcessor = $messageProcessor;
     }
 
-    /**
-     * This method build a message and buffer data in case of incomplete data.
-     *
-     * @param string $data
-     */
-    protected function processMessage($data)
+    private function initListeners()
     {
-        if ($this->currentMessage === null || $this->currentMessage->isComplete()) {
-            $this->currentMessage = new Message();
-        }
-        if (null === $this->buffer) {
-            $this->buffer = $data;
-        } else {
-            $this->buffer .= $data;
-        }
-
-        try {
-            if ($this->timeout !== null) {
-                $this->timeout->cancel();
-                $this->timeout = null;
-            }
-
-            $this->currentMessage->addFrame(new Frame($this->buffer));
-            $this->buffer = null;
-            if ($this->currentMessage->isComplete()) {
-                if (!in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
-                    $this->handler->onData($this->currentMessage->getContent(), $this);
-                }
-            }
-        } catch (IncompleteFrameException $e) {
-
-            $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
-                $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR));
-                $this->socketStream->close();
-            });
-        } catch (LimitationException $e) {
-            $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS));
-            $this->socketStream->close();
-        }
+        $this->socketStream->on('data', function ($data) {
+            $this->processData($data);
+        });
     }
 
-    public function processData($data)
+    private function processData($data)
     {
         try {
             if (!$this->handshakeDone) {
@@ -141,15 +103,49 @@ class Connection
             }
 
             return;
-        } catch (TooBigFrameException $e) {
-            $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS));
-            $this->handler->onError($e, $this);
         } catch (WebsocketException $e) {
-            $this->write($this->frameFactory->createCloseFrame());
+            $this->messageProcessor->close($this->socketStream);
             $this->handler->onError($e, $this);
         }
+    }
 
-        $this->socketStream->close();
+    /**
+     * This method build a message and buffer data in case of incomplete data.
+     *
+     * @param string $data
+     */
+    protected function processMessage($data)
+    {
+        try {
+            // It may be a timeout going (we were waiting for data), let's clear it.
+            if ($this->timeout !== null) {
+                $this->timeout->cancel();
+                $this->timeout = null;
+            }
+
+            $this->currentMessage = $this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage);
+
+            if (null !== $this->currentMessage && $this->currentMessage->isComplete()) {
+                if (!in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
+
+                    // Sending the message throw the woketo API.
+                    $this->handler->onData($this->currentMessage->getContent(), $this);
+                    $this->currentMessage = null;
+                }
+            } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
+
+                // We wait for more data so we start a timeout.
+                $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
+                    $this->messageProcessor->timeout($this->socketStream);
+                });
+            }
+        } catch (IncompleteFrameException $e) {
+
+            // We wait for more data so we start a timeout.
+            $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
+                $this->messageProcessor->timeout($this->socketStream);
+            });
+        }
     }
 
     /**
@@ -158,13 +154,7 @@ class Connection
      */
     public function write($frame)
     {
-        if (!$frame instanceof Frame) {
-            $data = $frame;
-            $frame = new Frame();
-            $frame->setPayload($data);
-            $frame->setOpcode(Frame::OP_TEXT);
-        }
-        $this->socketStream->write($frame->getRawData());
+        $this->messageProcessor->write($frame, $this->socketStream);
     }
 
     /**

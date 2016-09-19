@@ -10,10 +10,9 @@
 
 namespace Nekland\Woketo\Exception\Frame;
 
+use Nekland\Woketo\Exception\LimitationException;
 
-use Nekland\Woketo\Exception\WebsocketException;
-
-class TooBigFrameException extends WebsocketException
+class TooBigFrameException extends LimitationException
 {
 
 }

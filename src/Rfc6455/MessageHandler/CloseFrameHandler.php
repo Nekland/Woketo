@@ -10,19 +10,21 @@
 
 namespace Nekland\Woketo\Rfc6455\MessageHandler;
 
-
 use Nekland\Woketo\Rfc6455\Frame;
+use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use React\Socket\ConnectionInterface;
 
 class CloseFrameHandler implements Rfc6455MessageHandlerInterface
 {
-    public function supports(Frame $frame)
+    public function supports(Message $message)
     {
-        // TODO: Implement supports() method.
+        return $message->getFirstFrame()->getOpcode() === Frame::OP_CLOSE;
     }
 
-    public function process(Frame $frame, MessageProcessor $messageProcessor)
+    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
     {
-        // TODO: Implement process() method.
+        $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame(), $socket);
+        $socket->close();
     }
 }

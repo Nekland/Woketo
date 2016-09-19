@@ -11,7 +11,7 @@
 namespace Nekland\Woketo\Exception;
 
 
-class LimitationException extends \Exception
+class LimitationException extends WebsocketException
 {
 
 }
