@@ -11,8 +11,10 @@
 namespace Nekland\Woketo\Rfc6455;
 
 
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
+use Nekland\Woketo\Exception\WebsocketException;
 
 class Message
 {
@@ -26,10 +28,32 @@ class Message
      */
     private $isComplete;
 
+    /**
+     * @var string
+     */
+    private $buffer;
+
     public function __construct()
     {
         $this->frames = [];
         $this->isComplete = false;
+        $this->buffer = '';
+    }
+
+    public function addData($data)
+    {
+        try {
+            if ('' === $this->buffer) {
+                $this->addFrame(new Frame($data));
+            } else {
+                $this->buffer = $this->buffer . $data;
+                $this->addFrame(new Frame($this->buffer));
+            }
+            $this->buffer = '';
+
+        } catch (WebsocketException $e) {
+            $this->buffer .= $data;
+        }
     }
 
     /**
@@ -44,14 +68,27 @@ class Message
             throw new \InvalidArgumentException('The message is already complete.');
         }
 
-        if (count($this->frames) > 9) {
-            throw new LimitationException('We don\'t accept more than 10 frame by message. This is a security limitation.');
+        if (count($this->frames) > 19) {
+            throw new LimitationException('We don\'t accept more than 20 frame by message. This is a security limitation.');
         }
 
         $this->isComplete = $frame->isFinal();
         $this->frames[] = $frame;
 
         return $this;
+    }
+
+    /**
+     * @return Frame
+     * @throws MissingDataException
+     */
+    public function getFirstFrame() : Frame
+    {
+        if (empty($this->frames[0])) {
+            throw new MissingDataException('There is no first frame for now.');
+        }
+
+        return $this->frames[0];
     }
 
     /**
@@ -74,9 +111,20 @@ class Message
 
         return $res;
     }
-    
+
+    /**
+     * @return bool
+     */
     public function isComplete()
     {
         return $this->isComplete;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOperation()
+    {
+        return in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
     }
 }

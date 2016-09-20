@@ -10,8 +10,9 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-use Nekland\Woketo\Exception\InvalidFrameException;
-use Nekland\Woketo\Exception\LimitationException;
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\InvalidFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -28,6 +29,20 @@ class Frame
     const OP_PING     =  9;
     const OP_PONG     = 10;
 
+    // To understand codes, please refer to RFC:
+    // https://tools.ietf.org/html/rfc6455#section-7.4
+    const CLOSE_NORMAL                  = 1000;
+    const CLOSE_GOING_AWAY              = 1001;
+    const CLOSE_PROTOCOL_ERROR          = 1002;
+    const CLOSE_WRONG_DATA              = 1003;
+    // 1004-1006 are reserved
+    const CLOSE_INCOHERENT_DATA         = 1007;
+    const CLOSE_POLICY_VIOLATION        = 1008;
+    const CLOSE_TOO_BIG_TO_PROCESS      = 1009;
+    const CLOSE_MISSING_EXTENSION       = 1010; // In this case you should precise a reason
+    const CLOSE_UNEXPECTING_CONDITION   = 1011;
+    // 1015 is reserved
+
     /**
      * The payload size can be specified on 64b unsigned int according to the RFC. That means that maximum data
      * inside the payload is 0b1111111111111111111111111111111111111111111111111111111111111111 bits. In
@@ -37,9 +52,11 @@ class Frame
      * Notice that to support larger transfer we need to implemente a cache strategy on the harddrive. It also suggest
      * to have a threaded environment as the task of retrieving the data and treat it will be long.
      *
+     * This value is in bytes. Here we allow 1MiB.
+     *
      * @var int
      */
-    private static $maxPayloadSize = 1024;
+    private static $maxPayloadSize = 1049000;
 
     /**
      * Complete string representing data collected from socket
@@ -100,25 +117,32 @@ class Frame
      */
     private $opcode;
 
+    /**
+     * @var string
+     */
+    private $infoBytesLen;
+
     public function __construct($data=null)
     {
         if (null !== $data) {
             $this->setRawData($data);
-            $this->frameSize = strlen($data);
-
-            if ($this->frameSize < 2) {
-                throw new \InvalidArgumentException('Not enough data to be a frame.');
-            }
+            $this->checkFrameSize();
         }
     }
 
     /**
      * @param string|int $rawData Probably more likely a string than an int, but well... why not.
-     * @return $this
+     * @return self
+     * @throws InvalidFrameException
      */
     public function setRawData($rawData)
     {
         $this->rawData = $rawData;
+        $this->frameSize = strlen($rawData);
+
+        if ($this->frameSize < 2) {
+            throw new InvalidFrameException('Not enough data to be a frame.');
+        }
         $this->getInformationFromRawData();
 
         return $this;
@@ -259,17 +283,13 @@ class Frame
 
     public function getPayload()
     {
-        if ($this->payload) {
+        if ($this->payload !== null) {
             return $this->payload;
         }
 
-        $infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
-        if (strlen($this->rawData) < $infoBytesLen + $this->payloadLen) {
-            throw new \LogicException(
-                sprintf('Impossible to retrieve %s of payload when the full frame is %s bytes long.', $this->payloadLen, strlen($this->rawData))
-            );
-        }
+        $this->checkFrameSize();
 
+        $infoBytesLen = $this->getInfoBytesLen();
         $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
 
         if ($this->isMasked()) {
@@ -277,6 +297,32 @@ class Frame
         }
 
         return $this->payload = $payload;
+    }
+
+    public function getInfoBytesLen()
+    {
+        if ($this->infoBytesLen) {
+            return $this->infoBytesLen;
+        }
+
+        // Calculate headers (infos) length
+        // which can depend on mask and payload length information size
+        return $this->infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
+    }
+
+    public function checkFrameSize()
+    {
+        $infoBytesLen = $this->getInfoBytesLen();
+        $realDataLength = strlen($this->rawData);
+        $theoricDataLength = $infoBytesLen + $this->payloadLen;
+        if ($realDataLength < $theoricDataLength) {
+            throw new IncompleteFrameException(
+                sprintf('Impossible to retrieve %s bytes of payload when the full frame is %s bytes long.', $theoricDataLength, $realDataLength)
+            );
+        }
+        if ($realDataLength > $theoricDataLength) {
+            throw new TooBigFrameException();
+        }
     }
     
     public function setPayload(string $payload) : Frame
@@ -292,10 +338,18 @@ class Frame
         return $this;
     }
 
+    /**
+     * @return int
+     * @throws TooBigFrameException
+     */
     public function getPayloadLength() : int
     {
         if (null !== $this->payloadLen) {
             return $this->payloadLen;
+        }
+
+        if ($this->secondByte === null) {
+            throw new \RuntimeException('Impossible to get the payload length at this state of the frame, there is no data.');
         }
 
         // Get the first part of the payload length by removing mask information from the second byte
@@ -309,12 +363,13 @@ class Frame
 
         if ($payloadLen === 127) {
             $this->payloadLenSize += 48;
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11);
+
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11, true);
         }
 
         // Check < 0 because 64th bit is the negative one in PHP.
         if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
-            throw new LimitationException;
+            throw new TooBigFrameException;
         }
 
         return $this->payloadLen = $payloadLen;
@@ -372,6 +427,6 @@ class Frame
      */
     public function isValid() : bool
     {
-        return !empty($this->opcode) && !empty($this->payload);
+        return !empty($this->opcode);
     }
 }

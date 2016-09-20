@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace Nekland\Woketo\Utils;
 
-use Nekland\Woketo\Exception\PhpLimitationException;
-
 class BitManipulation
 {
     /**
@@ -127,11 +125,14 @@ class BitManipulation
         return $res;
     }
 
-    public static function bytesFromTo($frame, $from, $to) : int
+    public static function bytesFromTo($frame, $from, $to, $force8bytes=false) : int
     {
         // No more than 64b (which return negative number when the first bit is specified)
-        if (($to - $from) > 7) {
-            throw new \InvalidArgumentException('An int is only 64b large.');
+        if (($to - $from) > 7 && (!$force8bytes && ($to - $from) !== 8)) {
+            if ($force8bytes) {
+                throw new \InvalidArgumentException(sprintf('Not more than 8 bytes (64bit) is supported by this method and you asked for %s bytes.', $to - $from));
+            }
+            throw new \InvalidArgumentException('PHP limitation: getting more than 7 bytes will return a negative number because unsigned int does not exist.');
         }
 
         if (is_string($frame)) {
@@ -173,16 +174,36 @@ class BitManipulation
     }
 
     /**
-     * @param int $frame
+     * Take a frame represented by a decimal int to transform it in a string.
+     * Notice that any int is a frame and cannot be more than 8 bytes
+     *
+     * @param int      $frame
+     * @param int|null $size  In bytes.
      * @return string
      */
-    public static function intToString(int $frame) : string
+    public static function intToString(int $frame, int $size = null) : string
     {
         $res = '';
+        $startingBytes = true;
         for ($i = 8; $i >= 0; $i--) {
             $code = ($frame & (255 << ($i * 8))) >> ($i * 8);
-            if ($code !== 0) {
+
+            // This condition avoid to take care of front zero bytes (that are always present but we should ignore)
+            if ($code !== 0 || !$startingBytes) {
+                $startingBytes = false;
                 $res .= chr($code);
+            }
+        }
+
+        if ($size !== null) {
+            $actualSize = strlen($res);
+            if ($size < $actualSize) {
+                $res = substr($res, $size - $actualSize);
+            } else if ($size > $actualSize) {
+                $missingChars = $size - $actualSize;
+                for ($i = 0; $i < $missingChars; $i++) {
+                    $res = chr(0) . $res;
+                }
             }
         }
 
@@ -190,6 +211,8 @@ class BitManipulation
     }
 
     /**
+     * Take an string frame and transform it to a decimal frame (inside an int).
+     *
      * @param string $frame
      * @return int
      */

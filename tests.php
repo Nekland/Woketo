@@ -16,13 +16,12 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
 
     public function onData($data, \Nekland\Woketo\Server\Connection $connection)
     {
-        //echo $data;
         $connection->write($data);
     }
 
     public function onError(\Nekland\Woketo\Exception\WebsocketException $e, \Nekland\Woketo\Server\Connection $connection)
     {
-        echo $e->getMessage() . "\n";
+        echo '(' . get_class($e) . ') ' . $e->getMessage() . "\n";
     }
 }
 

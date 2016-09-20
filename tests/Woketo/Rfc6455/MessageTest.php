@@ -13,6 +13,7 @@ namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Utils\BitManipulation;
 
 class MessageTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,9 +31,12 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $message = new Message();
         $message->addFrame($frame1->reveal());
+
+        $this->assertSame($message->isComplete(), false);
+
         $message->addFrame($frame2->reveal());
 
-
+        $this->assertSame($message->isComplete(), true);
         $this->assertSame($message->getContent(), 'foo bar baz');
     }
 
@@ -65,10 +69,23 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException('\Nekland\Woketo\Exception\LimitationException');
 
-        for($i = 0; $i < 20; $i++) {
+        for($i = 0; $i <= 20; $i++) {
             $frame = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
             $frame->isFinal()->willReturn(false);
             $message->addFrame($frame->reveal());
         }
+    }
+
+    public function testItBufferDataToCreateFrame()
+    {
+        $message = new Message();
+
+        $message->addData(BitManipulation::hexArrayToString(['01', '03', '48', '65', '6c']));
+
+        $this->assertSame($message->isComplete(), false);
+
+        $message->addData(BitManipulation::hexArrayToString(['80', '02', '6c', '6f']));
+
+        $this->assertSame($message->isComplete(), true);
     }
 }
