@@ -78,6 +78,17 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PONG);
     }
 
+    public function testItSupportsEmptyFrames()
+    {
+        $frame = new Frame();
+        $frame->setPayload('');
+        $frame->setOpcode(Frame::OP_TEXT);
+
+        $this->assertSame($frame->getRawData(), BitManipulation::hexArrayToString([
+            '81', '00'
+        ]));
+    }
+
     /**
      * @dataProvider frameDataGenerationTestProvider
      *

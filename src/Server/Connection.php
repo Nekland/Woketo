@@ -14,6 +14,7 @@ namespace Nekland\Woketo\Server;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Exception\LimitationException;
+use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
@@ -94,7 +95,7 @@ class Connection
 
     private function processData($data)
     {
-        try {
+//        try {
             if (!$this->handshakeDone) {
                 $this->processHandcheck($data);
             } else {
@@ -102,10 +103,10 @@ class Connection
             }
 
             return;
-        } catch (WebsocketException $e) {
-            $this->messageProcessor->close($this->socketStream);
-            $this->handler->onError($e, $this);
-        }
+//        } catch (WebsocketException $e) {
+//            $this->messageProcessor->close($this->socketStream);
+//            $this->handler->onError($e, $this);
+//        }
     }
 
     /**
@@ -129,7 +130,6 @@ class Connection
                 $this->handler->onData($this->currentMessage->getContent(), $this);
             }
             $this->currentMessage = null;
-            var_dump($this->currentMessage);
         } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
 
             // We wait for more data so we start a timeout.
@@ -140,12 +140,16 @@ class Connection
     }
 
     /**
-     * @param string $frame
-     * @throws \Nekland\Woketo\Exception\Frame\InvalidFrameException
+     * @param string|Frame $frame
+     * @throws \Nekland\Woketo\Exception\RuntimeException
      */
     public function write($frame)
     {
-        $this->messageProcessor->write($frame, $this->socketStream);
+        try {
+            $this->messageProcessor->write($frame, $this->socketStream);
+        } catch (WebsocketException $e) {
+            throw new RuntimeException($e);
+        }
     }
 
     /**

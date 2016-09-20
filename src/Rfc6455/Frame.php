@@ -283,7 +283,7 @@ class Frame
 
     public function getPayload()
     {
-        if ($this->payload) {
+        if ($this->payload !== null) {
             return $this->payload;
         }
 

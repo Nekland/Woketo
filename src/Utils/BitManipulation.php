@@ -175,18 +175,22 @@ class BitManipulation
 
     /**
      * Take a frame represented by a decimal int to transform it in a string.
-     * Notice that any int is a frame and may noy
+     * Notice that any int is a frame and cannot be more than 8 bytes
      *
      * @param int      $frame
-     * @param int|null $size
+     * @param int|null $size  In bytes.
      * @return string
      */
     public static function intToString(int $frame, int $size = null) : string
     {
         $res = '';
+        $startingBytes = true;
         for ($i = 8; $i >= 0; $i--) {
             $code = ($frame & (255 << ($i * 8))) >> ($i * 8);
-            if ($code !== 0) {
+
+            // This condition avoid to take care of front zero bytes (that are always present but we should ignore)
+            if ($code !== 0 || !$startingBytes) {
+                $startingBytes = false;
                 $res .= chr($code);
             }
         }
