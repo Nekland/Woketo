@@ -125,6 +125,8 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             ['abcdef', 1, 2, false, 24930],
             [new \SplObjectStorage, 1, 2, false, '\InvalidArgumentException'],
             ['abc', 2, 5, false, '\InvalidArgumentException'],
+            ['abc', 1, 3, false, '\InvalidArgumentException'],
+            ['abc', 0, 0, false, 97],
             [
                 BitManipulation::hexArrayToString(
                     ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
