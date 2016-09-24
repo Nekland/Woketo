@@ -125,7 +125,16 @@ class BitManipulation
         return $res;
     }
 
-    public static function bytesFromTo($frame, $from, $to, $force8bytes=false) : int
+    /**
+     * @param string|int $frame
+     * @param int        $from        Byte where to start (should be inferior to $to).
+     * @param int        $to          Byte where to stop (considering it starts at 0). The `to` value include the target
+     *                                byte.
+     * @param bool       $force8bytes By default PHP have a wrong behavior with 8 bytes variables. If you have 8 bytes
+     *                                the returned int will be negative (because unsigned integers does not exists in PHP)
+     * @return int
+     */
+    public static function bytesFromTo($frame, int $from, int $to, $force8bytes = false) : int
     {
         // No more than 64b (which return negative number when the first bit is specified)
         if (($to - $from) > 7 && (!$force8bytes && ($to - $from) !== 8)) {
@@ -136,13 +145,13 @@ class BitManipulation
         }
 
         if (is_string($frame)) {
-            if (strlen($frame) < $to) {
+            if ((strlen($frame) - 1) < $to) {
                 throw new \InvalidArgumentException('The frame is not long enough.');
             }
 
             $subStringLength = $to - $from + 1;
             // Getting responsible bytes
-            $subString = substr($frame, $from-1, $subStringLength);
+            $subString = substr($frame, $from, $subStringLength);
             $res = 0;
 
             // for each byte, getting ord
