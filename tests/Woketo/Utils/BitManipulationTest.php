@@ -116,24 +116,27 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     public function bytesFromToProvider()
     {
         return [
-            [16711850, 2, 3, false, 170],
-            [16711850, 1, 2, false, 65280],
-            [16711850, 1, 3, false, 16711850],
+            [16711850, 2, 2, false, 170],
+            [16711850, 0, 1, false, 65280],
+            [16711850, 0, 2, false, 16711850],
             [16711850, -1, 2, false, '\InvalidArgumentException'],
             [-16711850, 1, 2, false, '\InvalidArgumentException'],
-            [16711850, 1, 9, false, '\InvalidArgumentException'],
-            ['abcdef', 1, 2, false, 24930],
+            [16711850, 1, 3, false, '\InvalidArgumentException'],
+            ['abcdef', 1, 2, false, 25187],
+            ['abcdef', 1, 3, false, 6447972],
             [new \SplObjectStorage, 1, 2, false, '\InvalidArgumentException'],
             ['abc', 2, 5, false, '\InvalidArgumentException'],
+            ['abc', 1, 3, false, '\InvalidArgumentException'],
+            ['abc', 0, 0, false, 97],
             [
                 BitManipulation::hexArrayToString(
                     ['81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58']
-                ), 3, 6, false, 939139389
+                ), 3, 6, false, 4196482431
             ],
             [
                 BitManipulation::hexArrayToString(
                     ['80', '00', '00', '00', '00', '00', '00', '00', 'a5', '45']
-                ), 1, 9, true, (int) -9223372036854775808
+                ), 0, 7, true, (int) -9223372036854775808
             ]
         ];
     }
@@ -160,18 +163,18 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     {
         return [
             // Success
-            [34815, 1, 135],
-            [34815, 2, 255],
-            ['_7P!gij', 1, 95],
-            ['_7P!gij', 2, 55],
-            ['_7P!gij', 7, 106],
+            [34815, 0, 135],
+            [34815, 1, 255],
+            ['_7P!gij', 0, 95],
+            ['_7P!gij', 1, 55],
+            ['_7P!gij', 6, 106],
 
             // Failure
             [-10, 1],
             [new \SplObjectStorage, 2],
             ['gdgdf_7P)', 10],
             ['gdgdf_7P)', -10],
-            [128, 2],
+            [128, 1],
         ];
     }
 

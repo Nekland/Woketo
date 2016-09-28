@@ -12,6 +12,12 @@ declare(strict_types=1);
 
 namespace Nekland\Woketo\Utils;
 
+/**
+ * Class BitManipulation
+ *
+ * Glossary:
+ *   - in this context a "frame" is an assembly of bytes represented by a "byte-string" or a (signed) int.
+ */
 class BitManipulation
 {
     /**
@@ -41,8 +47,10 @@ class BitManipulation
     }
 
     /**
-     * @param string $frame iso-8859-1 string
-     * @param int $byteNumber
+     * Get a specific byte inside a frame represented by an int or a string.
+     *
+     * @param string|int $frame      Non utf8 string (this should be more precisely a bytes-string).
+     * @param int        $byteNumber Starting at 0.
      * @return int
      */
     public static function nthByte($frame, int $byteNumber) : int
@@ -50,13 +58,13 @@ class BitManipulation
         if (is_string($frame)) {
             $len = strlen($frame);
 
-            if ($byteNumber < 1 || $byteNumber > $len) {
+            if ($byteNumber < 0 || $byteNumber > ($len-1)) {
                 throw new \InvalidArgumentException(
                     sprintf('The frame is only %s bytes larges but you tried to get the %sth byte.', $len, $byteNumber)
                 );
             }
 
-            return ord($frame[$byteNumber-1]);
+            return ord($frame[$byteNumber]);
         }
 
         if (is_int($frame)) {
@@ -69,16 +77,19 @@ class BitManipulation
             $len = strlen($hex);
 
             // Index of the first octal of the wanted byte
-            $realByteNth = ($byteNumber - 1) * 2;
+            $realByteNth = $byteNumber * 2;
 
-            if ($byteNumber < 1 || ($realByteNth + 1) > $len) {
+            if ($byteNumber < 0 || ($realByteNth + 1) > $len) {
                 throw new \InvalidArgumentException(
                     sprintf('Impossible to get the byte %s from the frame %s.', $byteNumber, $frame)
                 );
             }
 
-
+            // Considering FF12AB (number) if you want the byte represented by AB you need to get the
+            // first letter, shift it of 4 and add the next letter.
+            // This may seems weird but that's because you read numbers from right to left.
             return (hexdec($hex[$realByteNth]) << 4) + hexdec($hex[$realByteNth + 1]);
+            // _Notice that if the number is from right to left, your data is still from left to right_
         }
 
         throw new \InvalidArgumentException(
@@ -125,7 +136,16 @@ class BitManipulation
         return $res;
     }
 
-    public static function bytesFromTo($frame, $from, $to, $force8bytes=false) : int
+    /**
+     * @param string|int $frame
+     * @param int        $from        Byte where to start (should be inferior to $to).
+     * @param int        $to          Byte where to stop (considering it starts at 0). The `to` value include the target
+     *                                byte.
+     * @param bool       $force8bytes By default PHP have a wrong behavior with 8 bytes variables. If you have 8 bytes
+     *                                the returned int will be negative (because unsigned integers does not exists in PHP)
+     * @return int
+     */
+    public static function bytesFromTo($frame, int $from, int $to, bool $force8bytes = false) : int
     {
         // No more than 64b (which return negative number when the first bit is specified)
         if (($to - $from) > 7 && (!$force8bytes && ($to - $from) !== 8)) {
@@ -136,13 +156,13 @@ class BitManipulation
         }
 
         if (is_string($frame)) {
-            if (strlen($frame) < $to) {
+            if ((strlen($frame) - 1) < $to) {
                 throw new \InvalidArgumentException('The frame is not long enough.');
             }
 
             $subStringLength = $to - $from + 1;
             // Getting responsible bytes
-            $subString = substr($frame, $from-1, $subStringLength);
+            $subString = substr($frame, $from, $subStringLength);
             $res = 0;
 
             // for each byte, getting ord
@@ -161,7 +181,7 @@ class BitManipulation
         }
 
         if ($frame < 0) {
-            throw new \InvalidArgumentException('The frame cannot be a nevative number');
+            throw new \InvalidArgumentException('The frame cannot be a negative number');
         }
 
         $res = 0;
