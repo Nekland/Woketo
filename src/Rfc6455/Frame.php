@@ -274,7 +274,7 @@ class Frame
         }
 
         // 8 is the numbers of bits before the payload len.
-        $start = ((9 + $this->payloadLenSize) / 8) + 1;
+        $start = ((9 + $this->payloadLenSize) / 8);
 
         $value = BitManipulation::bytesFromTo($this->rawData, $start, $start + 3);
 
@@ -358,13 +358,13 @@ class Frame
 
         if ($payloadLen === 126) {
             $this->payloadLenSize += 16;
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 4);
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 3);
         }
 
         if ($payloadLen === 127) {
             $this->payloadLenSize += 48;
 
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 3, 11, true);
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 10, true);
         }
 
         // Check < 0 because 64th bit is the negative one in PHP.
@@ -404,8 +404,8 @@ class Frame
 
     private function getInformationFromRawData()
     {
-        $this->firstByte = BitManipulation::nthByte($this->rawData, 1);
-        $this->secondByte = BitManipulation::nthByte($this->rawData, 2);
+        $this->firstByte = BitManipulation::nthByte($this->rawData, 0);
+        $this->secondByte = BitManipulation::nthByte($this->rawData, 1);
 
         $this->final = (bool) BitManipulation::nthBit($this->firstByte, 1);
         $this->payloadLen = $this->getPayloadLength();
