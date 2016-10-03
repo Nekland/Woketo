@@ -109,9 +109,33 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(BitManipulation::stringToInt('abc'), 6382179);
     }
 
+    /**
+     * @dataProvider frameToHexProvider
+     * @param $a
+     * @param $b
+     */
+    public function testItTransformToHex($a, $b)
+    {
+        $this->assertSame($a, BitManipulation::frameToHex($b));
+    }
+
     //
     // Providers
     //
+
+    public function frameToHexProvider()
+    {
+        return [
+            [
+                '00',
+                BitManipulation::hexArrayToString(['00', '00'])
+            ],
+            [
+                '616263',
+                'abc'
+            ]
+        ];
+    }
 
     public function bytesFromToProvider()
     {

@@ -253,4 +253,23 @@ class BitManipulation
 
         return $res;
     }
+
+    /**
+     * Method that return frame as hex (more readable).
+     * Helpful for debug !
+     *
+     * @param string $frame
+     * @return string
+     */
+    public static function frameToHex(string $frame) : string
+    {
+        $len = strlen($frame);
+        $res = '';
+
+        for ($i = 0; $i < $len; $i++) {
+            $res .= dechex(ord($frame[$i]));
+        }
+
+        return $res;
+    }
 }
