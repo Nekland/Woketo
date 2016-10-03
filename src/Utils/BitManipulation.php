@@ -56,7 +56,7 @@ class BitManipulation
     public static function nthByte($frame, int $byteNumber) : int
     {
         if (is_string($frame)) {
-            $len = strlen($frame);
+            $len = BitManipulation::frameSize($frame);
 
             if ($byteNumber < 0 || $byteNumber > ($len-1)) {
                 throw new \InvalidArgumentException(
@@ -74,7 +74,7 @@ class BitManipulation
                 );
             }
             $hex = dechex($frame);
-            $len = strlen($hex);
+            $len = BitManipulation::frameSize($hex);
 
             // Index of the first octal of the wanted byte
             $realByteNth = $byteNumber * 2;
@@ -156,7 +156,7 @@ class BitManipulation
         }
 
         if (is_string($frame)) {
-            if ((strlen($frame) - 1) < $to) {
+            if ((BitManipulation::frameSize($frame) - 1) < $to) {
                 throw new \InvalidArgumentException('The frame is not long enough.');
             }
 
@@ -216,7 +216,7 @@ class BitManipulation
         }
 
         if ($size !== null) {
-            $actualSize = strlen($res);
+            $actualSize = BitManipulation::frameSize($res);
             if ($size < $actualSize) {
                 $res = substr($res, $size - $actualSize);
             } else if ($size > $actualSize) {
@@ -238,7 +238,7 @@ class BitManipulation
      */
     public static function stringToInt(string $frame) : int
     {
-        $len = strlen($frame);
+        $len = BitManipulation::frameSize($frame);
         $res = 0;
 
         if ($len > 8) {
@@ -263,7 +263,7 @@ class BitManipulation
      */
     public static function frameToHex(string $frame) : string
     {
-        $len = strlen($frame);
+        $len = BitManipulation::frameSize($frame);
         $res = '';
 
         for ($i = 0; $i < $len; $i++) {
@@ -271,5 +271,22 @@ class BitManipulation
         }
 
         return $res;
+    }
+
+    /**
+     * Haters gonna hate. `strlen` cannot be trusted because of an option of mbstring extension, more info:
+     * http://php.net/manual/fr/mbstring.overload.php
+     * http://php.net/manual/fr/function.mb-strlen.php#77040
+     *
+     * @param string $frame
+     * @return int
+     */
+    public static function frameSize(string $frame) : int
+    {
+        if (extension_loaded('mbstring')) {
+            return mb_strlen($frame, '8bit');
+        }
+
+        return strlen($frame);
     }
 }
