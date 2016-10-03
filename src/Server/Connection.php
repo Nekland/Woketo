@@ -95,7 +95,7 @@ class Connection
 
     private function processData($data)
     {
-//        try {
+        try {
             if (!$this->handshakeDone) {
                 $this->processHandcheck($data);
             } else {
@@ -103,10 +103,10 @@ class Connection
             }
 
             return;
-//        } catch (WebsocketException $e) {
-//            $this->messageProcessor->close($this->socketStream);
-//            $this->handler->onError($e, $this);
-//        }
+        } catch (WebsocketException $e) {
+            $this->messageProcessor->close($this->socketStream);
+            $this->handler->onError($e, $this);
+        }
     }
 
     /**
