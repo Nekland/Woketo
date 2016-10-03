@@ -51,7 +51,7 @@ class Message
             }
             $this->buffer = '';
 
-        } catch (WebsocketException $e) {
+        } catch (IncompleteFrameException $e) {
             $this->buffer .= $data;
         }
     }
