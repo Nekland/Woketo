@@ -52,7 +52,7 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $frameFactory->createCloseFrame(Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
         $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
-        $socket->close()->shouldBeCalled();
+        $socket->end()->shouldBeCalled();
 
         $handler = new CloseFrameHandler();
         $handler->process($this->closeMessage, $messageProcessor->reveal(), $socket->reveal());
