@@ -12,6 +12,7 @@ namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -64,7 +65,7 @@ class MessageProcessor
             return $message;
         } catch (LimitationException $e) {
             $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS), $socket);
-            $socket->close();
+            $socket->end();
         }
 
         return null;

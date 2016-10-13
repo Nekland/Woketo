@@ -360,12 +360,10 @@ class Frame
         if ($payloadLen === 126) {
             $this->payloadLenSize += 16;
             $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 3);
-        }
+        } else if ($payloadLen === 127) {
+            $this->payloadLenSize += 64;
 
-        if ($payloadLen === 127) {
-            $this->payloadLenSize += 48;
-
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 10, true);
+            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 9, true);
         }
 
         // Check < 0 because 64th bit is the negative one in PHP.

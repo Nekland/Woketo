@@ -39,6 +39,17 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($helloUnmaskedFrame->getPayload(), 'Hello');
     }
 
+    public function testItSupportsPayloadOn8Bits()
+    {
+        // Hello unmasked frame with payload size on 8 bytes.
+        $frame = new Frame(
+            BitManipulation::hexArrayToString(['81', '7F', '00', '00', '00', '00', '00', '00', '00', '05', '48', '65', '6c', '6c','6f'])
+        );
+
+        $this->assertSame($frame->getPayloadLength(), 5);
+        $this->assertSame($frame->getPayload(), 'Hello');
+    }
+
     public function testMaskedFrameContainingHello()
     {
         // Note : there is an error in the RFC on the 8th bit !
