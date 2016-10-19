@@ -1,0 +1,11 @@
+language: php
+php:
+    - 7.0
+
+branches:
+    only:
+        - master
+
+install:
+    - composer install --prefer-source
+    - phpunit tests/Woketo/
