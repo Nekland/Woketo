@@ -3,3 +3,4 @@ vendor
 composer.lock
 reports/
 fuzzingclient.json
+fuzzingserver.json
