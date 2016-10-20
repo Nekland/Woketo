@@ -9,4 +9,4 @@ branches:
 
 install:
     - composer install --prefer-source
-    - phpunit tests/Woketo/
+    - phpunit
