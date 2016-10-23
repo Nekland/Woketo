@@ -11,16 +11,12 @@
 
 namespace Nekland\Woketo\Server;
 
-use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
-use Nekland\Woketo\Exception\Frame\TooBigFrameException;
-use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
-use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
@@ -125,13 +121,18 @@ class Connection
         $this->currentMessage = $this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage);
 
         if (null !== $this->currentMessage && $this->currentMessage->isComplete()) {
-            if (in_array($this->currentMessage->getFirstFrame()->getOpcode(), [Frame::OP_BINARY, Frame::OP_TEXT])) {
-                // Sending the message throw the woketo API.
-                $this->handler->onData($this->currentMessage->getContent(), $this);
+            // Sending the message through the woketo API.
+            switch($this->currentMessage->getOpcode()) {
+                case Frame::OP_TEXT:
+                    $this->handler->onMessage($this->currentMessage->getContent(), $this);
+                    break;
+                case Frame::OP_BINARY:
+                    $this->handler->onBinary($this->currentMessage->getContent(), $this);
+                    break;
             }
             $this->currentMessage = null;
-        } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
 
+        } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
             // We wait for more data so we start a timeout.
             $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
                 $this->messageProcessor->timeout($this->socketStream);
@@ -141,12 +142,13 @@ class Connection
 
     /**
      * @param string|Frame $frame
+     * @param int          $opCode An int representing binary or text data (const of Frame class)
      * @throws \Nekland\Woketo\Exception\RuntimeException
      */
-    public function write($frame)
+    public function write($frame, int $opCode = Frame::OP_TEXT)
     {
         try {
-            $this->messageProcessor->write($frame, $this->socketStream);
+            $this->messageProcessor->write($frame, $this->socketStream, $opCode);
         } catch (WebsocketException $e) {
             throw new RuntimeException($e);
         }

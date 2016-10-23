@@ -87,6 +87,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message->addData(BitManipulation::hexArrayToString(['80', '02', '6c', '6f']));
 
         $this->assertSame($message->isComplete(), true);
+        $this->assertSame($message->getOpcode(), Frame::OP_TEXT);
     }
 
     public function testItSupportsMessageInManyFrames()
