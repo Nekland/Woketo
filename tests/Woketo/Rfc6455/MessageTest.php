@@ -88,4 +88,14 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($message->isComplete(), true);
     }
+
+    public function testItSupportsMessageInManyFrames()
+    {
+        $message = new Message();
+        $message->addData(BitManipulation::hexArrayToString(['81', '05']));
+        $message->addData(BitManipulation::hexArrayToString(['48', '65']));
+        $message->addData(BitManipulation::hexArrayToString(['6c', '6c', '6f']));
+
+        $this->assertSame($message->getContent(), 'Hello');
+    }
 }
