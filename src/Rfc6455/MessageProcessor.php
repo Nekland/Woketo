@@ -12,7 +12,6 @@ namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -45,7 +44,7 @@ class MessageProcessor
      * @param Message|null        $message
      * @return Message|null
      */
-    public function onData($data, ConnectionInterface $socket, Message $message = null)
+    public function onData(string $data, ConnectionInterface $socket, Message $message = null)
     {
         if (null === $message) {
             $message = new Message();

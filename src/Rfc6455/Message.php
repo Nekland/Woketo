@@ -14,7 +14,6 @@ namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
-use Nekland\Woketo\Exception\WebsocketException;
 
 class Message
 {
@@ -46,8 +45,7 @@ class Message
             if ('' === $this->buffer) {
                 $this->addFrame(new Frame($data));
             } else {
-                $this->buffer = $this->buffer . $data;
-                $this->addFrame(new Frame($this->buffer));
+                $this->addFrame(new Frame($this->buffer . $data));
             }
             $this->buffer = '';
 
