@@ -33,7 +33,7 @@ interface MessageHandlerInterface
      * @param string     $data       Text data
      * @param Connection $connection
      */
-    public function onMessage($data, Connection $connection);
+    public function onMessage(string $data, Connection $connection);
 
     /**
      * Is called on new binary data.
@@ -41,7 +41,7 @@ interface MessageHandlerInterface
      * @param string     $data       Binary data
      * @param Connection $connection
      */
-    public function onBinary($data, Connection $connection);
+    public function onBinary(string $data, Connection $connection);
 
     /**
      * This callback is call when there is an error on the websocket protocol communication.

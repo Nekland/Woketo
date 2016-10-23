@@ -14,12 +14,12 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
     {
     }
 
-    public function onMessage($data, \Nekland\Woketo\Server\Connection $connection)
+    public function onMessage(string $data, \Nekland\Woketo\Server\Connection $connection)
     {
         $connection->write($data);
     }
 
-    public function onBinary($data, \Nekland\Woketo\Server\Connection $connection)
+    public function onBinary(string $data, \Nekland\Woketo\Server\Connection $connection)
     {
         $connection->write($data, \Nekland\Woketo\Rfc6455\Frame::OP_BINARY);
     }
