@@ -11,14 +11,12 @@
 
 namespace Nekland\Woketo\Server;
 
-use Nekland\Woketo\Exception\SocketException;
 use Nekland\Woketo\Http\Request;
-use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Message\MessageHandlerInterface;
-use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
+use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
 use React\EventLoop\LoopInterface;
@@ -135,6 +133,7 @@ class Websocket
     private function buildMessageProcessor()
     {
         $this->messageProcessor = new MessageProcessor();
+        $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
         $this->messageProcessor->addHandler(new WrongOpcodeHandler());
     }

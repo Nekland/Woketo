@@ -42,6 +42,20 @@ class FrameFactory
         return $frame;
     }
 
+    /**
+     * The payload of Pong must be empty
+     * @return Frame
+     */
+    public function createPongFrame() : Frame
+    {
+        $frame = $this->createNewFrame();
+
+        $frame->setOpcode(Frame::OP_PONG);
+        $frame->setPayload('');
+
+        return $frame;
+    }
+
     protected function createNewFrame()
     {
         return new Frame();
