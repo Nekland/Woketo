@@ -314,13 +314,15 @@ class Frame
     public function checkFrameSize()
     {
         $infoBytesLen = $this->getInfoBytesLen();
-        $realDataLength = strlen($this->rawData);
+        $realDataLength = BitManipulation::frameSize($this->rawData);
         $theoricDataLength = $infoBytesLen + $this->payloadLen;
+
         if ($realDataLength < $theoricDataLength) {
             throw new IncompleteFrameException(
                 sprintf('Impossible to retrieve %s bytes of payload when the full frame is %s bytes long.', $theoricDataLength, $realDataLength)
             );
         }
+
         if ($realDataLength > $theoricDataLength) {
             throw new TooBigFrameException();
         }
