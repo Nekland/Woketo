@@ -122,6 +122,18 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected, $frame->getRawData());
     }
 
+    public function testItGenerateFrameWith65536Bytes()
+    {
+        $payload = file_get_contents(__DIR__ . '/../../fixtures/65536.data');
+        $expectedData = BitManipulation::hexArrayToString('81', '7F', '00', '00', '00', '00', '00', '01', '00', '00') . $payload;
+
+        $frame = new Frame();
+        $frame->setPayload($payload);
+        $frame->setOpcode(Frame::OP_TEXT);
+
+        $this->assertSame($expectedData, $frame->getRawData());
+    }
+
     public function frameDataGenerationTestProvider()
     {
         return [
