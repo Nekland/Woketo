@@ -11,7 +11,7 @@
 namespace Nekland\Woketo\Http;
 
 
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class Response extends AbstractHttpMessage
 {
@@ -40,9 +40,9 @@ class Response extends AbstractHttpMessage
     }
 
     /**
-     * @param Stream $stream
+     * @param ConnectionInterface $stream
      */
-    public function send(Stream $stream)
+    public function send(ConnectionInterface $stream)
     {
         $stringResponse = $this->getHttpVersion() . ' ' . $this->httpResponse . "\r\n";
 

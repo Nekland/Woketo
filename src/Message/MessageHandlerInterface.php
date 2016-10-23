@@ -28,12 +28,20 @@ interface MessageHandlerInterface
     public function onConnection(Connection $connection);
 
     /**
-     * Is called on new data.
+     * Is called on new text data.
      *
-     * @param string $data
+     * @param string     $data       Text data
      * @param Connection $connection
      */
-    public function onData($data, Connection $connection);
+    public function onMessage($data, Connection $connection);
+
+    /**
+     * Is called on new binary data.
+     *
+     * @param string     $data       Binary data
+     * @param Connection $connection
+     */
+    public function onBinary($data, Connection $connection);
 
     /**
      * This callback is call when there is an error on the websocket protocol communication.

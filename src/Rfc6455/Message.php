@@ -111,6 +111,14 @@ class Message
     }
 
     /**
+     * @return int
+     */
+    public function getOpcode()
+    {
+        return $this->getFirstFrame()->getOpcode();
+    }
+
+    /**
      * @return bool
      */
     public function isComplete()

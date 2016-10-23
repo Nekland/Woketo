@@ -29,7 +29,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
             . "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"
         ;
 
-        $stream = $this->prophesize('React\Stream\Stream');
+        $stream = $this->prophesize('React\Socket\ConnectionInterface');
         $stream->write($httpResponse)->shouldBeCalled();
         $this->stream = $stream->reveal();
     }

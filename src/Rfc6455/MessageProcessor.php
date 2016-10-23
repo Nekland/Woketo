@@ -84,14 +84,15 @@ class MessageProcessor
     /**
      * @param Frame|string        $frame
      * @param ConnectionInterface $socket
+     * @param int                 $opCode An int representing binary or text data (const of Frame class)
      */
-    public function write($frame, ConnectionInterface $socket)
+    public function write($frame, ConnectionInterface $socket, int $opCode = Frame::OP_TEXT)
     {
         if (!$frame instanceof Frame) {
             $data = $frame;
             $frame = new Frame();
             $frame->setPayload($data);
-            $frame->setOpcode(Frame::OP_TEXT);
+            $frame->setOpcode($opCode);
         }
 
         $socket->write($frame->getRawData());
