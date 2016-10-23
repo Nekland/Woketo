@@ -164,10 +164,11 @@ class Frame
             $firstLen = $this->payloadLen;
 
         } else {
-            // As the payload cannot be bigger than self::$maxPayloadSize. It will always be less than 65535
-            // and so will never take more than 2 bytes.
-            // That's why we don't handle the 127 length for the "firstLen". (which mean payload on 8bytes unsigned int)
-            $firstLen = 126;
+            if ($this->payloadLen < 65536) {
+                $firstLen = 126;
+            } else {
+                $firstLen = 127;
+            }
             $secondLen = $this->payloadLen;
         }
 
@@ -176,7 +177,7 @@ class Frame
             + ($this->isMasked() << 7) + $firstLen
         );
         if (null !== $secondLen) {
-            $data .= BitManipulation::intToString($secondLen, 2);
+            $data .= BitManipulation::intToString($secondLen, $firstLen === 126 ? 2 : 8);
         }
         if ($this->isMasked()) {
             $data .= $this->getMaskingKey();
@@ -331,11 +332,13 @@ class Frame
     public function setPayload(string $payload) : Frame
     {
         $this->payload = $payload;
-        $this->payloadLen = strlen($this->payload);
+        $this->payloadLen = BitManipulation::frameSize($this->payload);
         $this->payloadLenSize = 7;
         
-        if ($this->payloadLen > 126) {
+        if ($this->payloadLen > 126 && $this->payloadLen < 65536) {
             $this->payloadLenSize += 16;
+        } else if ($this->payloadLen > 126) {
+            $this->payloadLenSize += 64;
         }
         
         return $this;
