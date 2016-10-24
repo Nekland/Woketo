@@ -43,6 +43,8 @@ class Frame
     const CLOSE_UNEXPECTING_CONDITION   = 1011;
     // 1015 is reserved
 
+    const MAX_CONTROL_FRAME_SIZE = 125;
+
     /**
      * The payload size can be specified on 64b unsigned int according to the RFC. That means that maximum data
      * inside the payload is 0b1111111111111111111111111111111111111111111111111111111111111111 bits. In
@@ -328,6 +330,8 @@ class Frame
             throw new TooBigFrameException();
         }
     }
+
+
     
     public function setPayload(string $payload) : Frame
     {
@@ -432,5 +436,21 @@ class Frame
     public function isValid() : bool
     {
         return !empty($this->opcode);
+    }
+
+    /**
+     * The Control Frame is a pong, ping, close frame or a reserved frame between 0xB-0xF.
+     * @see https://tools.ietf.org/html/rfc6455#section-5.5
+     *
+     * @return bool
+     */
+    public function isControlFrame()
+    {
+        return (in_array($this->getOpcode(), [
+            self::OP_PONG,
+            self::OP_CLOSE,
+            self::OP_PING,
+        ])
+        || $this->getOpcode() >= 11 && $this->getOpcode() <= 15);
     }
 }

@@ -11,6 +11,7 @@ namespace Test\Woketo\Rfc6455\MessageHandler;
  * on the root directory of this project
  */
 
+use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
@@ -22,21 +23,13 @@ use React\Socket\ConnectionInterface;
 
 class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    private $pingMessage;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        // Normal ping frame without payload
-        $this->pingMessage = new Message();
-        $this->pingMessage->addFrame(new Frame(BitManipulation::hexArrayToString(['89', '00'])));
-    }
-
     public function testItSupportsPingFrame()
     {
+
         $handler = new PingFrameHandler();
-        $sup = $handler->supports($this->pingMessage);
+        $pingMessage = new Message();
+        $pingMessage->addFrame(new Frame(BitManipulation::hexArrayToString(['89', '00'])));
+        $sup = $handler->supports($pingMessage);
 
         $this->assertSame($sup, true);
     }
@@ -44,6 +37,9 @@ class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
     public function testItProcessPingFrame()
     {
         $frame = new Frame();
+
+        $message = new Message();
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['89','7F', '00', '00', '00', '00', '00', '00', '00', '05', '48', '65', '6c', '6c','6f'])));
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
@@ -57,9 +53,14 @@ class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
         $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
 
+
         $socket->end()->shouldBeCalled();
 
         $handler = new PingFrameHandler();
-        $handler->process($this->pingMessage, $messageProcessor->reveal(), $socket->reveal());
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
+
+        $this->expectException(TooBigFrameException::class);
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['89','7F', '7F', '7F', '7F', '7F', '7F', '7F', '7F', '7F', '7F', '65', '6c', '6c','6f'])));
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
     }
 }
