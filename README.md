@@ -3,6 +3,8 @@ Woketo
 
 **A websocket library designed to be released.**
 
+[![Build Status](https://travis-ci.org/Nekland/Woketo.svg?branch=master)](https://travis-ci.org/Nekland/Woketo)
+
 ### TODO
 
 - [x] Handcheck
