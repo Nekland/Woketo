@@ -34,6 +34,5 @@ class PingFrameHandler implements Rfc6455MessageHandlerInterface
 
         $messageProcessor->write($messageProcessor->getFrameFactory()->createPongFrame($message->getContent()), $socket);
         $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame(), $socket);
-        $socket->end();
     }
 }

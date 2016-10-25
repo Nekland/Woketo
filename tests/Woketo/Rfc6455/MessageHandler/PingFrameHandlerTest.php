@@ -54,7 +54,7 @@ class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
 
 
-        $socket->end()->shouldBeCalled();
+        $socket->end()->shouldNotBeCalled();
 
         $handler = new PingFrameHandler();
         $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
