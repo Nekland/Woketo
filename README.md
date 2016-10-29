@@ -58,7 +58,7 @@ use Nekland\Woketo\Server\Connection;
 
 class YourMessageHandler implements \Nekland\Woketo\Message\MessageHandlerInterface
 {
-    public function onConnection(\Nekland\Woketo\Server\Connection $connection)
+    public function onConnection(Connection $connection)
     {
         // Doing something when the client is connected ?
     }
