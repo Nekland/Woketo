@@ -461,11 +461,6 @@ class Frame
      */
     public function isControlFrame()
     {
-        return (in_array($this->getOpcode(), [
-            self::OP_PONG,
-            self::OP_CLOSE,
-            self::OP_PING,
-        ])
-        || $this->getOpcode() >= 11 && $this->getOpcode() <= 15);
+        return $this->getOpcode() >= 8;
     }
 }
