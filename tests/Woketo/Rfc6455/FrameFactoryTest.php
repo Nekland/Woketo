@@ -13,6 +13,7 @@ namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
+use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
 
 class FrameFactoryTest extends \PHPUnit_Framework_TestCase
@@ -40,5 +41,15 @@ class FrameFactoryTest extends \PHPUnit_Framework_TestCase
         // payload: 000 0010
         // close code: 0000 0011  1110 1000
         $this->assertEquals($data, BitManipulation::hexArrayToString(['88', '02', '03', 'E8']));
+    }
+
+    public function testCreatePongFrame()
+    {
+        $pingMessage = new Message();
+        $pingMessage->addFrame(new Frame(BitManipulation::hexArrayToString(['89', '00'])));
+        $message = $pingMessage->getContent();
+
+        $frame = $this->factory->createPongFrame($message);
+        $this->assertEquals($message, $frame->getPayload());
     }
 }

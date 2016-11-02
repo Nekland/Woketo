@@ -42,6 +42,20 @@ class FrameFactory
         return $frame;
     }
 
+    /**
+     * @param string $payload The payload must be the message content of the Ping
+     * @return Frame
+     */
+    public function createPongFrame(string $payload) : Frame
+    {
+        $frame = $this->createNewFrame();
+
+        $frame->setOpcode(Frame::OP_PONG);
+        $frame->setPayload($payload);
+
+        return $frame;
+    }
+
     protected function createNewFrame()
     {
         return new Frame();

@@ -147,4 +147,30 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
+
+    /**
+     * @dataProvider getIsOrNotControlFrame
+     */
+    public function testIsAControlFrame($result, $frame)
+    {
+        $frame = new Frame($frame);
+        $this->assertSame($result, $frame->isControlFrame());
+    }
+
+    public function getIsOrNotControlFrame()
+    {
+        return [
+            [true, BitManipulation::hexArrayToString(['89', '00'])],//ping
+            [true, BitManipulation::hexArrayToString(['8A', '00'])],//pong
+            [true, BitManipulation::hexArrayToString(['88', '00'])],//close
+            [true, BitManipulation::hexArrayToString(['8B', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8C', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8D', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8E', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8F', '00'])],//reserved
+            [false, BitManipulation::hexArrayToString(['82', '00'])],//binary
+            [false, BitManipulation::hexArrayToString(['80', '00'])],//continue
+            [false, BitManipulation::hexArrayToString(['81', '00'])],//text,
+         ];
+    }
 }
