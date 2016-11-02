@@ -8,6 +8,8 @@
  * on the root directory of this project
  */
 
+declare(strict_types=1);
+
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
@@ -63,7 +65,7 @@ class Frame
      *
      * @var int
      */
-    private static $maxPayloadSize = 1049000;
+    public static $maxPayloadSize = 1049000;
 
     /**
      * Complete string representing data collected from socket
@@ -145,7 +147,7 @@ class Frame
     public function setRawData($rawData)
     {
         $this->rawData = $rawData;
-        $this->frameSize = strlen($rawData);
+        $this->frameSize = BitManipulation::frameSize($rawData);
 
         if ($this->frameSize < 2) {
             throw new InvalidFrameException('Not enough data to be a frame.');
@@ -194,6 +196,11 @@ class Frame
         }
         
         return $data . $this->getPayload();
+    }
+
+    public function getFrameSize()
+    {
+        return $this->frameSize;
     }
 
     /**
@@ -336,8 +343,6 @@ class Frame
         }
     }
 
-
-    
     public function setPayload(string $payload) : Frame
     {
         $this->payload = $payload;

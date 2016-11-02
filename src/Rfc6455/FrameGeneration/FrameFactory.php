@@ -23,6 +23,16 @@ use Nekland\Woketo\Utils\BitManipulation;
 class FrameFactory
 {
     /**
+     * @var FrameGenerator
+     */
+    private $generator;
+
+    public function __construct(FrameGenerator $generator)
+    {
+        $this->generator = $generator;
+    }
+
+    /**
      * @param int    $status One of the close constant code of Frame class.
      * @param string $reason A little message that explain why closing.
      * @return Frame
@@ -39,7 +49,7 @@ class FrameFactory
 
         $frame->setPayload($content);
 
-        return $frame;
+        return $this->returnFrame($frame);
     }
 
     /**
@@ -53,11 +63,35 @@ class FrameFactory
         $frame->setOpcode(Frame::OP_PONG);
         $frame->setPayload($payload);
 
-        return $frame;
+        return $this->returnFrame($frame);
+    }
+
+    public function createFrameFromRawData(string $data)
+    {
+        return $this->returnFrame($this->createNewFrame()->setRawData($data));
     }
 
     protected function createNewFrame()
     {
         return new Frame();
+    }
+
+    /**
+     * Calculate raw of the frame (if needed)
+     *
+     * @param Frame $frame
+     * @return Frame
+     */
+    private function returnFrame(Frame $frame) : Frame
+    {
+        if ($frame->getRawData() === null) {
+            $frame->setRawData($this->generator->getRawFrame($frame));
+        }
+
+        if ($frame->isBuild()) {
+            $this->generator->buildFrame($frame);
+        }
+
+        return $frame;
     }
 }
