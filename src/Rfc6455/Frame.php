@@ -2,7 +2,7 @@
 /**
  * This file is a part of Woketo package.
  *
- * (c) Ci-tron <dev@ci-tron.org>
+ * (c) Nekland <dev@nekland.fr>
  *
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
@@ -10,8 +10,10 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
+use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\InvalidFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
 
@@ -43,6 +45,9 @@ class Frame
     const CLOSE_UNEXPECTING_CONDITION   = 1011;
     // 1015 is reserved
 
+    /**
+     * @see https://tools.ietf.org/html/rfc6455#section-5.5
+     */
     const MAX_CONTROL_FRAME_SIZE = 125;
 
     /**
@@ -425,6 +430,16 @@ class Frame
     {
         if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload())) {
             throw new InvalidFrameException('The text is not encoded in UTF-8.');
+        }
+
+        if ($frame->isControlFrame()) {
+            if (!$frame->isFinal()) {
+                throw new ControlFrameException('The frame cannot be fragmented');
+            }
+
+            if ($frame->getPayloadLength() > Frame::MAX_CONTROL_FRAME_SIZE) {
+                throw new TooBigControlFrameException('A control frame cannot be larger than 125 bytes.');
+            }
         }
     }
 

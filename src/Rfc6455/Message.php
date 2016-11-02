@@ -2,7 +2,7 @@
 /**
  * This file is a part of Woketo package.
  *
- * (c) Ci-tron <dev@ci-tron.org>
+ * (c) Nekland <dev@nekland.fr>
  *
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
@@ -10,10 +10,7 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-
-use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
-use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
 
@@ -134,22 +131,5 @@ class Message
     public function isOperation()
     {
         return in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
-    }
-
-    /**
-     * @throws ControlFrameException
-     * @throws TooBigFrameException
-     */
-    public function checkControlFrameSize()
-    {
-        $frame = $this->getFirstFrame();
-
-        if (!$frame->isControlFrame()) {
-            throw new ControlFrameException('It is not a control frame');
-        }
-
-        if ($frame->getPayloadLength() > Frame::MAX_CONTROL_FRAME_SIZE) {
-            throw new TooBigFrameException('A control frame cannot be larger than 125 bytes.');
-        }
     }
 }

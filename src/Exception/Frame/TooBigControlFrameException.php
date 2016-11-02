@@ -10,7 +10,7 @@
 
 namespace Nekland\Woketo\Exception\Frame;
 
-class ControlFrameException extends InvalidFrameException
+class TooBigControlFrameException extends TooBigFrameException
 {
 
 }

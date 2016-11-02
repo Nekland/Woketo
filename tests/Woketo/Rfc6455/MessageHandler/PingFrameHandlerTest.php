@@ -5,7 +5,7 @@ namespace Test\Woketo\Rfc6455\MessageHandler;
 /**
  * This file is a part of Woketo package.
  *
- * (c) Ci-tron <dev@ci-tron.org>
+ * (c) Nekland <dev@nekland.fr>
  *
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
