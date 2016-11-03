@@ -9,4 +9,6 @@ branches:
 
 install:
     - composer install --prefer-source
+
+script:
     - phpunit
