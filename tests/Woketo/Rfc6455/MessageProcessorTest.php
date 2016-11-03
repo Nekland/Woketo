@@ -15,6 +15,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -37,14 +38,47 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $processor = new MessageProcessor();
 
         /** @var Message $message */
-        $message = $processor->onData(
+        $messages = iterator_to_array($processor->onData(
             // Hello normal frame
             BitManipulation::hexArrayToString(['81', '05', '48', '65', '6c', '6c', '6f']),
             $this->socket->reveal()
+        ));
+
+        $this->assertInstanceOf(Message::class, $messages[0]);
+        $this->assertSame('Hello', $messages[0]->getContent());
+    }
+
+    public function testItBuildManyMessagesWithOnlyOneFrameData()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString(
+            '01', '03', '48', '65', '6c', // Data part 1
+            '80', '02', '6c', '6f',       // Data part 2
+            '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58' // Another message (Hello frame)
         );
 
-        $this->assertInstanceOf(Message::class, $message);
-        $this->assertSame('Hello', $message->getContent());
+        $processor = new MessageProcessor();
+
+        $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
+
+        $this->assertSame(count($messages), 2);
+        $this->assertSame($messages[1]->getContent(), 'Hello');
+    }
+
+    public function testItContinueFrameEvaluationAfterControlFrame()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString(
+            '89', '00',                                                       // Ping
+            '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58', // Another message (Hello frame)
+            '89', '00'                                                        // Ping
+        );
+
+        $processor = new MessageProcessor();
+        $processor->addHandler(new PingFrameHandler());
+
+        $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
+
+        $this->assertSame(count($messages), 3);
+        $this->assertSame($messages[1]->getContent(), 'Hello');
     }
 
     public function testItBuildPartialMessage()
@@ -52,23 +86,23 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $processor = new MessageProcessor();
         $socket = $this->socket->reveal();
 
-        $message = $processor->onData(
+        $messages = iterator_to_array($processor->onData(
             // "Hel" normal frame unmasked
             BitManipulation::hexArrayToString(['01', '03', '48', '65', '6c']),
             $socket
-        );
+        ));
 
-        $this->assertSame($message->isComplete(), false);
+        $this->assertSame($messages[0]->isComplete(), false);
 
-        $processor->onData(
+        iterator_to_array($processor->onData(
             // "lo" normal frame unmasked
             BitManipulation::hexArrayToString(['80', '02', '6c', '6f']),
             $socket,
-            $message
-        );
+            $messages[0]
+        ));
 
-        $this->assertSame($message->isComplete(), true);
-        $this->assertSame($message->getContent(), 'Hello');
+        $this->assertSame($messages[0]->isComplete(), true);
+        $this->assertSame($messages[0]->getContent(), 'Hello');
     }
 
     public function testItHandleSpecialMessagesWithHandler()
@@ -88,12 +122,12 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 
         $this->socket->write(Argument::cetera())->shouldBeCalled();
 
-        $message = $processor->onData(
+        $messages = iterator_to_array($processor->onData(
             BitManipulation::hexArrayToString(['88', '02', '03', 'E8']),
             $this->socket->reveal()
-        );
+        ));
 
-        $this->assertSame($message, null);
+        $this->assertSame($messages[0]->getOpcode(), Frame::OP_CLOSE);
     }
 
     public function testItReturnTheFrameFactory()

@@ -10,8 +10,10 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
+use Nekland\Tools\StringTools;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -39,35 +41,41 @@ class MessageProcessor
     }
 
     /**
-     * @param string              $data
+     * @param string $data
      * @param ConnectionInterface $socket
-     * @param Message|null        $message
-     * @return Message|null
+     * @param Message|null $message
+     * @return \Generator
      */
     public function onData(string $data, ConnectionInterface $socket, Message $message = null)
     {
-        if (null === $message) {
-            $message = new Message();
-        }
+        do {
 
-        try {
-            $message->addData($data);
-            if ($message->isComplete()) {
-                foreach ($this->handlers as $handler) {
-                    if ($handler->supports($message)) {
-                        $handler->process($message, $this, $socket);
-                        return null;
-                    }
-                }
+            if (null === $message) {
+                $message = new Message();
             }
 
-            return $message;
-        } catch (LimitationException $e) {
-            $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS), $socket);
-            $socket->end();
-        }
+            try {
+                $data = $message->addData($data);
 
-        return null;
+                if ($message->isComplete()) {
+                    foreach ($this->handlers as $handler) {
+                        if ($handler->supports($message)) {
+                            $handler->process($message, $this, $socket);
+                        }
+                    }
+
+                    yield $message;
+                    $message = null;
+                } else {
+                    yield $message;
+                }
+
+            } catch (LimitationException $e) {
+                $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS), $socket);
+                $socket->end();
+                $data = '';
+            }
+        } while(!empty($data));
     }
 
     /**

@@ -119,6 +119,12 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($a, BitManipulation::frameToHex($b));
     }
 
+    public function testItRetrieveSubFrames()
+    {
+        $this->assertSame('bcd', BitManipulation::bytesFromToString('abcdefg', 1, 3));
+        $this->assertSame('ef', BitManipulation::bytesFromToString('abcdefg', 4, 2, BitManipulation::MODE_PHP));
+    }
+
     //
     // Providers
     //

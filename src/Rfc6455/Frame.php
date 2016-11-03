@@ -8,6 +8,7 @@
  * on the root directory of this project
  */
 
+declare(strict_types=1);
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
@@ -89,7 +90,7 @@ class Frame
      * @var int
      */
     private $secondByte;
-    
+
     /**
      * @var bool
      */
@@ -133,11 +134,12 @@ class Frame
     {
         if (null !== $data) {
             $this->setRawData($data);
-            $this->checkFrameSize();
         }
     }
 
     /**
+     * It also run checks on data.
+     *
      * @param string|int $rawData Probably more likely a string than an int, but well... why not.
      * @return self
      * @throws InvalidFrameException
@@ -145,12 +147,21 @@ class Frame
     public function setRawData($rawData)
     {
         $this->rawData = $rawData;
-        $this->frameSize = strlen($rawData);
+        $this->frameSize = BitManipulation::frameSize($rawData);
 
         if ($this->frameSize < 2) {
             throw new InvalidFrameException('Not enough data to be a frame.');
         }
         $this->getInformationFromRawData();
+
+        try {
+            $this->checkFrameSize();
+        } catch (TooBigFrameException $e) {
+            $this->frameSize = $e->getMaxLength();
+            $this->rawData = BitManipulation::bytesFromToString($this->rawData, 0, $this->frameSize, BitManipulation::MODE_PHP);
+        }
+
+        Frame::checkFrame($this);
 
         return $this;
     }
@@ -188,12 +199,12 @@ class Frame
         }
         if ($this->isMasked()) {
             $data .= $this->getMaskingKey();
-            $data .= $this->applyMask($this->getPayload());
-            
-            return $data;
+            $data .= $this->applyMask();
+
+            return $this->rawData = $data;
         }
-        
-        return $data . $this->getPayload();
+
+        return $this->rawData = $data . $this->getPayload();
     }
 
     /**
@@ -221,7 +232,7 @@ class Frame
      */
     public function getRsv1() : bool
     {
-        return BitManipulation::nthBit($this->firstByte, 2);
+        return (bool) BitManipulation::nthBit($this->firstByte, 2);
     }
 
     /**
@@ -229,7 +240,7 @@ class Frame
      */
     public function getRsv2() : bool
     {
-        return BitManipulation::nthBit($this->firstByte, 3);
+        return (bool) BitManipulation::nthBit($this->firstByte, 3);
     }
 
     /**
@@ -237,7 +248,7 @@ class Frame
      */
     public function getRsv3() : bool
     {
-        return BitManipulation::nthBit($this->firstByte, 4);
+        return (bool) BitManipulation::nthBit($this->firstByte, 4);
     }
 
     /**
@@ -247,15 +258,15 @@ class Frame
     {
         return BitManipulation::partOfByte($this->firstByte, 2);
     }
-    
+
     public function setOpcode(int $opcode) : Frame
     {
         if (!in_array($opcode, [Frame::OP_TEXT, Frame::OP_BINARY, Frame::OP_CLOSE, Frame::OP_CONTINUE, Frame::OP_PING, Frame::OP_PONG])) {
             throw new \InvalidArgumentException('Wrong opcode !');
         }
-        
+
         $this->opcode = $opcode;
-        
+
         return $this;
     }
 
@@ -287,7 +298,7 @@ class Frame
 
         $value = BitManipulation::bytesFromTo($this->rawData, $start, $start + 3);
 
-        return $this->mask = BitManipulation::intToString($value);
+        return $this->mask = BitManipulation::intToString($value, 4);
     }
 
     public function getPayload()
@@ -296,13 +307,13 @@ class Frame
             return $this->payload;
         }
 
-        $this->checkFrameSize();
-
         $infoBytesLen = $this->getInfoBytesLen();
-        $payload = (string) substr($this->rawData, $infoBytesLen, $this->payloadLen);
+        $payload = (string) BitManipulation::bytesFromToString($this->rawData, $infoBytesLen, $this->payloadLen, BitManipulation::MODE_PHP);
 
         if ($this->isMasked()) {
-            return $this->payload = $this->applyMask($payload);
+            $this->payload = $payload;
+
+            return $this->payload = $this->applyMask();
         }
 
         return $this->payload = $payload;
@@ -319,37 +330,18 @@ class Frame
         return $this->infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
     }
 
-    public function checkFrameSize()
-    {
-        $infoBytesLen = $this->getInfoBytesLen();
-        $realDataLength = BitManipulation::frameSize($this->rawData);
-        $theoricDataLength = $infoBytesLen + $this->payloadLen;
-
-        if ($realDataLength < $theoricDataLength) {
-            throw new IncompleteFrameException(
-                sprintf('Impossible to retrieve %s bytes of payload when the full frame is %s bytes long.', $theoricDataLength, $realDataLength)
-            );
-        }
-
-        if ($realDataLength > $theoricDataLength) {
-            throw new TooBigFrameException();
-        }
-    }
-
-
-    
     public function setPayload(string $payload) : Frame
     {
         $this->payload = $payload;
         $this->payloadLen = BitManipulation::frameSize($this->payload);
         $this->payloadLenSize = 7;
-        
+
         if ($this->payloadLen > 126 && $this->payloadLen < 65536) {
             $this->payloadLenSize += 16;
         } else if ($this->payloadLen > 126) {
             $this->payloadLenSize += 64;
         }
-        
+
         return $this;
     }
 
@@ -382,7 +374,7 @@ class Frame
 
         // Check < 0 because 64th bit is the negative one in PHP.
         if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
-            throw new TooBigFrameException;
+            throw new TooBigFrameException(Frame::$maxPayloadSize);
         }
 
         return $this->payloadLen = $payloadLen;
@@ -393,22 +385,26 @@ class Frame
         if ($this->mask !== null) {
             return true;
         }
-        
+
         if ($this->rawData !== null) {
             return (bool) BitManipulation::nthBit($this->secondByte, 1);
         }
-        
+
         return false;
     }
 
-    public function applyMask(string $payload) : string
+    /**
+     * This method works for mask and unmask (it's the same operation)
+     *
+     * @return string
+     */
+    public function applyMask() : string
     {
         $res = '';
         $mask = $this->getMaskingKey();
 
-
         for ($i = 0; $i < $this->payloadLen; $i++) {
-            $payloadByte = $payload[$i];
+            $payloadByte = $this->payload[$i];
             $res .= $payloadByte ^ $mask[$i % 4];
         }
 
@@ -422,10 +418,39 @@ class Frame
 
         $this->final = (bool) BitManipulation::nthBit($this->firstByte, 1);
         $this->payloadLen = $this->getPayloadLength();
-
-        Frame::checkFrame($this);
     }
 
+    /**
+     * Check if the frame have the good size based on payload size.
+     *
+     * @throws IncompleteFrameException
+     * @throws TooBigFrameException
+     */
+    public function checkFrameSize()
+    {
+        $infoBytesLen = $this->getInfoBytesLen();
+        $this->frameSize = BitManipulation::frameSize($this->rawData);
+        $theoricDataLength = $infoBytesLen + $this->payloadLen;
+
+        if ($this->frameSize < $theoricDataLength) {
+            throw new IncompleteFrameException(
+                sprintf('Impossible to retrieve %s bytes of payload when the full frame is %s bytes long.', $theoricDataLength, $this->frameSize)
+            );
+        }
+
+        if ($this->frameSize > $theoricDataLength) {
+            throw new TooBigFrameException($theoricDataLength);
+        }
+    }
+
+    /**
+     * Validate a frame with RFC criteria
+     *
+     * @param Frame $frame
+     * @throws ControlFrameException
+     * @throws InvalidFrameException
+     * @throws TooBigControlFrameException
+     */
     public static function checkFrame(Frame $frame)
     {
         if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload())) {
@@ -438,14 +463,14 @@ class Frame
             }
 
             if ($frame->getPayloadLength() > Frame::MAX_CONTROL_FRAME_SIZE) {
-                throw new TooBigControlFrameException('A control frame cannot be larger than 125 bytes.');
+                throw new TooBigControlFrameException(Frame::MAX_CONTROL_FRAME_SIZE, 'A control frame cannot be larger than 125 bytes.');
             }
         }
     }
 
     /**
      * You can call this method to be sure your frame is valid before trying to get the raw data.
-     * 
+     *
      * @return bool
      */
     public function isValid() : bool

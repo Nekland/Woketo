@@ -40,6 +40,40 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($message->getContent(), 'foo bar baz');
     }
 
+    public function testItReturnUnusedDataOnAddDataCall()
+    {
+        // 2 frames "Hello"
+        $entryData = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58', '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
+
+        $message = new Message();
+        $data = $message->addData($entryData);
+
+        $this->assertSame($data, BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58'));
+    }
+
+    public function testItCompleteMessageWithMultipleFramesWhenDataAllowIt()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString(
+            '01', '03', '48', '65', '6c', // Data part 1
+            '80', '02', '6c', '6f',       // Data part 2
+            '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58' // Another message (Hello frame)
+        );
+
+        $message = new Message();
+
+        $this->assertSame($message->addData($multipleFrameData), BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58'));
+    }
+
+    public function testItReturnNothingWhenBufferingWhenAddData()
+    {
+        $incompleteFrame = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d');
+
+        $message = new Message();
+
+        $this->assertSame($message->addData($incompleteFrame), '');
+        $this->assertSame($message->isComplete(), false);
+    }
+
     public function testItThrowErrorWhenMissingFrame()
     {
         /** @var Frame $frame1 */

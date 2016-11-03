@@ -118,26 +118,28 @@ class Connection
             $this->timeout = null;
         }
 
-        $this->currentMessage = $this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage);
+        foreach ($this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage) as $message) {
+            $this->currentMessage = $message;
+            if ($this->currentMessage->isComplete()) {
+                // Sending the message through the woketo API.
+                switch($this->currentMessage->getOpcode()) {
+                    case Frame::OP_TEXT:
+                        $this->handler->onMessage($this->currentMessage->getContent(), $this);
+                        break;
+                    case Frame::OP_BINARY:
+                        $this->handler->onBinary($this->currentMessage->getContent(), $this);
+                        break;
+                }
+                $this->currentMessage = null;
 
-        if (null !== $this->currentMessage && $this->currentMessage->isComplete()) {
-            // Sending the message through the woketo API.
-            switch($this->currentMessage->getOpcode()) {
-                case Frame::OP_TEXT:
-                    $this->handler->onMessage($this->currentMessage->getContent(), $this);
-                    break;
-                case Frame::OP_BINARY:
-                    $this->handler->onBinary($this->currentMessage->getContent(), $this);
-                    break;
+            } else {
+                // We wait for more data so we start a timeout.
+                $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
+                    $this->messageProcessor->timeout($this->socketStream);
+                });
             }
-            $this->currentMessage = null;
-
-        } else if (null !== $this->currentMessage && !$this->currentMessage->isComplete()) {
-            // We wait for more data so we start a timeout.
-            $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
-                $this->messageProcessor->timeout($this->socketStream);
-            });
         }
+
     }
 
     /**
