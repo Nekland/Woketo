@@ -44,7 +44,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $message->isComplete()->willReturn(true);
         $message->getOpcode()->willReturn(Frame::OP_TEXT);
         $message->getContent()->willReturn('Hello');
-        $processor->onData($helloFrame, Argument::cetera())->willReturn($message->reveal());
+        $processor->onData($helloFrame, Argument::cetera())->willReturn([$message->reveal()]);
         $handler->onConnection(Argument::type(Connection::class))->shouldBeCalled();
         $handler->onMessage('Hello', Argument::type(Connection::class))->shouldBeCalled();
 
@@ -76,7 +76,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $message->isComplete()->willReturn(true);
         $message->getOpcode()->willReturn(Frame::OP_BINARY);
         $message->getContent()->willReturn($binary);
-        $processor->onData($binaryFrame, Argument::cetera())->willReturn($message->reveal());
+        $processor->onData($binaryFrame, Argument::cetera())->willReturn([$message->reveal()]);
         $handler->onConnection(Argument::type(Connection::class))->shouldBeCalled();
         $handler->onBinary($binary, Argument::type(Connection::class))->shouldBeCalled();
 

@@ -79,14 +79,14 @@ class FrameTest extends \PHPUnit_Framework_TestCase
 
     public function testPongMaskedFrameContainingHello()
     {
-        $helloUnmaskedPingFrame = new Frame(
-            BitManipulation::hexArrayToString('8a', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58')
-        );
+        $raw = BitManipulation::hexArrayToString('8a', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
+        $helloUnmaskedPingFrame = new Frame($raw);
 
         $this->assertSame($helloUnmaskedPingFrame->isMasked(), true);
         $this->assertSame($helloUnmaskedPingFrame->isFinal(), true);
         $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
         $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PONG);
+        $this->assertSame($helloUnmaskedPingFrame->getRawData(), $raw);
     }
 
     public function testItSupportsEmptyFrames()
@@ -98,6 +98,18 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($frame->getRawData(), BitManipulation::hexArrayToString([
             '81', '00'
         ]));
+    }
+
+    public function testItTakesOnlyFirstWebsocketFrameFromEntryData()
+    {
+        // 2 frames masked with `Hello` as content
+        $entryData = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58', '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
+        $firstDataFrame = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
+
+        $frame = new Frame($entryData);
+
+        $this->assertSame($frame->getRawData(), $firstDataFrame);
+        $this->assertSame($frame->getPayload(), 'Hello');
     }
 
     /**
@@ -132,6 +144,16 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $frame->setOpcode(Frame::OP_TEXT);
 
         $this->assertSame($expectedData, $frame->getRawData());
+    }
+
+    public function testItSupportsFrameWith65536PayloadFromRawData()
+    {
+        $payload = file_get_contents(__DIR__ . '/../../fixtures/65536.data');
+        $rawData = BitManipulation::hexArrayToString('81', '7F', '00', '00', '00', '00', '00', '01', '00', '00') . $payload;
+
+        $frame = new Frame($rawData);
+
+        $this->assertSame($rawData, $frame->getRawData());
     }
 
     public function frameDataGenerationTestProvider()

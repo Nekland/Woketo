@@ -21,6 +21,12 @@ namespace Nekland\Woketo\Utils;
 class BitManipulation
 {
     /**
+     * Mode from to is the default mode of inspection of frames. But PHP usually uses from and length to inspect frames.
+     */
+    const MODE_FROM_TO = 0;
+    const MODE_PHP = 1;
+
+    /**
      * Get a specific bit from a byte.
      *
      * @param int $byte
@@ -194,11 +200,28 @@ class BitManipulation
     }
 
     /**
+     * Proxy to the substr to be sure to be use the right method (mb_substr)
+     *
+     * @param string $frame
+     * @param int    $from
+     * @param int    $to
+     * @return string
+     */
+    public static function bytesFromToString(string $frame, int $from, int $to, int $mode = BitManipulation::MODE_FROM_TO) : string
+    {
+        if ($mode === BitManipulation::MODE_FROM_TO) {
+            return mb_substr($frame, $from, $to - $from + 1, '8bit');
+        }
+
+        return mb_substr($frame, $from, $to, '8bit');
+    }
+
+    /**
      * Take a frame represented by a decimal int to transform it in a string.
      * Notice that any int is a frame and cannot be more than 8 bytes
      *
      * @param int      $frame
-     * @param int|null $size  In bytes.
+     * @param int|null $size  In bytes. This value should always be precise. Be careful if you don't !
      * @return string
      */
     public static function intToString(int $frame, int $size = null) : string

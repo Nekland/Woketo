@@ -10,9 +10,11 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
+use Nekland\Tools\StringTools;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
+use Nekland\Woketo\Utils\BitManipulation;
 
 class Message
 {
@@ -40,17 +42,21 @@ class Message
 
     public function addData($data)
     {
-        try {
-            if ('' === $this->buffer) {
-                $this->addFrame(new Frame($data));
-            } else {
-                $this->addFrame(new Frame($this->buffer . $data));
+        $this->buffer .= $data;
+        do {
+            try {
+                $this->addFrame($frame = new Frame($this->buffer));
+                $this->buffer = StringTools::removeStart($this->buffer, $frame->getRawData(), '8bit');
+            } catch (IncompleteFrameException $e) {
+                return ''; // There is no more frame we can generate, the data is saved as buffer.
             }
-            $this->buffer = '';
+        } while(!$this->isComplete() && !empty($this->buffer));
 
-        } catch (IncompleteFrameException $e) {
-            $this->buffer .= $data;
+        if ($this->isComplete()) {
+            return $this->buffer;
         }
+
+        return '';
     }
 
     /**
