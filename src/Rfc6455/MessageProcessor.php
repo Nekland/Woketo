@@ -10,10 +10,9 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-use Nekland\Tools\StringTools;
+use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -69,7 +68,10 @@ class MessageProcessor
                 } else {
                     yield $message;
                 }
-
+            } catch (TooBigControlFrameException $e) {
+                $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
+                $socket->end();
+                $data = '';
             } catch (LimitationException $e) {
                 $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS), $socket);
                 $socket->end();
