@@ -103,6 +103,19 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($messages[0]->getContent(), 'Hello');
     }
 
+    public function testItBuildOnlyCompleteMessagesOrYieldLastOnly()
+    {
+        $processor = new MessageProcessor();
+        $socket = $this->socket->reveal();
+
+        $messages = iterator_to_array($processor->onData(
+            // "Hel" and "lo" normal frame unmasked
+            BitManipulation::hexArrayToString('01', '03', '48', '65', '6c', '80', '02', '6c', '6f'),
+            $socket
+        ));
+        $this->assertSame(count($messages), 1);
+    }
+
     public function testItHandleSpecialMessagesWithHandler()
     {
         $processor = new MessageProcessor();
