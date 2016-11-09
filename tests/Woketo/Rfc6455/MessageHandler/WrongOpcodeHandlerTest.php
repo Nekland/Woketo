@@ -10,7 +10,6 @@
 
 namespace Test\Woketo\Rfc6455\MessageHandler;
 
-
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
@@ -22,23 +21,23 @@ use React\Socket\ConnectionInterface;
 
 class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    private $wrongMessage;
-
-    protected function setUp()
-    {
-        $this->wrongMessage = new Message();
-        $this->wrongMessage->addData(BitManipulation::hexArrayToString('83','00'));
-    }
-
-    public function testItSupportsMessageWithWrongOpcode()
+    /**
+     * @dataProvider getFrameWithWrongOpCode
+     */
+    public function testItSupportsMessageWithWrongOpcode($result, $frame)
     {
         $handler = new WrongOpcodeHandler();
+        $wrongMessage = new Message();
+        $wrongMessage->addData($frame);
 
-        $this->assertSame($handler->supports($this->wrongMessage), true);
+        $this->assertSame($handler->supports($wrongMessage), $result);
     }
 
     public function testItCloseWithProtocolError()
     {
+        $wrongMessage = new Message();
+        $wrongMessage->addData(BitManipulation::hexArrayToString('83','00'));
+
         $frame = new Frame();
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
@@ -51,6 +50,28 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
         $socket->end()->shouldBeCalled();
 
         $handler = new WrongOpcodeHandler();
-        $handler->process($this->wrongMessage, $messageProcessor->reveal(), $socket->reveal());
+        $handler->process($wrongMessage, $messageProcessor->reveal(), $socket->reveal());
+    }
+
+    public function getFrameWithWrongOpCode()
+    {
+        return [
+            [false, BitManipulation::hexArrayToString(['80', '00'])],//continue
+            [false, BitManipulation::hexArrayToString(['81', '00'])],//text
+            [false, BitManipulation::hexArrayToString(['82', '00'])],//binary
+            [true, BitManipulation::hexArrayToString(['83', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['84', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['85', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['86', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['87', '00'])],//reserved
+            [false, BitManipulation::hexArrayToString(['88', '00'])],//close
+            [false, BitManipulation::hexArrayToString(['89', '00'])],//ping
+            [false, BitManipulation::hexArrayToString(['8A', '00'])],//pong
+            [true, BitManipulation::hexArrayToString(['8B', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8C', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8D', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8E', '00'])],//reserved
+            [true, BitManipulation::hexArrayToString(['8F', '00'])],//reserved
+        ];
     }
 }
