@@ -10,7 +10,9 @@
 
 namespace Nekland\Woketo\Exception\Frame;
 
-class TooBigControlFrameException extends ProtocolErrorException
+use Nekland\Woketo\Exception\WebsocketException;
+
+class ProtocolErrorException extends WebsocketException
 {
 
 }

@@ -463,7 +463,7 @@ class Frame
             }
 
             if ($frame->getPayloadLength() > Frame::MAX_CONTROL_FRAME_SIZE) {
-                throw new TooBigControlFrameException(Frame::MAX_CONTROL_FRAME_SIZE, 'A control frame cannot be larger than 125 bytes.');
+                throw new TooBigControlFrameException('A control frame cannot be larger than 125 bytes.');
             }
         }
     }
