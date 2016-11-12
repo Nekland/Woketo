@@ -10,8 +10,6 @@
 
 namespace Test\Woketo\Rfc6455;
 
-
-use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
@@ -148,6 +146,38 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $processor->write('Hello', $this->socket->reveal());
         $processor->write($frame->reveal(), $this->socket->reveal());
     }
+
+    public function testItCatchesLimitationException()
+    {
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $framefactory
+            ->createCloseFrame(Frame::CLOSE_TOO_BIG_TO_PROCESS)
+            ->willReturn(new Frame(BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])))
+            ->shouldBeCalled();
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $messages = iterator_to_array($processor->onData(
+            BitManipulation::hexArrayToString(['89','7f','ff','ff','ff', 'ff', 'ff','ff','ff','ff']),
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages, []);
+    }
+
+    public function testItCatchesTooBigControlFrameException()
+    {
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $framefactory
+            ->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)
+            ->willReturn(new Frame(BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])))
+            ->shouldBeCalled();
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $messages = iterator_to_array($processor->onData(
+            BitManipulation::hexArrayToString(['89','7e','00','7e','00','00 ','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','ec','ec','ec','ec','ec']),
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages, []);
+    }
 }
-
-
