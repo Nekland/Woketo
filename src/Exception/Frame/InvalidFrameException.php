@@ -10,10 +10,7 @@
 
 namespace Nekland\Woketo\Exception\Frame;
 
-
-use Nekland\Woketo\Exception\WebsocketException;
-
-class InvalidFrameException extends WebsocketException
+class InvalidFrameException extends ProtocolErrorException
 {
 
 }
