@@ -100,6 +100,18 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         ]));
     }
 
+    /**
+     * When I retrieve less than minimum data for a frame (which is 4 bytes).
+     */
+    public function testItThrowMissingDataExceptionWhenFrameIsNotStarted()
+    {
+        $raw = BitManipulation::hexArrayToString('81');
+
+        $this->expectException('Nekland\\Woketo\\Exception\\Frame\\IncompleteFrameException');
+
+        $frame = new Frame($raw);
+    }
+
     public function testItTakesOnlyFirstWebsocketFrameFromEntryData()
     {
         // 2 frames masked with `Hello` as content

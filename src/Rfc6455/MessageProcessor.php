@@ -41,15 +41,14 @@ class MessageProcessor
     }
 
     /**
-     * @param string $data
+     * @param string              $data
      * @param ConnectionInterface $socket
-     * @param Message|null $message
+     * @param Message|null        $message
      * @return \Generator
      */
     public function onData(string $data, ConnectionInterface $socket, Message $message = null)
     {
         do {
-
             if (null === $message) {
                 $message = new Message();
             }

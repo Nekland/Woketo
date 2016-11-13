@@ -150,7 +150,7 @@ class Frame
         $this->frameSize = BitManipulation::frameSize($rawData);
 
         if ($this->frameSize < 2) {
-            throw new InvalidFrameException('Not enough data to be a frame.');
+            throw new IncompleteFrameException('Not enough data to be a frame.');
         }
         $this->getInformationFromRawData();
 
