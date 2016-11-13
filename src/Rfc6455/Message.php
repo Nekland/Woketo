@@ -138,4 +138,12 @@ class Message
     {
         return in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
     }
+
+    /**
+     * @return Frame[]
+     */
+    public function getFrames()
+    {
+        return $this->frames;
+    }
 }

@@ -62,6 +62,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message = new Message();
 
         $this->assertSame($message->addData($multipleFrameData), BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58'));
+        $this->assertSame(count($message->getFrames()), 2);
     }
 
     public function testItReturnNothingWhenBufferingWhenAddData()
