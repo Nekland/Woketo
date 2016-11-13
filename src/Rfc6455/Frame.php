@@ -126,11 +126,11 @@ class Frame
     private $opcode;
 
     /**
-     * @var string
+     * @var int
      */
     private $infoBytesLen;
 
-    public function __construct($data=null)
+    public function __construct(string $data = null)
     {
         if (null !== $data) {
             $this->setRawData($data);
@@ -144,7 +144,7 @@ class Frame
      * @return self
      * @throws IncompleteFrameException
      */
-    public function setRawData($rawData)
+    public function setRawData(string $rawData)
     {
         $this->rawData = $rawData;
         $this->frameSize = BitManipulation::frameSize($rawData);
