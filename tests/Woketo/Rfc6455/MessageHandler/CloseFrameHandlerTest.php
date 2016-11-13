@@ -21,25 +21,6 @@ use React\Socket\ConnectionInterface;
 
 class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    private $closeMessage;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        // Normal close frame without mask
-        $this->closeMessage = new Message();
-        $this->closeMessage->addFrame(new Frame(BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])));
-    }
-
-    public function testItSupportsCloseFrame()
-    {
-        $handler = new CloseFrameHandler();
-        $sup = $handler->supports($this->closeMessage);
-
-        $this->assertSame($sup, true);
-    }
-
     public function testItProcessCloseFrame()
     {
         $frame = new Frame();
@@ -53,7 +34,34 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
         $socket->end()->shouldBeCalled();
 
+        // Normal close frame without mask
+        $message = new Message();
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])));
+
         $handler = new CloseFrameHandler();
-        $handler->process($this->closeMessage, $messageProcessor->reveal(), $socket->reveal());
+        $this->assertTrue($handler->supports($message));
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
+    }
+
+    public function testItCloseWithProtocolErrorWhenFrameIsNotValid()
+    {
+        $frame = new Frame();
+
+        $messageProcessor = $this->prophesize(MessageProcessor::class);
+        $frameFactory = $this->prophesize(FrameFactory::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
+
+        $frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)->willReturn($frame);
+        $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
+        $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
+        $socket->end()->shouldBeCalled();
+
+        // Normal close frame without mask
+        $message = new Message();
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['F8', '02', '03', 'E8'])));
+
+        $handler = new CloseFrameHandler();
+        $this->assertTrue($handler->supports($message));
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
     }
 }

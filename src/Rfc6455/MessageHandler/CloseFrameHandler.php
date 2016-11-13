@@ -24,7 +24,14 @@ class CloseFrameHandler implements Rfc6455MessageHandlerInterface
 
     public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
     {
-        $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame(), $socket);
+        $code = Frame::CLOSE_NORMAL;
+
+        $frame = $message->getFirstFrame();
+        if ($frame->getRsv1() || $frame->getRsv2() || $frame->getRsv3()) {
+            $code = Frame::CLOSE_PROTOCOL_ERROR;
+        }
+
+        $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame($code), $socket);
         $socket->end();
     }
 }
