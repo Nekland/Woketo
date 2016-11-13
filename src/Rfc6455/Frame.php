@@ -167,7 +167,7 @@ class Frame
     }
 
     /**
-     * Return raw data cached or generates it from data (payload/frame type).
+     * Return cached raw data or generate it from data (payload/frame type).
      *
      * @return string
      * @throws InvalidFrameException
@@ -327,7 +327,7 @@ class Frame
     }
 
     /**
-     * Get payload from cache or generates it from raw data.
+     * Get payload from cache or generate it from raw data.
      *
      * @return string
      */
