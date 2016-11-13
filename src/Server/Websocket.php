@@ -15,6 +15,7 @@ use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
+use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
@@ -136,5 +137,6 @@ class Websocket
         $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
         $this->messageProcessor->addHandler(new WrongOpcodeHandler());
+        $this->messageProcessor->addHandler(new RsvCheckFrameHandler());
     }
 }
