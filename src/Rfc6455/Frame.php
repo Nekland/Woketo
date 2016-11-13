@@ -142,7 +142,7 @@ class Frame
      *
      * @param string|int $rawData Probably more likely a string than an int, but well... why not.
      * @return self
-     * @throws InvalidFrameException
+     * @throws IncompleteFrameException
      */
     public function setRawData($rawData)
     {
@@ -166,6 +166,12 @@ class Frame
         return $this;
     }
 
+    /**
+     * Return raw data cached or generates it from data (payload/frame type).
+     *
+     * @return string
+     * @throws InvalidFrameException
+     */
     public function getRawData() : string
     {
         if (null !== $this->rawData) {
@@ -259,27 +265,46 @@ class Frame
         return BitManipulation::partOfByte($this->firstByte, 2);
     }
 
+    /**
+     * Set the opcode of the frame.
+     *
+     * @param int $opcode
+     * @return Frame
+     */
     public function setOpcode(int $opcode) : Frame
     {
         if (!in_array($opcode, [Frame::OP_TEXT, Frame::OP_BINARY, Frame::OP_CLOSE, Frame::OP_CONTINUE, Frame::OP_PING, Frame::OP_PONG])) {
             throw new \InvalidArgumentException('Wrong opcode !');
         }
 
+        $this->rawData = null;
         $this->opcode = $opcode;
 
         return $this;
     }
 
+    /**
+     * Set the masking key of the frame. As a consequence the frame is now considered as masked.
+     *
+     * @param string $mask
+     * @return Frame
+     */
     public function setMaskingKey(string $mask) : Frame
     {
         if (null === $mask) {
             $this->isMasked();
         }
         $this->mask = $mask;
+        $this->rawData = null;
 
         return $this;
     }
 
+    /**
+     * Get the masking key (from cache if possible).
+     *
+     * @return string
+     */
     public function getMaskingKey() : string
     {
         if (null !== $this->mask) {
@@ -301,6 +326,11 @@ class Frame
         return $this->mask = BitManipulation::intToString($value, 4);
     }
 
+    /**
+     * Get payload from cache or generates it from raw data.
+     *
+     * @return string
+     */
     public function getPayload()
     {
         if ($this->payload !== null) {
@@ -319,6 +349,12 @@ class Frame
         return $this->payload = $payload;
     }
 
+    /**
+     * Get length of meta data of the frame.
+     * Metadata contains type of frame, length, masking key and rsv data.
+     *
+     * @return int
+     */
     public function getInfoBytesLen()
     {
         if ($this->infoBytesLen) {
@@ -330,8 +366,16 @@ class Frame
         return $this->infoBytesLen = (9 + $this->payloadLenSize) / 8 + ($this->isMasked() ? 4 : 0);
     }
 
+    /**
+     * Set the payload.
+     * The raw data is reset.
+     *
+     * @param string $payload
+     * @return Frame
+     */
     public function setPayload(string $payload) : Frame
     {
+        $this->rawData = null;
         $this->payload = $payload;
         $this->payloadLen = BitManipulation::frameSize($this->payload);
         $this->payloadLenSize = 7;
@@ -380,6 +424,12 @@ class Frame
         return $this->payloadLen = $payloadLen;
     }
 
+    /**
+     * If there is a mask in the raw data or if the mask was set, the frame is masked and this method gets the result
+     * for you.
+     *
+     * @return bool
+     */
     public function isMasked() : bool
     {
         if ($this->mask !== null) {
@@ -411,6 +461,9 @@ class Frame
         return $res;
     }
 
+    /**
+     * Fill metadata of the frame from the raw data.
+     */
     private function getInformationFromRawData()
     {
         $this->firstByte = BitManipulation::nthByte($this->rawData, 0);
