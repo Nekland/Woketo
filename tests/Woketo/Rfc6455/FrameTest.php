@@ -11,6 +11,10 @@
 namespace Test\Woketo\Rfc6455;
 
 
+use Nekland\Woketo\Exception\Frame\ControlFrameException;
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
+use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
 
@@ -107,7 +111,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     {
         $raw = BitManipulation::hexArrayToString('81');
 
-        $this->expectException('Nekland\\Woketo\\Exception\\Frame\\IncompleteFrameException');
+        $this->expectException(IncompleteFrameException::class);
 
         $frame = new Frame($raw);
     }
@@ -206,5 +210,46 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             [false, BitManipulation::hexArrayToString(['80', '00'])],//continue
             [false, BitManipulation::hexArrayToString(['81', '00'])],//text,
          ];
+    }
+
+    public function testItChecksAGoodFrameText()
+    {
+        $frame = BitManipulation::hexArrayToString(['81', '9d', '22', '4a', '47', '4d', '6a', '2f', '2b', '21', '4d', '67', '85', 'f8', '62', '89', 'd8', '8e', '94', '89', 'e3', '8e', '9e', '89', 'e7', '8e', '83', '67', '12', '19', '64', '67', '7f', '6c', '03']);
+        $frame = new Frame($frame);
+        Frame::checkFrame($frame);
+    }
+
+    public function testItChecksAGoodControlFrame()
+    {
+        $frame = BitManipulation::hexArrayToString(['89','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
+        $frame = new Frame($frame);
+        Frame::checkFrame($frame);
+    }
+
+    public function testItThrowsWrongEncoding()
+    {
+        $this->expectException(WrongEncodingException::class);
+
+        $frame = BitManipulation::hexArrayToString(['81','94','e8','e7','96','54','26','5d','77','e9','51','28','15','9a','54','29','23','b9','48','67','f3','30','81','93','f3','30']);
+        $frame = new Frame($frame);
+        Frame::checkFrame($frame);
+    }
+
+    public function testItThrowsTooBigControlFrame()
+    {
+        $this->expectException(TooBigControlFrameException::class);
+
+        $frame = BitManipulation::hexArrayToString(['89','7e','00','7e','00','00 ','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','ec','ec','ec','ec','ec']);
+        $frame = new Frame($frame);
+        Frame::checkFrame($frame);
+    }
+
+    public function testItThrowsControlFrame()
+    {
+        $this->expectException(ControlFrameException::class);
+
+        $frame = BitManipulation::hexArrayToString(['09','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
+        $frame = new Frame($frame);
+        Frame::checkFrame($frame);
     }
 }
