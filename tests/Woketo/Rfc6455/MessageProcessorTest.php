@@ -193,4 +193,21 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($messages, []);
     }
+
+    public function testItCatchesNotGoodEncodingException()
+    {
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $framefactory
+            ->createCloseFrame(Frame::CLOSE_INCOHERENT_DATA)
+            ->willReturn(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef'])))
+            ->shouldBeCalled();
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $messages = iterator_to_array($processor->onData(
+            BitManipulation::hexArrayToString(['81','94','e8','e7','96','54','26','5d','77','e9','51','28','15','9a','54','29','23','b9','48','67','f3','30','81','93','f3','30']),
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages, []);
+    }
 }

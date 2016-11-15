@@ -10,8 +10,8 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
+use Nekland\Woketo\Exception\Frame\IncoherentDataException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
-use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
 use React\Socket\ConnectionInterface;
@@ -68,6 +68,10 @@ class MessageProcessor
                 } else {
                     yield $message;
                 }
+            } catch (IncoherentDataException $e) {
+                $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_INCOHERENT_DATA), $socket);
+                $socket->end();
+                $data = '';
             } catch (ProtocolErrorException $e) {
                 $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
                 $socket->end();
