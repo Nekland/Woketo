@@ -14,9 +14,9 @@ namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\InvalidFrameException;
-use Nekland\Woketo\Exception\Frame\NotGoodEncodingException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
+use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -497,18 +497,20 @@ class Frame
         }
     }
 
+
     /**
      * Validate a frame with RFC criteria
      *
      * @param Frame $frame
+     *
      * @throws ControlFrameException
-     * @throws InvalidFrameException
      * @throws TooBigControlFrameException
+     * @throws WrongEncodingException
      */
     public static function checkFrame(Frame $frame)
     {
         if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload(), 'UTF-8')) {
-            throw new NotGoodEncodingException('The text is not encoded in UTF-8.');
+            throw new WrongEncodingException('The text is not encoded in UTF-8.');
         }
 
         if ($frame->isControlFrame()) {

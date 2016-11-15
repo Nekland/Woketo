@@ -10,7 +10,7 @@
 
 namespace Nekland\Woketo\Exception\Frame;
 
-class NotGoodEncodingException extends IncoherentDataException
+class WrongEncodingException extends IncoherentDataException
 {
 
 }
