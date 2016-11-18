@@ -10,7 +10,6 @@
 
 namespace Test\Woketo\Rfc6455;
 
-
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -38,41 +37,6 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($message->isComplete(), true);
         $this->assertSame($message->getContent(), 'foo bar baz');
-    }
-
-    public function testItReturnUnusedDataOnAddDataCall()
-    {
-        // 2 frames "Hello"
-        $entryData = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58', '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
-
-        $message = new Message();
-        $data = $message->addData($entryData);
-
-        $this->assertSame($data, BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58'));
-    }
-
-    public function testItCompleteMessageWithMultipleFramesWhenDataAllowIt()
-    {
-        $multipleFrameData = BitManipulation::hexArrayToString(
-            '01', '03', '48', '65', '6c', // Data part 1
-            '80', '02', '6c', '6f',       // Data part 2
-            '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58' // Another message (Hello frame)
-        );
-
-        $message = new Message();
-
-        $this->assertSame($message->addData($multipleFrameData), BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58'));
-        $this->assertSame(count($message->getFrames()), 2);
-    }
-
-    public function testItReturnNothingWhenBufferingWhenAddData()
-    {
-        $incompleteFrame = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d');
-
-        $message = new Message();
-
-        $this->assertSame($message->addData($incompleteFrame), '');
-        $this->assertSame($message->isComplete(), false);
     }
 
     public function testItThrowErrorWhenMissingFrame()
@@ -111,27 +75,29 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testItBufferDataToCreateFrame()
+    public function testItRemovesFromBuffer()
     {
+        $expectedBuffer = BitManipulation::hexArrayToString(['89','8c','0e','be','06','0d','7e','d7','68','6a','2e','ce','67','74','62','d1','67','69','80','89','b3','b9','b9','7f','d5','cb','d8','18','de','dc','d7','0b','81']);
+        $buffer = BitManipulation::hexArrayToString(['01','89','b1','62','d1','9d','d7','10','b0','fa','dc','07','bf','e9','80','89','8c','0e','be','06','0d','7e','d7','68','6a','2e','ce','67','74','62','d1','67','69','80','89','b3','b9','b9','7f','d5','cb','d8','18','de','dc','d7','0b','81']);
+
         $message = new Message();
+        $message->addBuffer($buffer);
+        $frame = new Frame($message->getBuffer());
+        $updatedBuffer = $message->removeFromBuffer($frame);
 
-        $message->addData(BitManipulation::hexArrayToString(['01', '03', '48', '65', '6c']));
-
-        $this->assertSame($message->isComplete(), false);
-
-        $message->addData(BitManipulation::hexArrayToString(['80', '02', '6c', '6f']));
-
-        $this->assertSame($message->isComplete(), true);
-        $this->assertSame($message->getOpcode(), Frame::OP_TEXT);
+        $this->assertSame($updatedBuffer, $expectedBuffer);
     }
 
-    public function testItSupportsMessageInManyFrames()
+    public function testItAddsAndClearsBuffer()
     {
+        $data = '';
         $message = new Message();
-        $message->addData(BitManipulation::hexArrayToString(['81', '05']));
-        $message->addData(BitManipulation::hexArrayToString(['48', '65']));
-        $message->addData(BitManipulation::hexArrayToString(['6c', '6c', '6f']));
+        $message->addBuffer($data);
 
-        $this->assertSame($message->getContent(), 'Hello');
+        $this->assertSame($data, $message->getBuffer());
+
+        $message->clearBuffer();
+
+        $this->assertSame('', $message->getBuffer());
     }
 }

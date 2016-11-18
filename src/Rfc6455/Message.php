@@ -11,10 +11,8 @@
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Tools\StringTools;
-use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
-use Nekland\Woketo\Utils\BitManipulation;
 
 class Message
 {
@@ -55,29 +53,11 @@ class Message
         return $this->buffer;
     }
 
-    public function setBuffer($buffer)
+    public function removeFromBuffer(Frame $frame) : string
     {
-        $this->clearBuffer();
-        $this->addBuffer($buffer);
-    }
+        $this->buffer = StringTools::removeStart($this->getBuffer(), $frame->getRawData(), '8bit');
 
-    public function addData($data)
-    {
-        $this->buffer .= $data;
-        do {
-            try {
-                $this->addFrame($frame = new Frame($this->buffer));
-                $this->buffer = StringTools::removeStart($this->buffer, $frame->getRawData(), '8bit');
-            } catch (IncompleteFrameException $e) {
-                return ''; // There is no more frame we can generate, the data is saved as buffer.
-            }
-        } while(!$this->isComplete() && !empty($this->buffer));
-
-        if ($this->isComplete()) {
-            return $this->buffer;
-        }
-
-        return '';
+        return $this->buffer;
     }
 
     /**
@@ -93,7 +73,7 @@ class Message
         }
 
         if (count($this->frames) > 19) {
-            throw new LimitationException('We don\'t accept more than 20 frame by message. This is a security limitation.');
+            throw new LimitationException('We don\'t accept more than 20 frames by message. This is a security limitation.');
         }
 
         $this->isComplete = $frame->isFinal();
@@ -166,5 +146,13 @@ class Message
     public function getFrames()
     {
         return $this->frames;
+    }
+
+    /**
+     * @return int
+     */
+    public function countFrames() : int
+    {
+        return count($this->frames);
     }
 }

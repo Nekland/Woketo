@@ -28,7 +28,7 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $handler = new WrongOpcodeHandler();
         $wrongMessage = new Message();
-        $wrongMessage->addData($frame);
+        $wrongMessage->addFrame(new Frame($frame));
 
         $this->assertSame($handler->supports($wrongMessage), $result);
     }
@@ -36,7 +36,7 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
     public function testItCloseWithProtocolError()
     {
         $wrongMessage = new Message();
-        $wrongMessage->addData(BitManipulation::hexArrayToString('83','00'));
+        $wrongMessage->addFrame(new Frame(BitManipulation::hexArrayToString('83','00')));
 
         $frame = new Frame();
 

@@ -10,7 +10,6 @@
 
 namespace Nekland\Woketo\Rfc6455;
 
-use Nekland\Tools\StringTools;
 use Nekland\Woketo\Exception\Frame\IncoherentDataException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
@@ -52,11 +51,11 @@ class MessageProcessor
      * - { [|frame1 (not final) |, |frame2 (final)|] }
      *   => buffer 2 frames from 1 binary to generate 1 message
      *
-     * - { [|frame1 (not final, not finished } { frame 1 (not final, finished)| } { |frame 2 (final)|] }
+     * - { [|frame1 (not final, not finished } { frame 1 (final, finished)| } { |frame 2 (final, finished)|] }
      *   => buffer 2 frames from 3 binary data to generate 1 message
      *
-     *
-     * TODO: refactor this part that is far to complicated to be understanding by normal humans.
+     * - { [|frame1 (not final, not finished } { frame control 1 (final, finished)| } { |frame 2 (final, finished)|] }
+     *   => buffer 2 frames from 3 binary data to generate 1 ping and 1 message
      *
      * @param string              $data
      * @param ConnectionInterface $socket
@@ -71,26 +70,24 @@ class MessageProcessor
             }
 
             try {
-                $data = $message->addData($data);
+                $message->addBuffer($data);
 
                 // Loop that build message if the message is in many frames in the same data binary frame received.
                 do {
                     try {
-                        $message->addBuffer($data);
                         $frame = new Frame($message->getBuffer());
 
                         if ($frame->isControlFrame()) {
-                            $controlFrameMessage = new Message();
-                            $controlFrameMessage->addFrame($frame);
-                            $this->processHelper($controlFrameMessage, $socket);
+                            $controlFrameMessage = $this->processControlFrame($frame, $socket);
 
-                            yield $controlFrameMessage; // Because every message should be return !
+                            yield $controlFrameMessage; // Because every message should be returned !
                         } else {
                             $message->addFrame($frame);
-
-                            // If the frame is a success maybe we still need to create messages
-                            $data = StringTools::removeStart($data, $frame->getRawData(), '8bit');
                         }
+
+                        // If the frame is a success maybe we still need to create messages
+                        // And the buffer must be updated
+                        $data = $message->removeFromBuffer($frame);
                     } catch (IncompleteFrameException $e) {
                         // Data is now stored in the message, let's clean the variable to stop both loops.
                         $data = null;
@@ -102,7 +99,7 @@ class MessageProcessor
 
                     yield $message;
                     $message = null;
-                } else {
+                } else if ($message->countFrames() > 0) {
                     yield $message;
                 }
             } catch (IncoherentDataException $e) {
@@ -132,6 +129,21 @@ class MessageProcessor
                 $handler->process($message, $this, $socket);
             }
         }
+    }
+
+    /**
+     * @param Frame $frame
+     * @param ConnectionInterface $socket
+     *
+     * @return Message
+     */
+    protected function processControlFrame(Frame $frame, ConnectionInterface $socket) : Message
+    {
+        $controlFrameMessage = new Message();
+        $controlFrameMessage->addFrame($frame);
+        $this->processHelper($controlFrameMessage, $socket);
+
+        return $controlFrameMessage;
     }
 
     /**
