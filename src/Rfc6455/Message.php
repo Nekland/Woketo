@@ -40,6 +40,27 @@ class Message
         $this->buffer = '';
     }
 
+    public function addBuffer($data)
+    {
+        $this->buffer .= $data;
+    }
+
+    public function clearBuffer()
+    {
+        $this->buffer = '';
+    }
+
+    public function getBuffer()
+    {
+        return $this->buffer;
+    }
+
+    public function setBuffer($buffer)
+    {
+        $this->clearBuffer();
+        $this->addBuffer($buffer);
+    }
+
     public function addData($data)
     {
         $this->buffer .= $data;
