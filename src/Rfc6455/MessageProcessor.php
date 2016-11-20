@@ -15,6 +15,7 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -77,7 +78,8 @@ class MessageProcessor
                     try {
                         $frame = new Frame($message->getBuffer());
 
-                        if ($frame->isControlFrame()) {
+                        // This condition intercept control frames in the middle of normal frames
+                        if ($frame->isControlFrame() && $message->hasFrames()) {
                             $controlFrameMessage = $this->processControlFrame($frame, $socket);
 
                             yield $controlFrameMessage; // Because every message should be returned !
@@ -99,7 +101,7 @@ class MessageProcessor
 
                     yield $message;
                     $message = null;
-                } else if ($message->countFrames() > 0) {
+                } else {
                     yield $message;
                 }
             } catch (IncoherentDataException $e) {

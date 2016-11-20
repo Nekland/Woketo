@@ -290,7 +290,11 @@ class BitManipulation
         $res = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $res .= dechex(ord($frame[$i]));
+            $hex = dechex(ord($frame[$i]));
+            if (strlen($hex) < 2) {
+                $hex = '0' . $hex;
+            }
+            $res .= $hex;
         }
 
         return $res;

@@ -74,10 +74,13 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $processor = new MessageProcessor();
         $processor->addHandler(new PingFrameHandler());
 
+        /** @var Message[] $messages */
         $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
 
         $this->assertSame(count($messages), 3);
         $this->assertSame($messages[1]->getContent(), 'Hello');
+        $this->assertSame($messages[0]->getFirstFrame()->getOpcode(), Frame::OP_PING);
+        $this->assertSame($messages[2]->getFirstFrame()->getOpcode(), Frame::OP_PING);
     }
 
     public function testItBuildPartialMessage()

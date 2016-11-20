@@ -38,21 +38,40 @@ class Message
         $this->buffer = '';
     }
 
+    /**
+     * Add some data to the buffer.
+     *
+     * @param $data
+     */
     public function addBuffer($data)
     {
         $this->buffer .= $data;
     }
 
+    /**
+     * Clear the buffer.
+     */
     public function clearBuffer()
     {
         $this->buffer = '';
     }
 
+    /**
+     * Get data inside the buffer.
+     *
+     * @return string
+     */
     public function getBuffer()
     {
         return $this->buffer;
     }
 
+    /**
+     * Remove data from the start of the buffer.
+     *
+     * @param Frame $frame
+     * @return string
+     */
     public function removeFromBuffer(Frame $frame) : string
     {
         $this->buffer = StringTools::removeStart($this->getBuffer(), $frame->getRawData(), '8bit');
@@ -146,6 +165,14 @@ class Message
     public function getFrames()
     {
         return $this->frames;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasFrames()
+    {
+        return count($this->frames) > 0;
     }
 
     /**
