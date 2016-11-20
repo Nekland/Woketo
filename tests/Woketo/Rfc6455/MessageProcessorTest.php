@@ -10,6 +10,7 @@
 
 namespace Test\Woketo\Rfc6455;
 
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
@@ -73,10 +74,13 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $processor = new MessageProcessor();
         $processor->addHandler(new PingFrameHandler());
 
+        /** @var Message[] $messages */
         $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
 
         $this->assertSame(count($messages), 3);
         $this->assertSame($messages[1]->getContent(), 'Hello');
+        $this->assertSame($messages[0]->getFirstFrame()->getOpcode(), Frame::OP_PING);
+        $this->assertSame($messages[2]->getFirstFrame()->getOpcode(), Frame::OP_PING);
     }
 
     public function testItBuildPartialMessage()
@@ -209,5 +213,88 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         ));
 
         $this->assertSame($messages, []);
+    }
+
+    public function testItSupportsMessageInManyFrames()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString(
+            '01', '03', '48', '65', '6c', // Data part 1
+            '80', '02', '6c', '6f'        // Data part 2
+        );
+
+        $frame1 = new Frame(BitManipulation::hexArrayToString('01', '03', '48', '65', '6c'));
+        $frame2 = new Frame(BitManipulation::hexArrayToString('80', '02', '6c', '6f'));
+
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $expectedMessage = new Message();
+        $expectedMessage->addFrame($frame1);
+        $expectedMessage->addFrame($frame2);
+
+        $messages = iterator_to_array($processor->onData(
+            $multipleFrameData,
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages[0]->getContent(), $expectedMessage->getContent());
+        $this->assertTrue($messages[0]->isComplete());
+        $this->assertSame($messages[0]->isComplete(), $expectedMessage->isComplete());
+        $this->assertSame($messages[0]->getOpcode(), Frame::OP_TEXT);
+        $this->assertSame($messages[0]->getContent(), 'Hello');
+        $this->assertSame(count($messages[0]->getFrames()), 2);
+    }
+
+    public function testItThrowsIncompleteExceptionAndSpecifiesIncompleteMessage()
+    {
+        $this->expectException(IncompleteFrameException::class);
+
+        $incompleteFrame = BitManipulation::hexArrayToString('81', '85', '37', 'fa', '21', '3d');
+
+        $frame1 = new Frame($incompleteFrame);
+
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $expectedMessage = new Message();
+        $expectedMessage->addFrame($frame1);
+
+        $messages = iterator_to_array($processor->onData(
+            $incompleteFrame,
+            $this->socket->reveal()
+        ));
+
+        $this->assertFalse($messages[0]->isComplete());
+    }
+
+    public function testItProcessesOnePingBetweenTwoFragmentedTextMessages()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString(['01','89','b1','62','d1','9d','d7','10','b0','fa','dc','07','bf','e9','80','89','8c','0e','be','06','0d','7e','d7','68','6a','2e','ce','67','74','62','d1','67','69','80','89','b3','b9','b9','7f','d5','cb','d8','18','de','dc','d7','0b','81']);
+
+        $frame1 = new Frame(BitManipulation::hexArrayToString('01', '03', '48', '65', '6c'));
+        $frame2 = new Frame(BitManipulation::hexArrayToString('80', '02', '6c', '6f'));
+
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $expectedMessage = new Message();
+        $expectedMessage->addFrame($frame1);
+        $expectedMessage->addFrame($frame2);
+
+        $messages = iterator_to_array($processor->onData(
+            $multipleFrameData,
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages[0]->getContent(), 'ping payload');
+        $this->assertSame($messages[1]->getContent(), 'fragment1fragment2');
+        $this->assertTrue($messages[0]->isComplete());
+        $this->assertTrue($messages[1]->isComplete());
+        $this->assertSame($messages[0]->isComplete(), $expectedMessage->isComplete());
+        $this->assertSame($messages[1]->isComplete(), $expectedMessage->isComplete());
+        $this->assertSame($messages[0]->getOpcode(), Frame::OP_PING);
+        $this->assertSame($messages[1]->getOpcode(), Frame::OP_TEXT);
+        $this->assertSame(count($messages[0]->getFrames()), 1);
+        $this->assertSame(count($messages[1]->getFrames()), 2);
     }
 }

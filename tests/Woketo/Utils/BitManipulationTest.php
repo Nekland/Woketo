@@ -133,12 +133,20 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                '00',
+                '0000',
                 BitManipulation::hexArrayToString(['00', '00'])
             ],
             [
                 '616263',
                 'abc'
+            ],
+            [
+                '8900818537fa213d7f9f4d51588900',
+                BitManipulation::hexArrayToString(
+                    '89', '00',
+                    '81', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58',
+                    '89', '00'
+                ),
             ]
         ];
     }
@@ -167,7 +175,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
                 BitManipulation::hexArrayToString(
                     ['80', '00', '00', '00', '00', '00', '00', '00', 'a5', '45']
                 ), 0, 7, true, (int) -9223372036854775808
-            ]
+            ],
         ];
     }
 
@@ -176,7 +184,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
         return [
             [['6c'], 'l'],
             [['21', '51', '6f'], '!Qo'],
-            [['00', '00', '6c'], chr(0) . chr(0) . 'l']
+            [['00', '00', '6c', '00'], chr(0) . chr(0) . 'l' . chr(0)]
         ];
     }
 

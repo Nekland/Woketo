@@ -11,9 +11,11 @@
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\IncoherentDataException;
+use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -41,6 +43,26 @@ class MessageProcessor
     }
 
     /**
+     * This methods process data received from the socket to generate a `Message` entity and/or process handler
+     * which may answer to some special ws-frames.
+     *
+     * Legend:
+     *     - {} stands for bin-frames
+     *     - || stands for ws-frames
+     *     - [] stands for Messages (of potentially many ws-frames)
+     *     - () are here for comment purpose
+     *
+     * This method buffer in many ways:
+     *
+     * - { [|ws-frame1 (not final) |, |ws-frame2 (final)|] }
+     *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message
+     *
+     * - { [|ws-frame1 (not final) } { ws-frame 1 (final)| } { |ws-frame 2 (final)|] }
+     *   => buffer 2 ws-frames from 3 bin-frame to generate 1 Message
+     *
+     * - { [|ws-frame1 (not final)| |ws-frame 2 (final, control frame, is not part of the current message)| |ws-frame3 (final, with ws-frame1)|] }
+     *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message with a control frame in the middle of the bin-frame.
+     *
      * @param string              $data
      * @param ConnectionInterface $socket
      * @param Message|null        $message
@@ -54,14 +76,33 @@ class MessageProcessor
             }
 
             try {
-                $data = $message->addData($data);
+                $message->addBuffer($data);
+
+                // Loop that build message if the message is in many frames in the same data binary frame received.
+                do {
+                    try {
+                        $frame = new Frame($message->getBuffer());
+
+                        // This condition intercept control frames in the middle of normal frames
+                        if ($frame->isControlFrame() && $message->hasFrames()) {
+                            $controlFrameMessage = $this->processControlFrame($frame, $socket);
+
+                            yield $controlFrameMessage; // Because every message should be returned !
+                        } else {
+                            $message->addFrame($frame);
+                        }
+
+                        // If the frame is a success maybe we still need to create messages
+                        // And the buffer must be updated
+                        $data = $message->removeFromBuffer($frame);
+                    } catch (IncompleteFrameException $e) {
+                        // Data is now stored in the message, let's clean the variable to stop both loops.
+                        $data = null;
+                    }
+                } while(!$message->isComplete() && !empty($data));
 
                 if ($message->isComplete()) {
-                    foreach ($this->handlers as $handler) {
-                        if ($handler->supports($message)) {
-                            $handler->process($message, $this, $socket);
-                        }
-                    }
+                    $this->processHelper($message, $socket);
 
                     yield $message;
                     $message = null;
@@ -82,6 +123,34 @@ class MessageProcessor
                 $data = '';
             }
         } while(!empty($data));
+    }
+
+    /**
+     * @param Message $message
+     * @param ConnectionInterface $socket
+     */
+    protected function processHelper(Message $message, ConnectionInterface $socket)
+    {
+        foreach ($this->handlers as $handler) {
+            if ($handler->supports($message)) {
+                $handler->process($message, $this, $socket);
+            }
+        }
+    }
+
+    /**
+     * @param Frame $frame
+     * @param ConnectionInterface $socket
+     *
+     * @return Message
+     */
+    protected function processControlFrame(Frame $frame, ConnectionInterface $socket) : Message
+    {
+        $controlFrameMessage = new Message();
+        $controlFrameMessage->addFrame($frame);
+        $this->processHelper($controlFrameMessage, $socket);
+
+        return $controlFrameMessage;
     }
 
     /**
