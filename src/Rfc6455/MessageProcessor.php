@@ -44,19 +44,24 @@ class MessageProcessor
 
     /**
      * This methods process data received from the socket to generate a `Message` entity and/or process handler
-     * which may answer to some special frames.
+     * which may answer to some special ws-frames.
      *
-     * (binary data entry string in {}, frames in || and messages (of potentially many frames) in [])
+     * Legend:
+     *     - {} stands for bin-frames
+     *     - || stands for ws-frames
+     *     - [] stands for Messages (of potentially many ws-frames)
+     *     - () are here for comment purpose
+     *
      * This method buffer in many ways:
      *
-     * - { [|frame1 (not final) |, |frame2 (final)|] }
-     *   => buffer 2 frames from 1 binary to generate 1 message
+     * - { [|ws-frame1 (not final) |, |ws-frame2 (final)|] }
+     *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message
      *
-     * - { [|frame1 (not final, not finished } { frame 1 (final, finished)| } { |frame 2 (final, finished)|] }
-     *   => buffer 2 frames from 3 binary data to generate 1 message
+     * - { [|ws-frame1 (not final) } { ws-frame 1 (final)| } { |ws-frame 2 (final)|] }
+     *   => buffer 2 ws-frames from 3 bin-frame to generate 1 Message
      *
-     * - { [|frame1 (not final, not finished } { frame control 1 (final, finished)| } { |frame 2 (final, finished)|] }
-     *   => buffer 2 frames from 3 binary data to generate 1 ping and 1 message
+     * - { [|ws-frame1 (not final)| |ws-frame 2 (final, control frame, is not part of the current message)| |ws-frame3 (final, with ws-frame1)|] }
+     *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message with a control frame in the middle of the bin-frame.
      *
      * @param string              $data
      * @param ConnectionInterface $socket
