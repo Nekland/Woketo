@@ -15,7 +15,6 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -82,6 +81,15 @@ class MessageProcessor
                 do {
                     try {
                         $frame = new Frame($message->getBuffer());
+
+                        if ($frame->getOpcode() === Frame::OP_CONTINUE && $message->countFrames() === 0) {
+                            throw new ProtocolErrorException('The first frame cannot be a continuation frame');
+                        }
+
+                        if ($frame->getOpcode() === Frame::OP_TEXT && $message->countFrames() >= 1) {
+                            throw new ProtocolErrorException('When there are fragmented frames, the next frame cannot
+                             be a text frame');
+                        }
 
                         // This condition intercept control frames in the middle of normal frames
                         if ($frame->isControlFrame() && $message->hasFrames()) {

@@ -297,4 +297,43 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(count($messages[0]->getFrames()), 1);
         $this->assertSame(count($messages[1]->getFrames()), 2);
     }
+
+    public function testItCatchesWrongContinutionFrameException()
+    {
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $framefactory
+            ->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)
+            ->willReturn(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef'])))
+            ->shouldBeCalled();
+        $processor = new MessageProcessor($framefactory->reveal());
+
+        $messages = iterator_to_array($processor->onData(
+            BitManipulation::hexArrayToString(['80','98','53','3d','b9','b3','3d','52','d7','9e','30','52','d7','c7','3a','53','cc','d2','27','54','d6','dd','73','4d','d8','ca','3f','52','d8','d7']),
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages, []);
+    }
+
+    public function testItCatchesWrongTextFragmentedFrameException()
+    {
+        $multipleFrameData = BitManipulation::hexArrayToString([
+            '01','89','b1','62','d1','9d','d7','10','b0','fa','dc','07','bf','e9','81', // first frame
+            '81','8c','0e','be','06','0d','7e','d7','68','6a','2e','ce','67','74','62','d1','67','69','80' // second frame
+        ]);
+
+        $framefactory = $this->prophesize(FrameFactory::class);
+        $processor = new MessageProcessor($framefactory->reveal());
+        $framefactory
+            ->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)
+            ->willReturn(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef'])))
+            ->shouldBeCalled();
+
+        $messages = iterator_to_array($processor->onData(
+            $multipleFrameData,
+            $this->socket->reveal()
+        ));
+
+        $this->assertSame($messages, []);
+    }
 }
