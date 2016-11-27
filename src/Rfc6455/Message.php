@@ -172,7 +172,7 @@ class Message
      */
     public function hasFrames()
     {
-        return count($this->frames) > 0;
+        return !empty($this->frames);
     }
 
     /**

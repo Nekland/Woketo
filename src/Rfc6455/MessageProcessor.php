@@ -15,7 +15,6 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use Nekland\Woketo\Utils\BitManipulation;
 use React\Socket\ConnectionInterface;
 
 /**
@@ -89,6 +88,15 @@ class MessageProcessor
 
                             yield $controlFrameMessage; // Because every message should be returned !
                         } else {
+                            if ($frame->getOpcode() === Frame::OP_CONTINUE && !$message->hasFrames()) {
+                                throw new ProtocolErrorException('The first frame cannot be a continuation frame');
+                            }
+
+                            if ($frame->getOpcode() !== Frame::OP_CONTINUE && $message->hasFrames()) {
+                                throw new ProtocolErrorException(
+                                    'When the Message is fragmented in many frames the only frame that can be a something else than an continue frame is the first'
+                                );
+                            }
                             $message->addFrame($frame);
                         }
 
