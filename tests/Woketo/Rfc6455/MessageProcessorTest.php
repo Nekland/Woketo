@@ -269,17 +269,21 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 
     public function testItProcessesOnePingBetweenTwoFragmentedTextMessages()
     {
-        $multipleFrameData = BitManipulation::hexArrayToString(['01','89','b1','62','d1','9d','d7','10','b0','fa','dc','07','bf','e9','80','89','8c','0e','be','06','0d','7e','d7','68','6a','2e','ce','67','74','62','d1','67','69','80','89','b3','b9','b9','7f','d5','cb','d8','18','de','dc','d7','0b','81']);
-
-        $frame1 = new Frame(BitManipulation::hexArrayToString('01', '03', '48', '65', '6c'));
-        $frame2 = new Frame(BitManipulation::hexArrayToString('80', '02', '6c', '6f'));
+        // bin-frame containing :
+        // 1- partial text ws-frame (containing fragment1)
+        // 2- ping ws-frame (containing ping payload)
+        // 3- partial (end) text ws-frame (containing fragment2)
+        $multipleFrameData = BitManipulation::hexArrayToString(
+            // Frame 1 (fragment1)
+            '01','89','b1','62','d1','9d','d7','10','b0','fa','dc','07','bf', 'e9','80',
+            // Frame 2 (ping)
+            '89','8c','0e','be','06','0d', '7e','d7','68','6a','2e','ce','67','74','62','d1','67','69',
+            // Frame 3 (fragment2)
+            '80','89','b3','b9','b9','7f','d5','cb','d8', '18','de','dc','d7','0b','81'
+        );
 
         $framefactory = $this->prophesize(FrameFactory::class);
         $processor = new MessageProcessor($framefactory->reveal());
-
-        $expectedMessage = new Message();
-        $expectedMessage->addFrame($frame1);
-        $expectedMessage->addFrame($frame2);
 
         $messages = iterator_to_array($processor->onData(
             $multipleFrameData,
@@ -290,8 +294,8 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($messages[1]->getContent(), 'fragment1fragment2');
         $this->assertTrue($messages[0]->isComplete());
         $this->assertTrue($messages[1]->isComplete());
-        $this->assertSame($messages[0]->isComplete(), $expectedMessage->isComplete());
-        $this->assertSame($messages[1]->isComplete(), $expectedMessage->isComplete());
+        $this->assertSame($messages[0]->isComplete(), true);
+        $this->assertSame($messages[1]->isComplete(), true);
         $this->assertSame($messages[0]->getOpcode(), Frame::OP_PING);
         $this->assertSame($messages[1]->getOpcode(), Frame::OP_TEXT);
         $this->assertSame(count($messages[0]->getFrames()), 1);

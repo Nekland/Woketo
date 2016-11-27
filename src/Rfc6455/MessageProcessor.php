@@ -82,21 +82,21 @@ class MessageProcessor
                     try {
                         $frame = new Frame($message->getBuffer());
 
-                        if ($frame->getOpcode() === Frame::OP_CONTINUE && $message->countFrames() === 0) {
-                            throw new ProtocolErrorException('The first frame cannot be a continuation frame');
-                        }
-
-                        if ($frame->getOpcode() === Frame::OP_TEXT && $message->countFrames() >= 1) {
-                            throw new ProtocolErrorException('When there are fragmented frames, the next frame cannot
-                             be a text frame');
-                        }
-
                         // This condition intercept control frames in the middle of normal frames
                         if ($frame->isControlFrame() && $message->hasFrames()) {
                             $controlFrameMessage = $this->processControlFrame($frame, $socket);
 
                             yield $controlFrameMessage; // Because every message should be returned !
                         } else {
+                            if ($frame->getOpcode() === Frame::OP_CONTINUE && !$message->hasFrames()) {
+                                throw new ProtocolErrorException('The first frame cannot be a continuation frame');
+                            }
+
+                            if ($frame->getOpcode() !== Frame::OP_CONTINUE && $message->hasFrames()) {
+                                throw new ProtocolErrorException(
+                                    'When the Message is fragmented in many frames the only frame that can be a something else than an continue frame is the first'
+                                );
+                            }
                             $message->addFrame($frame);
                         }
 
