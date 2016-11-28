@@ -16,7 +16,6 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\InvalidFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
-use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -505,14 +504,9 @@ class Frame
      *
      * @throws ControlFrameException
      * @throws TooBigControlFrameException
-     * @throws WrongEncodingException
      */
     public static function checkFrame(Frame $frame)
     {
-        if ($frame->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($frame->getPayload(), 'UTF-8')) {
-            throw new WrongEncodingException('The text is not encoded in UTF-8.');
-        }
-
         if ($frame->isControlFrame()) {
             if (!$frame->isFinal()) {
                 throw new ControlFrameException('The frame cannot be fragmented');

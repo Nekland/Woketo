@@ -10,6 +10,7 @@
 
 namespace Test\Woketo\Rfc6455;
 
+use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -22,6 +23,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $frame1 = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
         $frame1->getPayload()->willReturn('foo bar ');
         $frame1->isFinal()->willReturn(false);
+        $frame1->getOpcode()->willReturn(Frame::OP_TEXT);
 
         /** @var Frame $frame2 */
         $frame2 = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
@@ -37,6 +39,20 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($message->isComplete(), true);
         $this->assertSame($message->getContent(), 'foo bar baz');
+    }
+
+    public function testItThrowsWrongEncoding()
+    {
+        $this->expectException(WrongEncodingException::class);
+
+        $frame = BitManipulation::hexArrayToString(
+            '81','94','e8','e7','96','54','26','5d','77','e9','51','28','15','9a','54',
+            '29','23','b9','48','67','f3','30','81','93','f3','30'
+        );
+        $frame = new Frame($frame);
+
+        $message = new Message();
+        $message->addFrame($frame);
     }
 
     public function testItThrowErrorWhenMissingFrame()
@@ -68,10 +84,10 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException('\Nekland\Woketo\Exception\LimitationException');
 
-        for($i = 0; $i <= 20; $i++) {
-            $frame = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
-            $frame->isFinal()->willReturn(false);
-            $message->addFrame($frame->reveal());
+        for($i = 0; $i <= 1001; $i++) {
+            $frame = new Frame();
+            $frame->setFinal(false);
+            $message->addFrame($frame);
         }
     }
 
