@@ -11,11 +11,13 @@
 namespace Nekland\Woketo\Rfc6455;
 
 use Nekland\Tools\StringTools;
+use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Exception\MissingDataException;
 
 class Message
 {
+    const MAX_MESSAGES_BUFFERING = 1000;
     /**
      * @var array
      */
@@ -84,6 +86,7 @@ class Message
      * @return Message
      * @throws \InvalidArgumentException
      * @throws LimitationException
+     * @throws WrongEncodingException
      */
     public function addFrame(Frame $frame) : Message
     {
@@ -91,12 +94,20 @@ class Message
             throw new \InvalidArgumentException('The message is already complete.');
         }
 
-        if (count($this->frames) > 19) {
-            throw new LimitationException('We don\'t accept more than 20 frames by message. This is a security limitation.');
+        if (count($this->frames) > Message::MAX_MESSAGES_BUFFERING) {
+            throw new LimitationException(
+                sprintf('We don\'t accept more than %s frames by message. This is a security limitation.', Message::MAX_MESSAGES_BUFFERING)
+            );
         }
 
         $this->isComplete = $frame->isFinal();
         $this->frames[] = $frame;
+
+        if ($this->isComplete()) {
+            if ($this->getFirstFrame()->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($this->getContent(), 'UTF-8')) {
+                throw new WrongEncodingException('The text is not encoded in UTF-8.');
+            }
+        }
 
         return $this;
     }

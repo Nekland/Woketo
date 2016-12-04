@@ -14,7 +14,6 @@ namespace Test\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
-use Nekland\Woketo\Exception\Frame\WrongEncodingException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
 
@@ -222,15 +221,6 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     public function testItChecksAGoodControlFrame()
     {
         $frame = BitManipulation::hexArrayToString(['89','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
-        $frame = new Frame($frame);
-        Frame::checkFrame($frame);
-    }
-
-    public function testItThrowsWrongEncoding()
-    {
-        $this->expectException(WrongEncodingException::class);
-
-        $frame = BitManipulation::hexArrayToString(['81','94','e8','e7','96','54','26','5d','77','e9','51','28','15','9a','54','29','23','b9','48','67','f3','30','81','93','f3','30']);
         $frame = new Frame($frame);
         Frame::checkFrame($frame);
     }
