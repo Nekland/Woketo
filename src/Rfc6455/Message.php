@@ -95,7 +95,9 @@ class Message
         }
 
         if (count($this->frames) > Message::MAX_MESSAGES_BUFFERING) {
-            throw new LimitationException('We don\'t accept more than 20 frames by message. This is a security limitation.');
+            throw new LimitationException(
+                sprintf('We don\'t accept more than %s frames by message. This is a security limitation.', Message::MAX_MESSAGES_BUFFERING)
+            );
         }
 
         $this->isComplete = $frame->isFinal();
