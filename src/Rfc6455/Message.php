@@ -19,7 +19,7 @@ class Message
 {
     const MAX_MESSAGES_BUFFERING = 1000;
     /**
-     * @var array
+     * @var array|Frame[]
      */
     private $frames;
 
@@ -104,7 +104,7 @@ class Message
         $this->frames[] = $frame;
 
         if ($this->isComplete()) {
-            if ($this->getFirstFrame()->getOpcode() === Frame::OP_TEXT && !mb_check_encoding($this->getContent(), 'UTF-8')) {
+            if (in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_CLOSE, Frame::OP_TEXT]) && !mb_check_encoding($this->getContent(), 'UTF-8')) {
                 throw new WrongEncodingException('The text is not encoded in UTF-8.');
             }
         }
@@ -140,7 +140,7 @@ class Message
         $res = '';
 
         foreach ($this->frames as $frame) {
-            $res .= $frame->getPayload();
+            $res .= $frame->getContent();
         }
 
         return $res;

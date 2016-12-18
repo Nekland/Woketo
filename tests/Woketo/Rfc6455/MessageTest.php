@@ -21,13 +21,13 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     {
         /** @var Frame $frame1 */
         $frame1 = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
-        $frame1->getPayload()->willReturn('foo bar ');
+        $frame1->getContent()->willReturn('foo bar ');
         $frame1->isFinal()->willReturn(false);
         $frame1->getOpcode()->willReturn(Frame::OP_TEXT);
 
         /** @var Frame $frame2 */
         $frame2 = $this->prophesize('\Nekland\Woketo\Rfc6455\Frame');
-        $frame2->getPayload()->willReturn('baz');
+        $frame2->getContent()->willReturn('baz');
         $frame2->isFinal()->willReturn(true);
 
         $message = new Message();

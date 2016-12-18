@@ -13,6 +13,7 @@ namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -241,5 +242,35 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $frame = BitManipulation::hexArrayToString(['09','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
         $frame = new Frame($frame);
         Frame::checkFrame($frame);
+    }
+
+    public function testItCannotHaveCloseFrameWithLessThan2BytesBody()
+    {
+        // Close unmasked frame with 1 byte body (01)
+        $binFrame = BitManipulation::hexArrayToString('88','01','01');
+
+        $this->expectException(ProtocolErrorException::class);
+
+        new Frame($binFrame);
+    }
+
+    /**
+     * @dataProvider getFramesAndContent
+     * @param string $binFrame
+     * @param string $content
+     */
+    public function testItRetrieveUsefulContentAndNotFullPayload($binFrame, $content)
+    {
+        $frame = new Frame($binFrame);
+
+        $this->assertSame($frame->getContent(), $content);
+    }
+
+    public function getFramesAndContent()
+    {
+        return [
+            [BitManipulation::hexArrayToString('88','04', '03', 'E8', '41', '41'), 'AA'], // Close frame containing AA
+            [BitManipulation::hexArrayToString('80','02', '41', '42'), 'AB'],             // Normal frame containing AB
+        ];
     }
 }

@@ -14,6 +14,7 @@ namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\InvalidFrameException;
+use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -350,6 +351,27 @@ class Frame
     }
 
     /**
+     * Returns the content and not potential metadata of the body.
+     * If you want to get the real body you will prefer using `getPayload`
+     *
+     * @return string
+     */
+    public function getContent()
+    {
+        $payload = $this->getPayload();
+        if ($this->getOpcode() === Frame::OP_TEXT || $this->getOpcode() === Frame::OP_BINARY) {
+            return $payload;
+        }
+
+        $len = BitManipulation::frameSize($payload);
+        if ($len !== 0 && $this->getOpcode() === Frame::OP_CLOSE) {
+            return BitManipulation::bytesFromToString($payload, 2, $len);
+        }
+
+        return $payload;
+    }
+
+    /**
      * Get length of meta data of the frame.
      * Metadata contains type of frame, length, masking key and rsv data.
      *
@@ -493,6 +515,10 @@ class Frame
 
         if ($this->frameSize > $theoricDataLength) {
             throw new TooBigFrameException($theoricDataLength);
+        }
+
+        if ($this->getOpcode() === Frame::OP_CLOSE && $this->payloadLen === 1) {
+            throw new ProtocolErrorException('The close frame cannot be only 1 bytes as the close code MUST be send as 2 bytes unsigned int.');
         }
     }
 
