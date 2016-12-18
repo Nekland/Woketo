@@ -351,6 +351,27 @@ class Frame
     }
 
     /**
+     * Returns the content and not potential metadata of the body.
+     * If you want to get the real body you will prefer using `getPayload`
+     *
+     * @return string
+     */
+    public function getContent()
+    {
+        $payload = $this->getPayload();
+        if ($this->getOpcode() === Frame::OP_TEXT || $this->getOpcode() === Frame::OP_BINARY) {
+            return $payload;
+        }
+
+        $len = BitManipulation::frameSize($payload);
+        if ($len !== 0 && $this->getOpcode() === Frame::OP_CLOSE) {
+            return BitManipulation::bytesFromToString($payload, 2, $len);
+        }
+
+        return $payload;
+    }
+
+    /**
      * Get length of meta data of the frame.
      * Metadata contains type of frame, length, masking key and rsv data.
      *

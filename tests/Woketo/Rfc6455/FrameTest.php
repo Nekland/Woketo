@@ -200,7 +200,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         return [
             [true, BitManipulation::hexArrayToString(['89', '00'])],//ping
             [true, BitManipulation::hexArrayToString(['8A', '00'])],//pong
-            [true, BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])],//close
+            [true, BitManipulation::hexArrayToString(['88', '00'])],//close
             [true, BitManipulation::hexArrayToString(['8B', '00'])],//reserved
             [true, BitManipulation::hexArrayToString(['8C', '00'])],//reserved
             [true, BitManipulation::hexArrayToString(['8D', '00'])],//reserved
@@ -252,5 +252,25 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $this->expectException(ProtocolErrorException::class);
 
         new Frame($binFrame);
+    }
+
+    /**
+     * @dataProvider getFramesAndContent
+     * @param string $binFrame
+     * @param string $content
+     */
+    public function testItRetrieveUsefulContentAndNotFullPayload($binFrame, $content)
+    {
+        $frame = new Frame($binFrame);
+
+        $this->assertSame($frame->getContent(), $content);
+    }
+
+    public function getFramesAndContent()
+    {
+        return [
+            [BitManipulation::hexArrayToString('88','04', '03', 'E8', '41', '41'), 'AA'], // Close frame containing AA
+            [BitManipulation::hexArrayToString('80','02', '41', '42'), 'AB'],             // Normal frame containing AB
+        ];
     }
 }
