@@ -14,6 +14,7 @@ namespace Nekland\Woketo\Rfc6455;
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\InvalidFrameException;
+use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -493,6 +494,10 @@ class Frame
 
         if ($this->frameSize > $theoricDataLength) {
             throw new TooBigFrameException($theoricDataLength);
+        }
+
+        if ($this->getOpcode() === Frame::OP_CLOSE && $this->payloadLen === 1) {
+            throw new ProtocolErrorException('The close frame cannot be only 1 bytes as the close code MUST be send as 2 bytes unsigned int.');
         }
     }
 

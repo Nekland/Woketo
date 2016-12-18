@@ -13,6 +13,7 @@ namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
+use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -199,7 +200,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         return [
             [true, BitManipulation::hexArrayToString(['89', '00'])],//ping
             [true, BitManipulation::hexArrayToString(['8A', '00'])],//pong
-            [true, BitManipulation::hexArrayToString(['88', '00'])],//close
+            [true, BitManipulation::hexArrayToString(['88', '02', '03', 'E8'])],//close
             [true, BitManipulation::hexArrayToString(['8B', '00'])],//reserved
             [true, BitManipulation::hexArrayToString(['8C', '00'])],//reserved
             [true, BitManipulation::hexArrayToString(['8D', '00'])],//reserved
@@ -241,5 +242,15 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $frame = BitManipulation::hexArrayToString(['09','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
         $frame = new Frame($frame);
         Frame::checkFrame($frame);
+    }
+
+    public function testItCannotHaveCloseFrameWithLessThan2BytesBody()
+    {
+        // Close unmasked frame with 1 byte body (01)
+        $binFrame = BitManipulation::hexArrayToString('88','01','01');
+
+        $this->expectException(ProtocolErrorException::class);
+
+        new Frame($binFrame);
     }
 }
