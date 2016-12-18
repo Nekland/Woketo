@@ -64,4 +64,43 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($handler->supports($message));
         $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
     }
+
+    /**
+     * Check it return protocol error on code that should not be send
+     *
+     * @dataProvider getCloseCodeAndRelatedResponseCode
+     */
+    public function testItClosesWithProtocolErrorOnWrongCloseCode(int $codeFrameIn, int $codeFrameOut)
+    {
+        $frameIn = BitManipulation::intToString($codeFrameIn, 2);
+
+        $messageProcessor = $this->prophesize(MessageProcessor::class);
+        $frameFactory = $this->prophesize(FrameFactory::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
+
+        $frameFactory->createCloseFrame($codeFrameOut)->willReturn(new Frame());
+        $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
+        $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
+        $socket->end()->shouldBeCalled();
+
+        // Normal close frame without mask
+        $message = new Message();
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['88', '02']).$frameIn));
+
+        $handler = new CloseFrameHandler();
+        $this->assertTrue($handler->supports($message));
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
+    }
+
+    public function getCloseCodeAndRelatedResponseCode()
+    {
+        return [
+            [999, Frame::CLOSE_PROTOCOL_ERROR],
+            [10, Frame::CLOSE_PROTOCOL_ERROR],
+            [1000, Frame::CLOSE_NORMAL],
+            [1100, Frame::CLOSE_PROTOCOL_ERROR],
+            [4000, Frame::CLOSE_NORMAL],
+            [6000, Frame::CLOSE_PROTOCOL_ERROR],
+        ];
+    }
 }
