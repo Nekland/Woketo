@@ -64,4 +64,24 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($handler->supports($message));
         $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
     }
+
+    public function testItClosesWithProtocolErrorOnWrongCloseCode()
+    {
+        $messageProcessor = $this->prophesize(MessageProcessor::class);
+        $frameFactory = $this->prophesize(FrameFactory::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
+
+        $frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)->willReturn(new Frame());
+        $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
+        $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
+        $socket->end()->shouldBeCalled();
+
+        // Normal close frame without mask
+        $message = new Message();
+        $message->addFrame(new Frame(BitManipulation::hexArrayToString(['88', '02', '00', 'F7'])));
+
+        $handler = new CloseFrameHandler();
+        $this->assertTrue($handler->supports($message));
+        $handler->process($message, $messageProcessor->reveal(), $socket->reveal());
+    }
 }
