@@ -15,6 +15,7 @@ use Nekland\Woketo\Exception\Frame\ControlFrameException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
+use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
 
@@ -160,6 +161,25 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $frame->setOpcode(Frame::OP_TEXT);
 
         $this->assertSame($expectedData, $frame->getRawData());
+    }
+
+    public function testItFailsOnTooBigFrames()
+    {
+        // ~1.2MB
+        $payload = file_get_contents(__DIR__ . '/../../fixtures/1245185.data');
+        $rawData = BitManipulation::hexArrayToString('81', '7F', '00', '00', '00', '00', '00', '13', '00', '01') . $payload;
+
+        $this->expectException(TooBigFrameException::class);
+
+        $frame = new Frame($rawData);
+    }
+
+    public function testMaxFrameSizeIsConfigurable()
+    {
+        $payload = file_get_contents(__DIR__ . '/../../fixtures/1245185.data');
+        $rawData = BitManipulation::hexArrayToString('81', '7F', '00', '00', '00', '00', '00', '13', '00', '01') . $payload;
+
+        $frame = new Frame($rawData, ['maxPayloadSize' => 4194304]); // Allow 4Mo
     }
 
     public function testItSupportsFrameWith65536PayloadFromRawData()

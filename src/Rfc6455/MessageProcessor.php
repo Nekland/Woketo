@@ -80,7 +80,7 @@ class MessageProcessor
                 // Loop that build message if the message is in many frames in the same data binary frame received.
                 do {
                     try {
-                        $frame = new Frame($message->getBuffer());
+                        $frame = $this->frameFactory->createNewFrame($message->getBuffer());
 
                         // This condition intercept control frames in the middle of normal frames
                         if ($frame->isControlFrame() && $message->hasFrames()) {
@@ -104,6 +104,7 @@ class MessageProcessor
                         // And the buffer must be updated
                         $data = $message->removeFromBuffer($frame);
                     } catch (IncompleteFrameException $e) {
+
                         // Data is now stored in the message, let's clean the variable to stop both loops.
                         $data = null;
                     }

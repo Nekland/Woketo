@@ -65,7 +65,7 @@ class Frame
      *
      * @var int
      */
-    private static $maxPayloadSize = 1049000;
+    private static $defaultMaxPayloadSize = 1048576;
 
     /**
      * Complete string representing data collected from socket
@@ -131,8 +131,21 @@ class Frame
      */
     private $infoBytesLen;
 
-    public function __construct(string $data = null)
+    /**
+     * @var array
+     */
+    private $config;
+
+    /**
+     * You should construct this object by using the FrameFactory class instead of this direct constructor.
+     *
+     * @param string|null $data
+     * @param array       $config
+     * @internal
+     */
+    public function __construct(string $data = null, array $config = [])
     {
+        $this->setConfig($config);
         if (null !== $data) {
             $this->setRawData($data);
         }
@@ -439,8 +452,8 @@ class Frame
         }
 
         // Check < 0 because 64th bit is the negative one in PHP.
-        if ($payloadLen < 0 || $payloadLen > Frame::$maxPayloadSize) {
-            throw new TooBigFrameException(Frame::$maxPayloadSize);
+        if ($payloadLen < 0 || $payloadLen > $this->config['maxPayloadSize']) {
+            throw new TooBigFrameException($this->config['maxPayloadSize']);
         }
 
         return $this->payloadLen = $payloadLen;
@@ -563,5 +576,18 @@ class Frame
     public function isControlFrame()
     {
         return $this->getOpcode() >= 8;
+    }
+
+    /**
+     * @param array $config
+     * @return Frame
+     */
+    public function setConfig(array $config = [])
+    {
+        $this->config = array_merge([
+            'maxPayloadSize' => Frame::$defaultMaxPayloadSize,
+        ],$config);
+
+        return $this;
     }
 }

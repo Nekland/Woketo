@@ -4,7 +4,7 @@ use Nekland\Woketo\Server\Websocket;
 
 require 'vendor/autoload.php';
 
-$foo = new Websocket(9001);
+$foo = new Websocket(9001, '127.0.0.1', ['frame' => ['maxPayloadSize' => 16777216]]);
 
 
 
