@@ -132,6 +132,8 @@ class Frame
     private $infoBytesLen;
 
     /**
+     * @see Frame::setConfig() for full default configuration.
+     *
      * @var array
      */
     private $config;

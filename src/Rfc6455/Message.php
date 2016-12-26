@@ -38,6 +38,8 @@ class Message
     private $buffer;
 
     /**
+     * @see Message::setConfig() for full default configuration.
+     * 
      * @var array
      */
     private $config;
