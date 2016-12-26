@@ -61,11 +61,11 @@ class Frame
      * Notice that to support larger transfer we need to implemente a cache strategy on the harddrive. It also suggest
      * to have a threaded environment as the task of retrieving the data and treat it will be long.
      *
-     * This value is in bytes. Here we allow 1MiB.
+     * This value is in bytes. Here we allow 0.5 MiB.
      *
      * @var int
      */
-    private static $defaultMaxPayloadSize = 1048576;
+    private static $defaultMaxPayloadSize = 524288;
 
     /**
      * Complete string representing data collected from socket

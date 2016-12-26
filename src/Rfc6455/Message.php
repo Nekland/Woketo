@@ -17,7 +17,11 @@ use Nekland\Woketo\Exception\MissingDataException;
 
 class Message
 {
-    const MAX_MESSAGES_BUFFERING = 1000;
+    /**
+     * It allows ~50MiB buffering as the default of Frame content is 0.5MB
+     */
+    const MAX_MESSAGES_BUFFERING = 100;
+    
     /**
      * @var array|Frame[]
      */
@@ -33,11 +37,17 @@ class Message
      */
     private $buffer;
 
-    public function __construct()
+    /**
+     * @var array
+     */
+    private $config;
+
+    public function __construct(array $config = [])
     {
         $this->frames = [];
         $this->isComplete = false;
         $this->buffer = '';
+        $this->setConfig($config);
     }
 
     /**
@@ -94,9 +104,9 @@ class Message
             throw new \InvalidArgumentException('The message is already complete.');
         }
 
-        if (count($this->frames) > Message::MAX_MESSAGES_BUFFERING) {
+        if (count($this->frames) > $this->config['maxMessagesBuffering']) {
             throw new LimitationException(
-                sprintf('We don\'t accept more than %s frames by message. This is a security limitation.', Message::MAX_MESSAGES_BUFFERING)
+                sprintf('We don\'t accept more than %s frames by message. This is a security limitation.', $this->config['maxMessagesBuffering'])
             );
         }
 
@@ -192,5 +202,18 @@ class Message
     public function countFrames() : int
     {
         return count($this->frames);
+    }
+
+    /**
+     * @param array $config
+     * @return Message
+     */
+    public function setConfig(array $config = [])
+    {
+        $this->config = array_merge([
+            'maxMessagesBuffering' => Message::MAX_MESSAGES_BUFFERING
+        ], $config);
+        
+        return $this;
     }
 }

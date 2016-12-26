@@ -16,6 +16,7 @@ use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
@@ -150,7 +151,10 @@ class Websocket
      */
     private function buildMessageProcessor()
     {
-        $this->messageProcessor = new MessageProcessor(new FrameFactory($this->config['frame']));
+        $this->messageProcessor = new MessageProcessor(
+            new FrameFactory($this->config['frame']),
+            new MessageFactory($this->config['message'])
+        );
         $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
         $this->messageProcessor->addHandler(new WrongOpcodeHandler());
@@ -172,6 +176,7 @@ class Websocket
     {
         $this->config = array_merge([
             'frame' => [],
+            'message' => [],
             'messageHandlers' => []
         ], $config);
     }

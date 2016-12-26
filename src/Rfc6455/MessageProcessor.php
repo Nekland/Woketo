@@ -31,13 +31,19 @@ class MessageProcessor
     private $frameFactory;
 
     /**
+     * @var MessageFactory
+     */
+    private $messageFactory;
+
+    /**
      * @var Rfc6455MessageHandlerInterface[]
      */
     private $handlers;
 
-    public function __construct(FrameFactory $factory = null)
+    public function __construct(FrameFactory $factory = null, MessageFactory $messageFactory = null)
     {
         $this->frameFactory = $factory ?: new FrameFactory();
+        $this->messageFactory = $messageFactory ?: new MessageFactory();
         $this->handlers = [];
     }
 
@@ -71,7 +77,7 @@ class MessageProcessor
     {
         do {
             if (null === $message) {
-                $message = new Message();
+                $message = $this->messageFactory->create();
             }
 
             try {

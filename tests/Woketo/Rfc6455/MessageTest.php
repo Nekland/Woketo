@@ -11,6 +11,7 @@
 namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Exception\Frame\WrongEncodingException;
+use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
@@ -72,7 +73,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message->addFrame($frame2->reveal());
 
         $this->assertSame($message->isComplete(), false);
-        
+
         $this->expectException('\Nekland\Woketo\Exception\MissingDataException');
 
         $message->getContent();
@@ -84,7 +85,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 
         $this->expectException('\Nekland\Woketo\Exception\LimitationException');
 
-        for($i = 0; $i <= 1001; $i++) {
+        for($i = 0; $i <= 101; $i++) {
             $frame = new Frame();
             $frame->setFinal(false);
             $message->addFrame($frame);
@@ -115,5 +116,16 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $message->clearBuffer();
 
         $this->assertSame('', $message->getBuffer());
+    }
+
+    public function testItHasConfigurableMaxMessages()
+    {
+        $message = new Message(['maxMessagesBuffering' => 1010]);
+
+        for($i = 0; $i <= 1000; $i++) {
+            $frame = new Frame();
+            $frame->setFinal(false);
+            $message->addFrame($frame);
+        }
     }
 }
