@@ -11,9 +11,12 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
+use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
@@ -77,17 +80,24 @@ class Websocket
     private $messageProcessor;
 
     /**
+     * @var array
+     */
+    private $config;
+
+    /**
      * Websocket constructor.
      *
      * @param int    $port    The number of the port to bind
      * @param string $address The address to listen on (by default 127.0.0.1)
+     * @param array  $config
      */
-    public function __construct($port, $address = '127.0.0.1')
+    public function __construct($port, $address = '127.0.0.1', $config = [])
     {
         $this->address = $address;
         $this->port = $port;
         $this->handshake = new ServerHandshake();
         $this->connections = [];
+        $this->setConfig($config);
         $this->buildMessageProcessor();
     }
 
@@ -115,28 +125,59 @@ class Websocket
         $this->loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($this->loop);
-        $socket->on('connection', [$this, 'newConnection']);
+        $socket->on('connection', function ($socketStream) {
+            $this->onNewConnection($socketStream);
+        });
         $socket->listen($this->port);
 
         $this->loop->run();
     }
 
-    public function newConnection(ConnectionInterface $socketStream)
+    /**
+     * @param ConnectionInterface $socketStream
+     */
+    private function onNewConnection(ConnectionInterface $socketStream)
     {
         $messageHandler = $this->messageHandler;
         if (is_string($messageHandler)) {
             $messageHandler = new $messageHandler;
         }
-        
+
         $this->connections[] = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
     }
 
+    /**
+     * Build the message processor with configuration
+     */
     private function buildMessageProcessor()
     {
-        $this->messageProcessor = new MessageProcessor();
+        $this->messageProcessor = new MessageProcessor(
+            new FrameFactory($this->config['frame']),
+            new MessageFactory($this->config['message'])
+        );
         $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
         $this->messageProcessor->addHandler(new WrongOpcodeHandler());
         $this->messageProcessor->addHandler(new RsvCheckFrameHandler());
+
+        foreach ($this->config['messageHandlers'] as $handler) {
+            if (!$handler instanceof MessageHandlerInterface) {
+                throw new RuntimeException(sprintf('%s is not an instance of MessageHandlerInterface but must be !', get_class($handler)));
+            }
+        }
+    }
+
+    /**
+     * Sets the configuration
+     *
+     * @param array $config
+     */
+    private function setConfig(array $config)
+    {
+        $this->config = array_merge([
+            'frame' => [],
+            'message' => [],
+            'messageHandlers' => []
+        ], $config);
     }
 }

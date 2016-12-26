@@ -12,8 +12,12 @@ namespace Nekland\Woketo\Exception;
 
 class RuntimeException extends \Exception
 {
-    public function __construct(\Exception $e)
+    public function __construct($e)
     {
-        parent::__construct('Bad behavior of inside of woketo. Error: (' . get_class($e) . ') ' . $e->getMessage());
+        if ($e instanceof \Exception) {
+            parent::__construct('Bad behavior of inside of woketo. Error: (' . get_class($e) . ') ' . $e->getMessage());
+        } else {
+            parent::__construct($e);
+        }
     }
 }

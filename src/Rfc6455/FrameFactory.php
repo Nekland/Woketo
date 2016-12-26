@@ -23,6 +23,18 @@ use Nekland\Woketo\Utils\BitManipulation;
 class FrameFactory
 {
     /**
+     * Configuration for frames creation
+     *
+     * @var array
+     */
+    private $configuration;
+
+    public function __construct(array $configuration = [])
+    {
+        $this->configuration = $configuration;
+    }
+
+    /**
      * @param int    $status One of the close constant code of Frame class.
      * @param string $reason A little message that explain why closing.
      * @return Frame
@@ -56,8 +68,14 @@ class FrameFactory
         return $frame;
     }
 
-    protected function createNewFrame()
+    /**
+     * Construct a frame with a global configuration.
+     *
+     * @param string|null $rawData
+     * @return Frame
+     */
+    public function createNewFrame(string $rawData = null)
     {
-        return new Frame();
+        return new Frame($rawData, $this->configuration);
     }
 }
