@@ -12,10 +12,8 @@
 namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\RuntimeException;
-use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
-use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
@@ -39,11 +37,6 @@ class Websocket
     private $address;
 
     /**
-     * @var Request
-     */
-    private $request;
-
-    /**
      * @var ServerHandshake
      */
     private $handshake;
@@ -52,12 +45,6 @@ class Websocket
      * @var MessageHandlerInterface
      */
     private $messageHandler;
-
-    /**
-     * tmp var for test purpose
-     * @var Message
-     */
-    private $message;
 
     /**
      * @var array
@@ -116,7 +103,6 @@ class Websocket
 
     public function start()
     {
-        $this->message = new Message();
         $this->loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($this->loop);
