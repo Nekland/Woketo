@@ -37,7 +37,7 @@ class ServerHandshake
             $key = $key->getHeader('Sec-WebSocket-Key');
         }
 
-        $sign = base64_encode(sha1($key . ServerHandshake::GUID, true));
+        $sign = \base64_encode(\sha1($key . ServerHandshake::GUID, true));
 
         if (null !== $response) {
             $response->addHeader('Sec-WebSocket-Accept', $sign);
@@ -55,31 +55,31 @@ class ServerHandshake
     {
         if ($request->getHttpVersion() !== 'HTTP/1.1') {
             throw new WebsocketException(
-                sprintf('Wrong http version, HTTP/1.1 expected, "%s" received.', $request->getHttpVersion())
+                \sprintf('Wrong http version, HTTP/1.1 expected, "%s" received.', $request->getHttpVersion())
             );
         }
 
         if ($request->getMethod() !== 'GET') {
             throw new WebsocketException(
-                sprintf('Wrong http method, GET expected, "%" received.', $request->getMethod())
+                \sprintf('Wrong http method, GET expected, "%" received.', $request->getMethod())
             );
         }
 
         $headers = $request->getHeaders();
         if (empty($headers['Sec-WebSocket-Key'])) {
             throw new WebsocketException(
-                sprintf('Missing websocket key header.')
+                \sprintf('Missing websocket key header.')
             );
         }
 
-        if (empty($headers['Upgrade']) || 'websocket' !== strtolower($headers['Upgrade'])) {
+        if (empty($headers['Upgrade']) || 'websocket' !== \strtolower($headers['Upgrade'])) {
             throw new WebsocketException(
-                sprintf('Wrong or missing upgrade header.')
+                \sprintf('Wrong or missing upgrade header.')
             );
         }
         
         $version = $headers->get('Sec-WebSocket-Version');
-        if (!in_array($version, ServerHandshake::SUPPORTED_VERSIONS)) {
+        if (!\in_array($version, ServerHandshake::SUPPORTED_VERSIONS)) {
             throw new WebsocketVersionException(sprintf('Version %s not supported by Woketo for now.', $version));
         }
 

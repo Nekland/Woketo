@@ -27,7 +27,7 @@ class WrongOpcodeHandler implements Rfc6455MessageHandlerInterface
      */
     public function supports(Message $message)
     {
-        return in_array($message->getOpcode(), [3, 4, 5, 6, 7, 11, 12, 13, 14, 15]);
+        return \in_array($message->getOpcode(), [3, 4, 5, 6, 7, 11, 12, 13, 14, 15]);
     }
 
     /**

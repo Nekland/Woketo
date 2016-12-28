@@ -289,7 +289,7 @@ class Frame
      */
     public function setOpcode(int $opcode) : Frame
     {
-        if (!in_array($opcode, [Frame::OP_TEXT, Frame::OP_BINARY, Frame::OP_CLOSE, Frame::OP_CONTINUE, Frame::OP_PING, Frame::OP_PONG])) {
+        if (!\in_array($opcode, [Frame::OP_TEXT, Frame::OP_BINARY, Frame::OP_CLOSE, Frame::OP_CONTINUE, Frame::OP_PING, Frame::OP_PONG])) {
             throw new \InvalidArgumentException('Wrong opcode !');
         }
 
@@ -586,7 +586,7 @@ class Frame
      */
     public function setConfig(array $config = [])
     {
-        $this->config = array_merge([
+        $this->config = \array_merge([
             'maxPayloadSize' => Frame::$defaultMaxPayloadSize,
         ],$config);
 

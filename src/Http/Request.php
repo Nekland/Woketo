@@ -78,7 +78,7 @@ class Request extends AbstractHttpMessage
     public function getExtensions()
     {
         $originalHeaders = $this->getHeaders()->get('Sec-WebSocket-Extensions');
-        if (!is_array($originalHeaders)) {
+        if (!\is_array($originalHeaders)) {
             $originalHeaders = [$originalHeaders];
         }
 
@@ -86,24 +86,24 @@ class Request extends AbstractHttpMessage
         $extensions = [];
 
         foreach ($originalHeaders as $extensionHeader) {
-            $extensionHeaders = array_merge($extensionHeaders, array_map('trim', explode(',', $extensionHeader)));
+            $extensionHeaders = \array_merge($extensionHeaders, array_map('trim', explode(',', $extensionHeader)));
         }
 
         foreach ($extensionHeaders as $extension) {
-            $explodingHeader = explode(';', $extension);
-            $extensionName = trim($explodingHeader[0]);
+            $explodingHeader = \explode(';', $extension);
+            $extensionName = \trim($explodingHeader[0]);
             $extensions[$extensionName] = [];
 
-            if (count($explodingHeader)) {
+            if (\count($explodingHeader)) {
                 unset($explodingHeader[0]); // removing the name of the extension
                 foreach($explodingHeader as $variable) {
-                    $explodeVariable = explode('=', $variable);
+                    $explodeVariable = \explode('=', $variable);
 
                     // The value can be with or without quote. We need to remove extra quotes.
-                    $value = preg_replace('/^"(.+)"$/', '$1', trim($explodeVariable[1]));
-                    $value = str_replace('\\"', '"', $value);
+                    $value = \preg_replace('/^"(.+)"$/', '$1', trim($explodeVariable[1]));
+                    $value = \str_replace('\\"', '"', $value);
 
-                    $extensions[$extensionName][trim($explodeVariable[0])] = $value;
+                    $extensions[$extensionName][\trim($explodeVariable[0])] = $value;
                 }
             }
         }
@@ -120,13 +120,13 @@ class Request extends AbstractHttpMessage
     {
         $request = new Request;
 
-        $lines = explode("\r\n", $requestString);
+        $lines = \explode("\r\n", $requestString);
         Request::initRequest($lines[0], $request);
 
         unset($lines[0]);
         Request::initHeaders($lines, $request);
 
-        if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || strtolower($request->getHeaders()->get('Upgrade')) !== 'websocket') {
+        if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || \strtolower($request->getHeaders()->get('Upgrade')) !== 'websocket') {
             throw new HttpException(sprintf("The request is not a websocket upgrade request, received:\n%s", $requestString));
         }
 
@@ -140,21 +140,21 @@ class Request extends AbstractHttpMessage
      */
     protected static function initRequest(string $firstLine, Request $request)
     {
-        $httpElements = explode(' ', $firstLine);
+        $httpElements = \explode(' ', $firstLine);
 
-        if (count($httpElements) < 3) {
+        if (\count($httpElements) < 3) {
             throw Request::createNotHttpException($firstLine);
         }
 
-        $httpElements[2] = trim($httpElements[2]);
-        if (!preg_match('/HTTP\/.+/', $httpElements[2])) {
+        $httpElements[2] = \trim($httpElements[2]);
+        if (!\preg_match('/HTTP\/.+/', $httpElements[2])) {
             throw Request::createNotHttpException($firstLine);
         }
         $request->setHttpVersion($httpElements[2]);
 
-        if (!in_array($httpElements[0], ['POST', 'GET', 'PUT', 'DELETE'])) {
+        if (!\in_array($httpElements[0], ['POST', 'GET', 'PUT', 'DELETE'])) {
             throw new HttpException(
-                sprintf('Request not supported, only POST, GET, PUT, and DELETE are supported. "%s" received.', $httpElements[0])
+                \sprintf('Request not supported, only POST, GET, PUT, and DELETE are supported. "%s" received.', $httpElements[0])
             );
         }
 
@@ -165,7 +165,7 @@ class Request extends AbstractHttpMessage
     private static function createNotHttpException($line)
     {
         return new HttpException(
-            sprintf('The request is not an http request. "%s" received.', $line)
+            \sprintf('The request is not an http request. "%s" received.', $line)
         );
     }
 
@@ -173,7 +173,7 @@ class Request extends AbstractHttpMessage
     {
         foreach ($headers as $header) {
             $cuttedHeader = explode(':', $header);
-            $request->addHeader(trim($cuttedHeader[0]), trim(str_replace($cuttedHeader[0] . ':', '', $header)));
+            $request->addHeader(\trim($cuttedHeader[0]), trim(str_replace($cuttedHeader[0] . ':', '', $header)));
         }
     }
 }

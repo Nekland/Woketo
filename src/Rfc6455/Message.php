@@ -21,7 +21,7 @@ class Message
      * It allows ~50MiB buffering as the default of Frame content is 0.5MB
      */
     const MAX_MESSAGES_BUFFERING = 100;
-    
+
     /**
      * @var array|Frame[]
      */
@@ -39,7 +39,7 @@ class Message
 
     /**
      * @see Message::setConfig() for full default configuration.
-     * 
+     *
      * @var array
      */
     private $config;
@@ -116,7 +116,7 @@ class Message
         $this->frames[] = $frame;
 
         if ($this->isComplete()) {
-            if (in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_CLOSE, Frame::OP_TEXT]) && !mb_check_encoding($this->getContent(), 'UTF-8')) {
+            if (\in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_CLOSE, Frame::OP_TEXT]) && !mb_check_encoding($this->getContent(), 'UTF-8')) {
                 throw new WrongEncodingException('The text is not encoded in UTF-8.');
             }
         }
@@ -179,7 +179,7 @@ class Message
      */
     public function isOperation()
     {
-        return in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
+        return \in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_TEXT, Frame::OP_BINARY]);
     }
 
     /**
@@ -203,7 +203,7 @@ class Message
      */
     public function countFrames() : int
     {
-        return count($this->frames);
+        return \count($this->frames);
     }
 
     /**
@@ -212,10 +212,10 @@ class Message
      */
     public function setConfig(array $config = [])
     {
-        $this->config = array_merge([
+        $this->config = \array_merge([
             'maxMessagesBuffering' => Message::MAX_MESSAGES_BUFFERING
         ], $config);
-        
+
         return $this;
     }
 }

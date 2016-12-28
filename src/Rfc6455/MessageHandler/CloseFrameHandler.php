@@ -39,7 +39,7 @@ class CloseFrameHandler implements Rfc6455MessageHandlerInterface
             // https://tools.ietf.org/html/rfc6455#section-7.4
             if (
                 (
-                    !in_array($errorCode, [
+                    !\in_array($errorCode, [
                         Frame::CLOSE_NORMAL, Frame::CLOSE_GOING_AWAY, Frame::CLOSE_PROTOCOL_ERROR, Frame::CLOSE_GOING_AWAY,
                         Frame::CLOSE_WRONG_DATA, Frame::CLOSE_INCOHERENT_DATA, Frame::CLOSE_TOO_BIG_TO_PROCESS,
                         Frame::CLOSE_POLICY_VIOLATION, Frame::CLOSE_MISSING_EXTENSION, Frame::CLOSE_UNEXPECTING_CONDITION

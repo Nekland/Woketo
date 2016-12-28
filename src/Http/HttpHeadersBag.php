@@ -49,8 +49,8 @@ class HttpHeadersBag implements \ArrayAccess, \Iterator
      */
     public function get(string $name, $default = null)
     {
-        $headersLower = array_change_key_case($this->headers);
-        $name = strtolower($name);
+        $headersLower = \array_change_key_case($this->headers);
+        $name = \strtolower($name);
 
         return isset($headersLower[$name]) ? $headersLower[$name] : $default;
     }
@@ -63,7 +63,7 @@ class HttpHeadersBag implements \ArrayAccess, \Iterator
     public function add(string $name, $value)
     {
         if (!empty($this->headers[$name])) {
-            if (!is_array($this->headers[$name])){
+            if (!\is_array($this->headers[$name])){
                 $this->headers[$name] = [$this->headers[$name]];
             }
             $this->headers[$name][] = $value;
@@ -116,17 +116,17 @@ class HttpHeadersBag implements \ArrayAccess, \Iterator
 
     public function current()
     {
-        return $this->next ?: current($this->headers);
+        return $this->next ?: \current($this->headers);
     }
 
     public function next()
     {
-        $this->next = next($this->headers);
+        $this->next = \next($this->headers);
     }
 
     public function key()
     {
-        return key($this->headers);
+        return \key($this->headers);
     }
 
     public function valid()
