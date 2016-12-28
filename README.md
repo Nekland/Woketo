@@ -18,12 +18,12 @@ Requirements
 How to install
 --------------
 
-*Woketo is not on composer for now because it's not released. If you really want to use it you can add it as git dependency.*
-
 ```bash
 # The installation is pretty much easier with composer. But you still can use it as git submodule !
 composer require "nekland/woketo"
 ```
+
+And that's all ! :scream_cat: 
 
 How to use it
 -------------
@@ -102,3 +102,15 @@ What's next ?
 -------------
 
 You can see what's plan for next versions in the [github milestones](https://github.com/Nekland/Woketo/milestones).
+
+What Woketo does _not_ do ?
+---------------------------
+
+Currently there is no support of the following:
+
+- WebSocket client (you still need to use [pawl](https://github.com/ratchetphp/Pawl), but we're working on)
+- Secured WebSockets (coming soon)
+- WebSocket extensions, currently not supported but will probably be in the future
+- [WAMP](http://wamp-proto.org/) implementation will probably never be done by Woketo itself as it's a layer on top of
+  WebSockets. This includes JSON-RPC and other layers up to WebSockets.
+  
