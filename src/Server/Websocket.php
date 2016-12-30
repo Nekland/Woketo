@@ -12,10 +12,8 @@
 namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\RuntimeException;
-use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
-use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
@@ -29,11 +27,6 @@ use React\Socket\ConnectionInterface;
 class Websocket
 {
     /**
-     * @var resource Socket of the server
-     */
-    private $socket;
-
-    /**
      * @var int Store the port for debug purpose.
      */
     private $port;
@@ -44,11 +37,6 @@ class Websocket
     private $address;
 
     /**
-     * @var Request
-     */
-    private $request;
-
-    /**
      * @var ServerHandshake
      */
     private $handshake;
@@ -57,12 +45,6 @@ class Websocket
      * @var MessageHandlerInterface
      */
     private $messageHandler;
-
-    /**
-     * tmp var for test purpose
-     * @var Message
-     */
-    private $message;
 
     /**
      * @var array
@@ -103,10 +85,10 @@ class Websocket
 
     public function setMessageHandler($messageHandler)
     {
-        if (!$messageHandler instanceof MessageHandlerInterface &&  !is_string($messageHandler)) {
+        if (!$messageHandler instanceof MessageHandlerInterface &&  !\is_string($messageHandler)) {
             throw new \InvalidArgumentException('The message handler must be an instance of MessageHandlerInterface or a string.');
         }
-        if (is_string($messageHandler)) {
+        if (\is_string($messageHandler)) {
             try {
                 $reflection = new \ReflectionClass($messageHandler);
                 if(!$reflection->implementsInterface('Nekland\Woketo\Message\MessageHandlerInterface')) {
@@ -121,7 +103,6 @@ class Websocket
 
     public function start()
     {
-        $this->message = new Message();
         $this->loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($this->loop);
@@ -139,7 +120,7 @@ class Websocket
     private function onNewConnection(ConnectionInterface $socketStream)
     {
         $messageHandler = $this->messageHandler;
-        if (is_string($messageHandler)) {
+        if (\is_string($messageHandler)) {
             $messageHandler = new $messageHandler;
         }
 
@@ -174,7 +155,7 @@ class Websocket
      */
     private function setConfig(array $config)
     {
-        $this->config = array_merge([
+        $this->config = \array_merge([
             'frame' => [],
             'message' => [],
             'messageHandlers' => []

@@ -37,17 +37,17 @@ class BitManipulation
     {
         if ($byte < 0 || $byte > 255) {
             throw new \InvalidArgumentException(
-                sprintf('The given integer %s is not a byte.', $byte)
+                \sprintf('The given integer %s is not a byte.', $byte)
             );
         }
 
         if ($bitNumber < 1 || $bitNumber > 8) {
             throw new \InvalidArgumentException(
-                sprintf('The bit number %s is not a correct value for a byte (1-8 required).', $bitNumber)
+                \sprintf('The bit number %s is not a correct value for a byte (1-8 required).', $bitNumber)
             );
         }
 
-        $realNth = pow(2, 8 - $bitNumber);
+        $realNth = \pow(2, 8 - $bitNumber);
 
         return (int) ($realNth === ($byte & $realNth));
     }
@@ -61,25 +61,25 @@ class BitManipulation
      */
     public static function nthByte($frame, int $byteNumber) : int
     {
-        if (is_string($frame)) {
+        if (\is_string($frame)) {
             $len = BitManipulation::frameSize($frame);
 
             if ($byteNumber < 0 || $byteNumber > ($len-1)) {
                 throw new \InvalidArgumentException(
-                    sprintf('The frame is only %s bytes larges but you tried to get the %sth byte.', $len, $byteNumber)
+                    \sprintf('The frame is only %s bytes larges but you tried to get the %sth byte.', $len, $byteNumber)
                 );
             }
 
-            return ord($frame[$byteNumber]);
+            return \ord($frame[$byteNumber]);
         }
 
-        if (is_int($frame)) {
+        if (\is_int($frame)) {
             if ($frame < 0) {
                 throw new \InvalidArgumentException(
-                    sprintf('This method does not support negative ints as parameter for now. %s given.', $byteNumber)
+                    \sprintf('This method does not support negative ints as parameter for now. %s given.', $byteNumber)
                 );
             }
-            $hex = dechex($frame);
+            $hex = \dechex($frame);
             $len = BitManipulation::frameSize($hex);
 
             // Index of the first octal of the wanted byte
@@ -87,19 +87,19 @@ class BitManipulation
 
             if ($byteNumber < 0 || ($realByteNth + 1) > $len) {
                 throw new \InvalidArgumentException(
-                    sprintf('Impossible to get the byte %s from the frame %s.', $byteNumber, $frame)
+                    \sprintf('Impossible to get the byte %s from the frame %s.', $byteNumber, $frame)
                 );
             }
 
             // Considering FF12AB (number) if you want the byte represented by AB you need to get the
             // first letter, shift it of 4 and add the next letter.
             // This may seems weird but that's because you read numbers from right to left.
-            return (hexdec($hex[$realByteNth]) << 4) + hexdec($hex[$realByteNth + 1]);
+            return (\hexdec($hex[$realByteNth]) << 4) + \hexdec($hex[$realByteNth + 1]);
             // _Notice that if the number is from right to left, your data is still from left to right_
         }
 
         throw new \InvalidArgumentException(
-            sprintf('The frame must be an int or string, %s given.', gettype($frame))
+            \sprintf('The frame must be an int or string, %s given.', gettype($frame))
         );
     }
 
@@ -130,13 +130,13 @@ class BitManipulation
      */
     public static function hexArrayToString(...$hexArray) : string
     {
-        if (is_array($hexArray[0])) {
+        if (\is_array($hexArray[0])) {
             $hexArray = $hexArray[0];
         }
         
         $res = '';
         foreach ($hexArray as $hexNum) {
-            $res .= chr(hexdec($hexNum));
+            $res .= \chr(\hexdec($hexNum));
         }
 
         return $res;
@@ -161,28 +161,28 @@ class BitManipulation
             throw new \InvalidArgumentException('PHP limitation: getting more than 7 bytes will return a negative number because unsigned int does not exist.');
         }
 
-        if (is_string($frame)) {
+        if (\is_string($frame)) {
             if ((BitManipulation::frameSize($frame) - 1) < $to) {
                 throw new \InvalidArgumentException('The frame is not long enough.');
             }
 
             $subStringLength = $to - $from + 1;
             // Getting responsible bytes
-            $subString = substr($frame, $from, $subStringLength);
+            $subString = \substr($frame, $from, $subStringLength);
             $res = 0;
 
             // for each byte, getting ord
             for($i = 0; $i < $subStringLength; $i++) {
                 $res <<= 8;
-                $res += ord($subString[$i]);
+                $res += \ord($subString[$i]);
             }
 
             return $res;
         }
 
-        if (!is_int($frame)) {
+        if (!\is_int($frame)) {
             throw new \InvalidArgumentException(
-                sprintf('A frame can only be a string or int. %s given', gettype($frame))
+                \sprintf('A frame can only be a string or int. %s given', gettype($frame))
             );
         }
 
@@ -210,10 +210,10 @@ class BitManipulation
     public static function bytesFromToString(string $frame, int $from, int $to, int $mode = BitManipulation::MODE_FROM_TO) : string
     {
         if ($mode === BitManipulation::MODE_FROM_TO) {
-            return mb_substr($frame, $from, $to - $from + 1, '8bit');
+            return \mb_substr($frame, $from, $to - $from + 1, '8bit');
         }
 
-        return mb_substr($frame, $from, $to, '8bit');
+        return \mb_substr($frame, $from, $to, '8bit');
     }
 
     /**
@@ -234,18 +234,18 @@ class BitManipulation
             // This condition avoid to take care of front zero bytes (that are always present but we should ignore)
             if ($code !== 0 || !$startingBytes) {
                 $startingBytes = false;
-                $res .= chr($code);
+                $res .= \chr($code);
             }
         }
 
         if ($size !== null) {
             $actualSize = BitManipulation::frameSize($res);
             if ($size < $actualSize) {
-                $res = substr($res, $size - $actualSize);
+                $res = \substr($res, $size - $actualSize);
             } else if ($size > $actualSize) {
                 $missingChars = $size - $actualSize;
                 for ($i = 0; $i < $missingChars; $i++) {
-                    $res = chr(0) . $res;
+                    $res = \chr(0) . $res;
                 }
             }
         }
@@ -266,12 +266,12 @@ class BitManipulation
 
         if ($len > 8) {
             throw new \InvalidArgumentException(
-                sprintf('The string %s cannot be converted to int because an int cannot be more than 8 bytes (64b).', $frame)
+                \sprintf('The string %s cannot be converted to int because an int cannot be more than 8 bytes (64b).', $frame)
             );
         }
 
         for ($i = $len - 1; $i >= 0; $i--) {
-            $res += ord($frame[$len - $i - 1]) << ($i * 8);
+            $res += \ord($frame[$len - $i - 1]) << ($i * 8);
         }
 
         return $res;
@@ -290,8 +290,8 @@ class BitManipulation
         $res = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $hex = dechex(ord($frame[$i]));
-            if (strlen($hex) < 2) {
+            $hex = \dechex(\ord($frame[$i]));
+            if (\strlen($hex) < 2) {
                 $hex = '0' . $hex;
             }
             $res .= $hex;
@@ -310,10 +310,10 @@ class BitManipulation
      */
     public static function frameSize(string $frame) : int
     {
-        if (extension_loaded('mbstring')) {
-            return mb_strlen($frame, '8bit');
+        if (\extension_loaded('mbstring')) {
+            return \mb_strlen($frame, '8bit');
         }
 
-        return strlen($frame);
+        return \strlen($frame);
     }
 }

@@ -20,6 +20,6 @@ class SocketException extends \Exception
      */
     public function __construct($message, $socket)
     {
-        parent::__construct($message . ' (error: ' . socket_strerror(socket_last_error($socket)) . ')');
+        parent::__construct($message . ' (error: ' . \socket_strerror(\socket_last_error($socket)) . ')');
     }
 }
