@@ -6,7 +6,7 @@ A PHP WebSocket library. With following features:
 * Autobahn test suite passed (WebSocket test suite reference)
 * Binary/text messages supported
 * Built on top of reactphp (async socket communication)
-* *Not dependent of any other big framework/library which mean you can use with guzzle (any version) or Symfony (any version)*
+* *Not dependent of any other big framework/library which mean you can use it with guzzle (any version) or Symfony (any version)*
 
 [![Build Status](https://travis-ci.org/Nekland/Woketo.svg?branch=master)](https://travis-ci.org/Nekland/Woketo) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master)
 
@@ -88,27 +88,28 @@ wstest -m fuzzingclient
 
 > wstest is the Autobahn test tool. You can install it with `sudo pip install autobahntestsuite`.
 >
-> You can read more about on [their documentation](http://autobahn.ws/testsuite/installation.html#installation).
+> You can read more about the installation of Autobahn on
+> [their documentation](http://autobahn.ws/testsuite/installation.html#installation).
 
 How to something else ?
 -----------------------
 
 * How to learn more about Woketo usage ? [RTFM](docs/index.md) !
-* How to get information about how it work internally ? Read the [docs/dev.md](docs/dev.md) page of doc.
+* How to get information about how it works internally ? Read the [docs/dev.md](docs/dev.md) page of doc.
 * How to contribute ? Read the [CONTRIBUTING.md](CONTRIBUTING.md) page of doc.
 * How to get support ? [Use Gitter](http://gitter.im/Nekland/Woketo), _the issue tracker is **not** a forum_.
 
 What's next ?
 -------------
 
-You can see what's plan for next versions in the [github milestones](https://github.com/Nekland/Woketo/milestones).
+You can see what's planned for next versions in the [github milestones](https://github.com/Nekland/Woketo/milestones).
 
 What Woketo does _not_ do ?
 ---------------------------
 
 Currently there is no support of the following:
 
-- WebSocket client (you still need to use [pawl](https://github.com/ratchetphp/Pawl), but we're working on)
+- WebSocket client (you still need to use [pawl](https://github.com/ratchetphp/Pawl), but we're working on it)
 - Secured WebSockets (coming soon)
 - WebSocket extensions, currently not supported but will probably be in the future
 - [WAMP](http://wamp-proto.org/) implementation will probably never be done by Woketo itself as it's a layer on top of
