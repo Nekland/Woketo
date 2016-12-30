@@ -310,7 +310,7 @@ class BitManipulation
      */
     public static function frameSize(string $frame) : int
     {
-        if (extension_loaded('mbstring')) {
+        if (\extension_loaded('mbstring')) {
             return \mb_strlen($frame, '8bit');
         }
 

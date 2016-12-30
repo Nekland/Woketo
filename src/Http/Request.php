@@ -86,7 +86,7 @@ class Request extends AbstractHttpMessage
         $extensions = [];
 
         foreach ($originalHeaders as $extensionHeader) {
-            $extensionHeaders = \array_merge($extensionHeaders, array_map('trim', explode(',', $extensionHeader)));
+            $extensionHeaders = \array_merge($extensionHeaders, \array_map('trim', \explode(',', $extensionHeader)));
         }
 
         foreach ($extensionHeaders as $extension) {
@@ -172,7 +172,7 @@ class Request extends AbstractHttpMessage
     protected static function initHeaders(array $headers, Request $request)
     {
         foreach ($headers as $header) {
-            $cuttedHeader = explode(':', $header);
+            $cuttedHeader = \explode(':', $header);
             $request->addHeader(\trim($cuttedHeader[0]), trim(str_replace($cuttedHeader[0] . ':', '', $header)));
         }
     }

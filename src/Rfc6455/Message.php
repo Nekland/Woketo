@@ -116,7 +116,7 @@ class Message
         $this->frames[] = $frame;
 
         if ($this->isComplete()) {
-            if (\in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_CLOSE, Frame::OP_TEXT]) && !mb_check_encoding($this->getContent(), 'UTF-8')) {
+            if (\in_array($this->getFirstFrame()->getOpcode(), [Frame::OP_CLOSE, Frame::OP_TEXT]) && !\mb_check_encoding($this->getContent(), 'UTF-8')) {
                 throw new WrongEncodingException('The text is not encoded in UTF-8.');
             }
         }
