@@ -75,11 +75,11 @@ class Websocket
      */
     public function __construct($port, $address = '127.0.0.1', $config = [])
     {
+        $this->setConfig($config);
         $this->address = $address;
         $this->port = $port;
         $this->handshake = new ServerHandshake();
         $this->connections = [];
-        $this->setConfig($config);
         $this->buildMessageProcessor();
     }
 
@@ -103,6 +103,10 @@ class Websocket
 
     public function start()
     {
+        if ($this->config['prod'] && \extension_loaded('xdebug')) {
+            throw new \Exception('xdebug is enabled, it\'s a performance issue. Disable that extension or specify "prod" option to false.');
+        }
+        
         $this->loop = \React\EventLoop\Factory::create();
 
         $socket = new \React\Socket\Server($this->loop);
@@ -158,7 +162,8 @@ class Websocket
         $this->config = \array_merge([
             'frame' => [],
             'message' => [],
-            'messageHandlers' => []
+            'messageHandlers' => [],
+            'prod' => true
         ], $config);
     }
 }
