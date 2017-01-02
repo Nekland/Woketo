@@ -81,6 +81,7 @@ The configuration is split in some parts:
 - The `frame` key configure the way Frames are managed
 - The `message` key configure the way Frames are stacked
 - The `messageHandlers` key contains your custom message handler, checkout the [message handler doc](#message-handler)
+- The `prod` key defined if your running environment is prod or not (similar to `debug` parameter in some environment)
 
 ```php
 <?php
@@ -93,6 +94,7 @@ $defaultConfiguration = [
         'maxMessagesBuffering' => 100 // 100 * 0.5 MiB max in memory
     ],
     'messageHandlers' => [],          // Empty by default, you can add some
+    'prod' => true,
 ];
 ```
 

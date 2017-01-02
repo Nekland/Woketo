@@ -2,10 +2,13 @@
 
 use Nekland\Woketo\Server\WebSocketServer;
 
-require '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-$foo = new WebSocketServer(9001, '127.0.0.1', ['frame' => ['maxPayloadSize' => 16777216], 'message' => ['maxMessagesBuffering' => 1000000]]);
-
+$foo = new WebSocketServer(9001, '127.0.0.1', [
+    'frame' => ['maxPayloadSize' => 16777216],
+    'message' => ['maxMessagesBuffering' => 1000000],
+    'prod' => false,
+]);
 
 
 class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
