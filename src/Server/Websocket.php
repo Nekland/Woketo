@@ -81,6 +81,10 @@ class Websocket
         $this->handshake = new ServerHandshake();
         $this->connections = [];
         $this->buildMessageProcessor();
+
+        // Some optimization
+        \gc_enable();       // As the process never stops, the garbage collector will be usefull, you may need to call it manually sometimes for performance purpose
+        \set_time_limit(0); // It's by default on most server for cli apps but better be sure of that fact
     }
 
     public function setMessageHandler($messageHandler)
