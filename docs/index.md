@@ -50,7 +50,7 @@ To use your class it's pretty easy:
 ```php
 <?php
 
-$server = new Websocket(1337, '127.0.0.1', []);
+$server = new WebSocketServer(1337, '127.0.0.1', []);
 $server->setMessageHandler(new YourMessageHandler());
 $server->start();
 ```

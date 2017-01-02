@@ -36,7 +36,7 @@ The file `tests.php` is a basic echo server. That's all you need to make a webso
 
 use Your\Namespace\YourMessageHandler;
 
-$server = new Websocket(1337);
+$server = new WebSocketServer(1337);
 $server->setMessageHandler(new YourMessageHandler());
 $server->start(); // And that's all <3
 ```
@@ -82,7 +82,7 @@ composer install
 ### Functionnal tests suite
 
 ```bash
-php tests.php
+php tests/echo-server.php
 wstest -m fuzzingclient
 ```
 

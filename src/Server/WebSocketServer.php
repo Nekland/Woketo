@@ -3,7 +3,7 @@
 /**
  * This file is a part of Woketo package.
  *
- * (c) Nekland <nekland.fr@gmail.fr>
+ * (c) Nekland <dev@nekland.fr>
  *
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
@@ -24,7 +24,7 @@ use Nekland\Woketo\Rfc6455\ServerHandshake;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
-class Websocket
+class WebSocketServer
 {
     /**
      * @var int Store the port for debug purpose.

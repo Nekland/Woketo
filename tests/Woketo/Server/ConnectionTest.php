@@ -9,7 +9,7 @@
  * on the root directory of this project
  */
 
-namespace Test\Woketo\Core;
+namespace Test\Woketo\Server;
 
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
