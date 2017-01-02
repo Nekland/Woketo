@@ -21,20 +21,23 @@ use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
+use Nekland\Woketo\Utils\SimpleLogger;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 
 class WebSocketServer
 {
     /**
-     * @var int Store the port for debug purpose.
+     * @var int
      */
     private $port;
 
     /**
      * @var string
      */
-    private $address;
+    private $host;
 
     /**
      * @var ServerHandshake
@@ -67,16 +70,19 @@ class WebSocketServer
     private $config;
 
     /**
-     * Websocket constructor.
-     *
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param int    $port    The number of the port to bind
-     * @param string $address The address to listen on (by default 127.0.0.1)
+     * @param string $host    The host to listen on (by default 127.0.0.1)
      * @param array  $config
      */
-    public function __construct($port, $address = '127.0.0.1', $config = [])
+    public function __construct($port, $host = '127.0.0.1', $config = [])
     {
         $this->setConfig($config);
-        $this->address = $address;
+        $this->host = $host;
         $this->port = $port;
         $this->handshake = new ServerHandshake();
         $this->connections = [];
@@ -119,6 +125,8 @@ class WebSocketServer
         });
         $socket->listen($this->port);
 
+        $this->getLogger()->info('Listening on ' . $this->host . ':' . $this->port);
+
         $this->loop->run();
     }
 
@@ -132,7 +140,9 @@ class WebSocketServer
             $messageHandler = new $messageHandler;
         }
 
-        $this->connections[] = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
+        $connection = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
+        $connection->setLogger($this->getLogger());
+        $this->connections[] = $connection;
     }
 
     /**
@@ -169,5 +179,30 @@ class WebSocketServer
             'messageHandlers' => [],
             'prod' => true
         ], $config);
+    }
+
+    /**
+     * @return SimpleLogger|LoggerInterface
+     */
+    public function getLogger()
+    {
+        if (null === $this->logger) {
+            return $this->logger = new SimpleLogger(!$this->config['prod']);
+        }
+
+        return $this->logger;
+    }
+
+    /**
+     * Allows you to set a custom logger
+     *
+     * @param LoggerInterface $logger
+     * @return WebSocketServer
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 }

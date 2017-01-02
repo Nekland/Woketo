@@ -20,12 +20,15 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Rfc6455\ServerHandshake;
+use Psr\Log\LoggerAwareTrait;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 
 class Connection
 {
+    use LoggerAwareTrait;
+
     /**
      * 5 seconds
      */
@@ -71,8 +74,13 @@ class Connection
      */
     private $timeout;
     
-    public function __construct(ConnectionInterface $socketStream, MessageHandlerInterface $messageHandler, LoopInterface $loop, MessageProcessor $messageProcessor, ServerHandshake $handshake = null)
-    {
+    public function __construct(
+        ConnectionInterface $socketStream,
+        MessageHandlerInterface $messageHandler,
+        LoopInterface $loop,
+        MessageProcessor $messageProcessor,
+        ServerHandshake $handshake = null
+    ) {
         $this->socketStream = $socketStream;
         $this->initListeners();
         $this->handler = $messageHandler;
@@ -86,7 +94,9 @@ class Connection
         $this->socketStream->on('data', function ($data) {
             $this->processData($data);
         });
-        $this->socketStream->on('error', [$this, 'error']);
+        $this->socketStream->on('error', function ($data) {
+            $this->error($data);
+        });
     }
 
     private function processData($data)
@@ -101,6 +111,7 @@ class Connection
             return;
         } catch (WebsocketException $e) {
             $this->messageProcessor->close($this->socketStream);
+            $this->logger->notice('Connection to ' . $this->getIp() . ' closed with error : ' . $e->getMessage());
             $this->handler->onError($e, $this);
         }
     }
@@ -135,11 +146,11 @@ class Connection
             } else {
                 // We wait for more data so we start a timeout.
                 $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
+                    $this->logger->notice('Connection to ' . $this->getIp() . ' timed out.');
                     $this->messageProcessor->timeout($this->socketStream);
                 });
             }
         }
-
     }
 
     /**
@@ -157,11 +168,13 @@ class Connection
     }
 
     /**
-     * @param $data
+     * @param mixed $data
      */
-    public function error($data)
+    protected function error($data)
     {
-        echo "There is an error : \n" . $data . "\n\n";
+        $message = "A connectivity error occurred: " . $data;
+        $this->logger->error($message);
+        $this->handler->onError(new WebsocketException($message), $this);
     }
 
     /**
@@ -183,5 +196,21 @@ class Connection
         
         $this->handshakeDone = true;
         $this->handler->onConnection($this);
+    }
+
+    /**
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->socketStream->getRemoteAddress();
+    }
+
+    /**
+     * @return \Psr\Log\LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
     }
 }
