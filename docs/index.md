@@ -60,7 +60,7 @@ The `Websocket` instantiation take the following parameters:
 - `"127.0.0.1"`: the host you bind on, this is the default value and what you need most part of the time
 - `[]`: an (optional) array of configuration option documented in the [configuration reference](#configuration-reference)
 
-The `Connection` object have the following methods you can use:
+The `Connection` object has the following methods you can use:
 - `write($message, $opCode = Frame::OP_TEXT)`, you may change to `Frame::OP_BINARY` if you want to send binary data
 - `getIp()`, that returns the current IP
 - `getLogger()`, that returns the logger of woketo
@@ -115,7 +115,7 @@ $server->setLogger($myLogger);
 $server->run();
 ```
 
-> Notice that this defined logger will be accessible from `Connection::getLogger()`.
+> Notice that the logger you give will be accessible from `Connection::getLogger()`.
 
 ### Message Handler
 
