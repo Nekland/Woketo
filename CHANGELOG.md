@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 
-## [1.0.0] - 2017-01-02
+## [1.0.0] - 2017-01-03
 ### Added
 - First release
 - WebSockets server
