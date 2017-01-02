@@ -60,6 +60,11 @@ The `Websocket` instantiation take the following parameters:
 - `"127.0.0.1"`: the host you bind on, this is the default value and what you need most part of the time
 - `[]`: an (optional) array of configuration option documented in the [configuration reference](#configuration-reference)
 
+The `Connection` object have the following methods you can use:
+- `write($message, $opCode = Frame::OP_TEXT)`, you may change to `Frame::OP_BINARY` if you want to send binary data
+- `getIp()`, that returns the current IP
+- `getLogger()`, that returns the logger of woketo
+
 ### Use it your way
 
 Here are some helpers you can use depending on your use-case:
@@ -97,6 +102,20 @@ $defaultConfiguration = [
     'prod' => true,
 ];
 ```
+
+### Logs
+
+Woketo provides a custom logger but you may want to log with yours. It's easy as Woketo uses psr-3 log system.
+
+```php
+<?php
+
+$server = new WebSocketServer(1337);
+$server->setLogger($myLogger);
+$server->run();
+```
+
+> Notice that this defined logger will be accessible from `Connection::getLogger()`.
 
 ### Message Handler
 
