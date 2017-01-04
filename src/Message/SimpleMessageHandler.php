@@ -11,17 +11,17 @@
 namespace Nekland\Woketo\Message;
 
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\WebsocketException;
-use Nekland\Woketo\Server\Connection;
 
 abstract class SimpleMessageHandler implements MessageHandlerInterface
 {
-    public function onConnection(Connection $connection)
+    public function onConnection(AbstractConnection $connection)
     {
         // Doing nothing
     }
 
-    public function onError(WebsocketException $e, Connection $connection)
+    public function onError(WebsocketException $e, AbstractConnection $connection)
     {
         echo 'An error occurred : ' . $e->getMessage();
     }

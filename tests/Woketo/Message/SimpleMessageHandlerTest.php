@@ -10,6 +10,7 @@
  */
 namespace Test\Woketo\Message;
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Message\SimpleMessageHandler;
 use Nekland\Woketo\Server\Connection;
@@ -45,6 +46,6 @@ class SimpleMessageHandlerTest extends \PHPUnit_Framework_TestCase
 
 class SimpleMessageHandlerImplementation extends SimpleMessageHandler
 {
-    public function onMessage(string $data, Connection $connection) {}
-    public function onBinary(string $data, Connection $connection) {}
+    public function onMessage(string $data, AbstractConnection $connection) {}
+    public function onBinary(string $data, AbstractConnection $connection) {}
 }

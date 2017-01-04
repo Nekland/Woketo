@@ -46,7 +46,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testItThrowsGoodErrors($request)
     {
-        $this->expectException('Nekland\Woketo\Exception\HttpException');
+        $this->expectException('Nekland\Woketo\Exception\Http\HttpException');
 
         Request::create($request);
     }
@@ -64,6 +64,23 @@ class RequestTest extends \PHPUnit_Framework_TestCase
                 'bar' => []
             ],
             $request->getExtensions()
+        );
+    }
+
+    public function testItAllowToCreateRequestFromScratchAndGetItAsString()
+    {
+        $request = Request::createClientRequest('/chat', 'www.example.com');
+        $request->setVersion(13);
+        $request->setKey('sOmEaWeSoMeKey');
+
+        $this->assertSame($request->getRequestAsString(),
+            "GET /chat HTTP/1.1\r\n"
+            . "Host: www.example.com\r\n"
+            . "User-Agent: Woketo/2.0\r\n"
+            . "Upgrade: websocket\r\n"
+            . "Connection: Upgrade\r\n"
+            . "Sec-WebSocket-Version: 13\r\n"
+            . "Sec-WebSocket-Key: sOmEaWeSoMeKey\r\n\r\n"
         );
     }
 

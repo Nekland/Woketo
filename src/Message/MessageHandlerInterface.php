@@ -10,8 +10,8 @@
  */
 namespace Nekland\Woketo\Message;
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\WebsocketException;
-use Nekland\Woketo\Server\Connection;
 
 /**
  * Interface MessageHandlerInterface
@@ -23,30 +23,30 @@ interface MessageHandlerInterface
     /**
      * Is called when a new connection is established.
      *
-     * @param Connection $connection
+     * @param AbstractConnection $connection
      */
-    public function onConnection(Connection $connection);
+    public function onConnection(AbstractConnection $connection);
 
     /**
      * Is called on new text data.
      *
      * @param string     $data       Text data
-     * @param Connection $connection
+     * @param AbstractConnection $connection
      */
-    public function onMessage(string $data, Connection $connection);
+    public function onMessage(string $data, AbstractConnection $connection);
 
     /**
      * Is called on new binary data.
      *
      * @param string     $data       Binary data
-     * @param Connection $connection
+     * @param AbstractConnection $connection
      */
-    public function onBinary(string $data, Connection $connection);
+    public function onBinary(string $data, AbstractConnection $connection);
 
     /**
      * This callback is call when there is an error on the websocket protocol communication.
      *
      * @param WebsocketException $e
      */
-    public function onError(WebsocketException $e, Connection $connection);
+    public function onError(WebsocketException $e, AbstractConnection $connection);
 }

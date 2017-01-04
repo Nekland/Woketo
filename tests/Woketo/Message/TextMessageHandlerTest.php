@@ -11,6 +11,7 @@
 namespace Test\Woketo\Message;
 
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\UnsupportedException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\Connection;
@@ -27,5 +28,5 @@ class TextMessageHandlerTest extends \PHPUnit_Framework_TestCase
 
 class TextMessageHandlerImplementation extends TextMessageHandler
 {
-    public function onMessage(string $data, Connection $connection) {}
+    public function onMessage(string $data, AbstractConnection $connection) {}
 }

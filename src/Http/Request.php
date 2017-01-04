@@ -11,7 +11,8 @@
 
 namespace Nekland\Woketo\Http;
 
-use Nekland\Woketo\Exception\HttpException;
+use Nekland\Woketo\Exception\Http\HttpException;
+use Nekland\Woketo\Meta;
 
 class Request extends AbstractHttpMessage
 {
@@ -25,12 +26,17 @@ class Request extends AbstractHttpMessage
      */
     private $uri;
 
+    /**
+     * @var string
+     */
+    private $host;
+
     private function __construct() {}
 
     /**
      * @return Request
      */
-    private function setMethod($method)
+    private function setMethod($method) : Request
     {
         $this->method = $method;
 
@@ -41,7 +47,7 @@ class Request extends AbstractHttpMessage
      * @param string $uri
      * @return Request
      */
-    private function setUri($uri)
+    private function setUri(string $uri) : Request
     {
         $this->uri = $uri;
 
@@ -51,7 +57,7 @@ class Request extends AbstractHttpMessage
     /**
      * @return string
      */
-    public function getUri()
+    public function getUri() : string
     {
         return $this->uri;
     }
@@ -59,7 +65,7 @@ class Request extends AbstractHttpMessage
     /**
      * @return string
      */
-    public function getMethod()
+    public function getMethod() : string
     {
         return $this->method;
     }
@@ -73,9 +79,42 @@ class Request extends AbstractHttpMessage
     }
 
     /**
+     * @param int $version
+     * @return Request
+     */
+    public function setVersion(int $version) : Request
+    {
+        $this->addHeader('Sec-WebSocket-Version', $version);
+
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return Request
+     */
+    public function setKey(string $key) : Request
+    {
+        $this->addHeader('Sec-WebSocket-Key', $key);
+
+        return $this;
+    }
+
+    /**
+     * @param string $host
+     * @return self
+     */
+    private function setHost(string $host) : Request
+    {
+        $this->host = $host;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
-    public function getExtensions()
+    public function getExtensions() : array
     {
         $originalHeaders = $this->getHeaders()->get('Sec-WebSocket-Extensions');
         if (!\is_array($originalHeaders)) {
@@ -112,6 +151,34 @@ class Request extends AbstractHttpMessage
     }
 
     /**
+     * @return string
+     */
+    public function getRequestAsString() : string
+    {
+        $request = mb_strtoupper($this->method) . ' ' . $this->uri . " HTTP/1.1\r\n";
+        $request .= 'Host: ' . $this->host . "\r\n";
+        $request .= 'User-Agent: Woketo/' . Meta::VERSION . "\r\n";
+        $request .= "Upgrade: websocket\r\n";
+        $request .= "Connection: Upgrade\r\n";
+
+        foreach ($this->getHeaders() as $key => $header) {
+            $request .= $key . ': ' . $header . "\r\n";
+        }
+
+        $request .= "\r\n";
+
+        return $request;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getRequestAsString();
+    }
+
+    /**
      * @param string $requestString
      * @return Request
      * @throws HttpException
@@ -129,6 +196,23 @@ class Request extends AbstractHttpMessage
         if (empty($request->getHeaders()->get('Sec-WebSocket-Key')) || empty($request->getHeaders()->get('Upgrade')) || \strtolower($request->getHeaders()->get('Upgrade')) !== 'websocket') {
             throw new HttpException(sprintf("The request is not a websocket upgrade request, received:\n%s", $requestString));
         }
+
+        return $request;
+    }
+
+    /**
+     * @param string $uri
+     * @param string $host
+     * @return Request
+     */
+    public static function createClientRequest(string $uri, string $host)
+    {
+        $request = new Request();
+
+        $request->setMethod('GET');
+        $request->setUri($uri);
+        $request->setHttpVersion('1.1');
+        $request->setHost($host);
 
         return $request;
     }
@@ -160,20 +244,5 @@ class Request extends AbstractHttpMessage
 
         $request->setMethod($httpElements[0]);
         $request->setUri($httpElements[1]);
-    }
-
-    private static function createNotHttpException($line)
-    {
-        return new HttpException(
-            \sprintf('The request is not an http request. "%s" received.', $line)
-        );
-    }
-
-    protected static function initHeaders(array $headers, Request $request)
-    {
-        foreach ($headers as $header) {
-            $cuttedHeader = \explode(':', $header);
-            $request->addHeader(\trim($cuttedHeader[0]), trim(str_replace($cuttedHeader[0] . ':', '', $header)));
-        }
     }
 }

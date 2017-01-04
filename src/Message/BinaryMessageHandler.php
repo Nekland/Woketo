@@ -11,12 +11,12 @@
 namespace Nekland\Woketo\Message;
 
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\UnsupportedException;
-use Nekland\Woketo\Server\Connection;
 
 abstract class BinaryMessageHandler extends SimpleMessageHandler
 {
-    public function onMessage(string $data, Connection $connection)
+    public function onMessage(string $data, AbstractConnection $connection)
     {
         throw new UnsupportedException('Only binary is authorized by BinaryMessageHandler.');
     }

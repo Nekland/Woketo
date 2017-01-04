@@ -11,6 +11,8 @@
 namespace Nekland\Woketo\Http;
 
 
+use Nekland\Woketo\Exception\Http\HttpException;
+use Nekland\Woketo\Exception\Http\IncompleteHttpMessageException;
 use React\Socket\ConnectionInterface;
 
 class Response extends AbstractHttpMessage
@@ -22,6 +24,16 @@ class Response extends AbstractHttpMessage
      * @var string For example "404 Not Found"
      */
     private $httpResponse;
+
+    /**
+     * @var int
+     */
+    private $statusCode;
+
+    /**
+     * @var string
+     */
+    private $reason;
 
     public function __construct()
     {
@@ -40,6 +52,46 @@ class Response extends AbstractHttpMessage
     }
 
     /**
+     * @return int
+     */
+    public function getStatusCode(): int
+    {
+        return (int) $this->statusCode;
+    }
+
+    /**
+     * @param int $statusCode
+     */
+    public function setStatusCode(int $statusCode)
+    {
+        $this->statusCode = $statusCode;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReason(): string
+    {
+        return $this->reason;
+    }
+
+    /**
+     * @param string $reason
+     */
+    public function setReason(string $reason)
+    {
+        $this->reason = $reason;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAcceptKey()
+    {
+        return $this->getHeader('Sec-WebSocket-Accept');
+    }
+
+    /**
      * @param ConnectionInterface $stream
      */
     public function send(ConnectionInterface $stream)
@@ -49,7 +101,7 @@ class Response extends AbstractHttpMessage
         foreach ($this->getHeaders() as $name => $content) {
             $stringResponse .= $name . ': '. $content . "\r\n";
         }
-        
+
         // No content to concatenate
         $stringResponse .= "\r\n";
 
@@ -65,5 +117,68 @@ class Response extends AbstractHttpMessage
         $response->addHeader('Connection', 'Upgrade');
 
         return $response;
+    }
+
+    /**
+     * @param string $data
+     * @return Response
+     * @throws HttpException
+     */
+    public static function create(string &$data) : Response
+    {
+        if (!\preg_match('/\\r\\n\\r\\n/', $data)) {
+            throw new IncompleteHttpMessageException();
+        }
+
+        $exploded = explode("\r\n\r\n", $data);
+        $responseString = '';
+        if (count($exploded) > 1) {
+            $responseString = $exploded[0];
+            unset($exploded[0]);
+            $data = implode("\r\n\r\n", $exploded);
+        }
+
+        $response = new Response();
+
+        $lines = \explode("\r\n", $responseString);
+        Response::initResponse($lines[0], $response);
+
+        unset($lines[0]);
+        Response::initHeaders($lines, $response);
+
+        if ($response->getHeader('Upgrade') !== 'websocket') {
+            throw new HttpException('Missing or wrong upgrade header.');
+        }
+        if ($response->getHeader('Connection') !== 'Upgrade') {
+            throw new HttpException('Missing upgrade header.');
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param string   $firstLine
+     * @param Response $response
+     * @throws HttpException
+     */
+    protected static function initResponse(string $firstLine, Response $response)
+    {
+        $httpElements = \explode(' ', $firstLine);
+
+        if (!\preg_match('/HTTP\/[1-2\.]+/',$httpElements[0])) {
+            throw Response::createNotHttpException($firstLine);
+        }
+        $response->setHttpVersion($httpElements[0]);
+        unset($httpElements[0]);
+
+        if ($httpElements[1] != 101) {
+            throw new HttpException(
+                sprintf('Attempted 101 response but got %s', $httpElements[1])
+            );
+        }
+        $response->setStatusCode($httpElements[1]);
+        unset($httpElements[1]);
+
+        $response->setReason(implode(' ', $httpElements));
     }
 }

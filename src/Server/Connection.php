@@ -11,75 +11,22 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\NoHandlerException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
-use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
-use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
-use Nekland\Woketo\Rfc6455\ServerHandshake;
-use Psr\Log\LoggerAwareTrait;
+use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 
-class Connection
+class Connection extends AbstractConnection
 {
-    use LoggerAwareTrait;
 
-    /**
-     * 5 seconds
-     */
-    const DEFAULT_TIMEOUT = 5;
 
-    /**
-     * @var ConnectionInterface
-     */
-    private $socketStream;
-
-    /**
-     * @var MessageHandlerInterface|\Closure
-     */
-    private $handler;
-
-    /**
-     * @var bool
-     */
-    private $handshakeDone;
-
-    /**
-     * @var ServerHandshake
-     */
-    private $handshake;
-
-    /**
-     * @var Message
-     */
-    private $currentMessage;
-
-    /**
-     * @var MessageProcessor
-     */
-    private $messageProcessor;
-
-    /**
-     * @var LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var TimerInterface
-     */
-    private $timeout;
-
-    /**
-     * @var string
-     */
-    private $uri;
-    
     public function __construct(
         ConnectionInterface $socketStream,
         \Closure $messageHandler,
@@ -87,20 +34,19 @@ class Connection
         MessageProcessor $messageProcessor,
         ServerHandshake $handshake = null
     ) {
-        $this->socketStream = $socketStream;
+        parent::__construct($messageProcessor, $handshake ?: new ServerHandshake);
+        $this->stream = $socketStream;
         $this->initListeners();
         $this->handler = $messageHandler;
-        $this->handshake = $handshake ?: new ServerHandshake;
         $this->loop = $loop;
-        $this->messageProcessor = $messageProcessor;
     }
 
     private function initListeners()
     {
-        $this->socketStream->on('data', function ($data) {
+        $this->stream->on('data', function ($data) {
             $this->processData($data);
         });
-        $this->socketStream->on('error', function ($data) {
+        $this->stream->on('error', function ($data) {
             $this->error($data);
         });
     }
@@ -109,14 +55,14 @@ class Connection
     {
         try {
             if (!$this->handshakeDone) {
-                $this->processHandcheck($data);
+                $this->processHandshake($data);
             } else {
                 $this->processMessage($data);
             }
 
             return;
         } catch (WebsocketException $e) {
-            $this->messageProcessor->close($this->socketStream);
+            $this->messageProcessor->close($this->stream);
             $this->logger->notice('Connection to ' . $this->getIp() . ' closed with error : ' . $e->getMessage());
             $this->getHandler()->onError($e, $this);
         } catch (NoHandlerException $e) {
@@ -130,7 +76,7 @@ class Connection
      *
      * @param string $data
      */
-    protected function processMessage($data)
+    protected function processMessage(string $data)
     {
         // It may be a timeout going (we were waiting for data), let's clear it.
         if ($this->timeout !== null) {
@@ -138,7 +84,7 @@ class Connection
             $this->timeout = null;
         }
 
-        foreach ($this->messageProcessor->onData($data, $this->socketStream, $this->currentMessage) as $message) {
+        foreach ($this->messageProcessor->onData($data, $this->stream, $this->currentMessage) as $message) {
             $this->currentMessage = $message;
             if ($this->currentMessage->isComplete()) {
                 // Sending the message through the woketo API.
@@ -156,7 +102,7 @@ class Connection
                 // We wait for more data so we start a timeout.
                 $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
                     $this->logger->notice('Connection to ' . $this->getIp() . ' timed out.');
-                    $this->messageProcessor->timeout($this->socketStream);
+                    $this->messageProcessor->timeout($this->stream);
                 });
             }
         }
@@ -170,7 +116,7 @@ class Connection
     public function write($frame, int $opCode = Frame::OP_TEXT)
     {
         try {
-            $this->messageProcessor->write($frame, $this->socketStream, $opCode);
+            $this->messageProcessor->write($frame, $this->stream, $opCode);
         } catch (WebsocketException $e) {
             throw new RuntimeException($e);
         }
@@ -191,7 +137,7 @@ class Connection
      *
      * @param string $data
      */
-    protected function processHandcheck($data)
+    protected function processHandshake(string $data)
     {
         if ($this->handshakeDone) {
             return;
@@ -201,27 +147,11 @@ class Connection
         $this->handshake->verify($request);
         $this->uri = $request->getUri();
         $response = Response::createSwitchProtocolResponse();
-        $this->handshake->sign($request, $response);
-        $response->send($this->socketStream);
+        $this->handshake->sign($response, $this->handshake->extractKeyFromRequest($request));
+        $response->send($this->stream);
         
         $this->handshakeDone = true;
         $this->getHandler()->onConnection($this);
-    }
-
-    /**
-     * @return string
-     */
-    public function getIp()
-    {
-        return $this->socketStream->getRemoteAddress();
-    }
-
-    /**
-     * @return \Psr\Log\LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
     }
 
     /**
@@ -229,26 +159,6 @@ class Connection
      */
     public function close()
     {
-        $this->messageProcessor->close($this->socketStream);
-    }
-
-    /**
-     * @return MessageHandlerInterface
-     * @throws NoHandlerException
-     */
-    private function getHandler()
-    {
-        if ($this->handler instanceof \Closure) {
-            $handler = $this->handler;
-            $handler = $handler($this->uri, $this);
-
-            if (null === $handler) {
-                throw new NoHandlerException(sprintf('No handler for request URI %s.', $this->uri));
-            }
-
-            return $this->handler = $handler;
-        }
-
-        return $this->handler;
+        $this->messageProcessor->close($this->stream);
     }
 }

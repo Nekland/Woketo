@@ -11,6 +11,8 @@
 namespace Nekland\Woketo\Http;
 
 
+use Nekland\Woketo\Exception\Http\HttpException;
+
 abstract class AbstractHttpMessage
 {
     /**
@@ -25,7 +27,7 @@ abstract class AbstractHttpMessage
 
     /**
      * @param string $httpVersion
-     * @return Request
+     * @return self
      */
     protected function setHttpVersion($httpVersion)
     {
@@ -37,7 +39,7 @@ abstract class AbstractHttpMessage
     /**
      * @param string $name
      * @param string $value
-     * @return Request
+     * @return self
      */
     public function addHeader(string $name, string $value)
     {
@@ -51,11 +53,12 @@ abstract class AbstractHttpMessage
 
     /**
      * @param string $header
+     * @param mixed  $default
      * @return string
      */
-    public function getHeader($header)
+    public function getHeader(string $header, $default = null)
     {
-        return $this->headers[$header];
+        return $this->headers[$header] ?: $default;
     }
 
     /**
@@ -72,5 +75,24 @@ abstract class AbstractHttpMessage
     public function getHeaders()
     {
         return $this->headers;
+    }
+
+    /**
+     * @param string[]              $headers
+     * @param AbstractHttpMessage   $request
+     */
+    protected static function initHeaders(array $headers, AbstractHttpMessage $request)
+    {
+        foreach ($headers as $header) {
+            $cuttedHeader = \explode(':', $header);
+            $request->addHeader(\trim($cuttedHeader[0]), trim(str_replace($cuttedHeader[0] . ':', '', $header)));
+        }
+    }
+
+    protected static function createNotHttpException($line)
+    {
+        return new HttpException(
+            \sprintf('The message is not an http request. "%s" received.', $line)
+        );
     }
 }
