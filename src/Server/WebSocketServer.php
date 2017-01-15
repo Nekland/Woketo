@@ -130,6 +130,7 @@ class WebSocketServer
                 'local_cert' => $this->config['certFile'],
                 'passphrase' => $this->config['passphrase'],
             ], $this->config['ssl_context_options']));
+            $this->getLogger()->info('Enabled ssl');
         }
 
         $socket->on('connection', function ($socketStream) {
@@ -193,7 +194,7 @@ class WebSocketServer
             'ssl' => false,
             'certFile' => '',
             'passphrase' => '',
-            'ssl_context' => [],
+            'ssl_context_options' => [],
         ], $config);
     }
 

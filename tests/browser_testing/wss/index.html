@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        var ws = new WebSocket("wss://127.0.0.1:9001/foo");
+        ws.onopen = function () {
+            console.log ('openned');
+        };
+        ws.onmessage = function (data) {
+            console.log('got message: ', data);
+        };
+    </script>
+</head>
+<body>
+    <p>Open the console and type commands to use with `ws` variable.</p>
+</body>
+</html>
