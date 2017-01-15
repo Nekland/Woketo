@@ -111,6 +111,11 @@ class WebSocketServer
         $this->messageHandler = $messageHandler;
     }
 
+    /**
+     * Launch the websocket server.
+     *
+     * @throws \Exception
+     */
     public function start()
     {
         if ($this->config['prod'] && \extension_loaded('xdebug')) {
@@ -118,8 +123,15 @@ class WebSocketServer
         }
         
         $this->loop = \React\EventLoop\Factory::create();
-
         $socket = new \React\Socket\Server($this->loop);
+
+        if ($this->config['ssl']) {
+            $socket = new \React\Socket\SecureServer($socket, $this->loop, array_merge([
+                'local_cert' => $this->config['certFile'],
+                'passphrase' => $this->config['passphrase'],
+            ], $this->config['ssl_context_options']));
+        }
+
         $socket->on('connection', function ($socketStream) {
             $this->onNewConnection($socketStream);
         });
@@ -177,7 +189,11 @@ class WebSocketServer
             'frame' => [],
             'message' => [],
             'messageHandlers' => [],
-            'prod' => true
+            'prod' => true,
+            'ssl' => false,
+            'certFile' => '',
+            'passphrase' => '',
+            'ssl_context' => [],
         ], $config);
     }
 
