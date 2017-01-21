@@ -11,6 +11,7 @@
 namespace Test\Woketo\Server;
 
 
+use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Server\WebSocketServer;
 
@@ -34,6 +35,15 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
 
         $server = new WebSocketServer(1000, '127.0.0.1', [
             'messageHandlers' => [new class() {}]
+        ]);
+    }
+
+    public function testItThrowsErrorOnWrongSslConfig()
+    {
+        $this->expectException(ConfigException::class);
+
+        $server = new WebSocketServer(1000, '127.0.0.1', [
+            'ssl' => true, // Missing cert file
         ]);
     }
 }

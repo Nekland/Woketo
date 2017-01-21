@@ -11,6 +11,7 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
@@ -183,6 +184,7 @@ class WebSocketServer
      * Sets the configuration
      *
      * @param array $config
+     * @throws ConfigException
      */
     private function setConfig(array $config)
     {
@@ -196,6 +198,10 @@ class WebSocketServer
             'passphrase' => '',
             'ssl_context_options' => [],
         ], $config);
+
+        if ($this->config['ssl'] && !is_file($this->config['certFile'])) {
+            throw new ConfigException('With ssl configuration, you need to specify a certificate file.');
+        }
     }
 
     /**
