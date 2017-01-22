@@ -37,7 +37,7 @@ The file `tests.php` is a basic echo server. That's all you need to make a webso
 use Your\Namespace\YourMessageHandler;
 
 $server = new WebSocketServer(1337);
-$server->setMessageHandler(new YourMessageHandler());
+$server->setMessageHandler(new YourMessageHandler(), '/path'); // accessible on ws://127.0.0.1:1337/path
 $server->start(); // And that's all <3
 ```
 

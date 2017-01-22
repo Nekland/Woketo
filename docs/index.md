@@ -60,7 +60,7 @@ To use your class it's pretty easy:
 <?php
 
 $server = new WebSocketServer(1337, '127.0.0.1', []);
-$server->setMessageHandler(new YourMessageHandler());
+$server->setMessageHandler(new YourMessageHandler(), '/path');
 $server->start();
 ```
 
@@ -68,6 +68,10 @@ The `Websocket` instantiation take the following parameters:
 - `1337`: the port you want to bind your server on (notice that for low ports you need root rights)
 - `"127.0.0.1"`: the host you bind on, this is the default value and what you need most part of the time
 - `[]`: an (optional) array of configuration option documented in the [configuration reference](#configuration-reference)
+
+The `setMessageHandler` method takes 2 parameters:
+- Your message handler
+- The path on the websocket server it will be trigger `ws://127.0.0.1:1337/path`
 
 The `Connection` object has the following methods you can use:
 - `write($message, $opCode = Frame::OP_TEXT)`, you may change to `Frame::OP_BINARY` if you want to send binary data
