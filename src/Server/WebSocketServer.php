@@ -46,9 +46,9 @@ class WebSocketServer
     private $handshake;
 
     /**
-     * @var MessageHandlerInterface
+     * @var MessageHandlerInterface[]
      */
-    private $messageHandler;
+    private $messageHandlers;
 
     /**
      * @var array
@@ -94,7 +94,11 @@ class WebSocketServer
         \set_time_limit(0); // It's by default on most server for cli apps but better be sure of that fact
     }
 
-    public function setMessageHandler($messageHandler)
+    /**
+     * @param MessageHandlerInterface|string $messageHandler An instance of a class as string
+     * @param string                         $uri            The URI you want to bind on
+     */
+    public function setMessageHandler($messageHandler, $uri = '*')
     {
         if (!$messageHandler instanceof MessageHandlerInterface &&  !\is_string($messageHandler)) {
             throw new \InvalidArgumentException('The message handler must be an instance of MessageHandlerInterface or a string.');
@@ -109,7 +113,7 @@ class WebSocketServer
                 throw new \InvalidArgumentException('The messageHandler must be a string representing a class.');
             }
         }
-        $this->messageHandler = $messageHandler;
+        $this->messageHandlers[$uri] = $messageHandler;
     }
 
     /**
@@ -149,14 +153,40 @@ class WebSocketServer
      */
     private function onNewConnection(ConnectionInterface $socketStream)
     {
-        $messageHandler = $this->messageHandler;
-        if (\is_string($messageHandler)) {
-            $messageHandler = new $messageHandler;
-        }
+        $connection = new Connection($socketStream, function ($uri, Connection $connection) {
+            return $this->getMessageHandler($uri, $connection);
+        }, $this->loop, $this->messageProcessor);
 
-        $connection = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
         $connection->setLogger($this->getLogger());
         $this->connections[] = $connection;
+    }
+
+    /**
+     * @param string $uri
+     * @param Connection $connection
+     * @return MessageHandlerInterface|null
+     */
+    private function getMessageHandler(string $uri, Connection $connection)
+    {
+        $handler = null;
+
+        if (!empty($this->messageHandlers[$uri])) {
+            $handler = $this->messageHandlers[$uri];
+        }
+
+        if (null === $handler && !empty($this->messageHandlers['*'])) {
+            $handler = $this->messageHandlers['*'];
+        }
+
+        if (null !== $handler) {
+            if (\is_string($handler)) {
+                $handler = new $handler;
+            }
+
+            return $handler;
+        }
+
+        return null;
     }
 
     /**

@@ -11,6 +11,7 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Exception\NoHandlerException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
@@ -40,7 +41,7 @@ class Connection
     private $socketStream;
 
     /**
-     * @var MessageHandlerInterface
+     * @var MessageHandlerInterface|\Closure
      */
     private $handler;
 
@@ -73,10 +74,15 @@ class Connection
      * @var TimerInterface
      */
     private $timeout;
+
+    /**
+     * @var string
+     */
+    private $uri;
     
     public function __construct(
         ConnectionInterface $socketStream,
-        MessageHandlerInterface $messageHandler,
+        \Closure $messageHandler,
         LoopInterface $loop,
         MessageProcessor $messageProcessor,
         ServerHandshake $handshake = null
@@ -112,7 +118,10 @@ class Connection
         } catch (WebsocketException $e) {
             $this->messageProcessor->close($this->socketStream);
             $this->logger->notice('Connection to ' . $this->getIp() . ' closed with error : ' . $e->getMessage());
-            $this->handler->onError($e, $this);
+            $this->getHandler()->onError($e, $this);
+        } catch (NoHandlerException $e) {
+            $this->getLogger()->info(sprintf('No handler found for uri %s. Connection closed.', $this->uri));
+            $this->close();
         }
     }
 
@@ -135,10 +144,10 @@ class Connection
                 // Sending the message through the woketo API.
                 switch($this->currentMessage->getOpcode()) {
                     case Frame::OP_TEXT:
-                        $this->handler->onMessage($this->currentMessage->getContent(), $this);
+                        $this->getHandler()->onMessage($this->currentMessage->getContent(), $this);
                         break;
                     case Frame::OP_BINARY:
-                        $this->handler->onBinary($this->currentMessage->getContent(), $this);
+                        $this->getHandler()->onBinary($this->currentMessage->getContent(), $this);
                         break;
                 }
                 $this->currentMessage = null;
@@ -174,7 +183,7 @@ class Connection
     {
         $message = "A connectivity error occurred: " . $data;
         $this->logger->error($message);
-        $this->handler->onError(new WebsocketException($message), $this);
+        $this->getHandler()->onError(new WebsocketException($message), $this);
     }
 
     /**
@@ -190,12 +199,13 @@ class Connection
 
         $request = Request::create($data);
         $this->handshake->verify($request);
+        $this->uri = $request->getUri();
         $response = Response::createSwitchProtocolResponse();
         $this->handshake->sign($request, $response);
         $response->send($this->socketStream);
         
         $this->handshakeDone = true;
-        $this->handler->onConnection($this);
+        $this->getHandler()->onConnection($this);
     }
 
     /**
@@ -212,5 +222,33 @@ class Connection
     public function getLogger()
     {
         return $this->logger;
+    }
+
+    /**
+     * Close the connection with normal close.
+     */
+    public function close()
+    {
+        $this->messageProcessor->close($this->socketStream);
+    }
+
+    /**
+     * @return MessageHandlerInterface
+     * @throws NoHandlerException
+     */
+    private function getHandler()
+    {
+        if ($this->handler instanceof \Closure) {
+            $handler = $this->handler;
+            $handler = $handler($this->uri, $this);
+
+            if (null === $handler) {
+                throw new NoHandlerException(sprintf('No handler for request URI %s.', $this->uri));
+            }
+
+            return $this->handler = $handler;
+        }
+
+        return $this->handler;
     }
 }
