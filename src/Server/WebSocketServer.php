@@ -130,7 +130,7 @@ class WebSocketServer
             $socket = new \React\Socket\SecureServer($socket, $this->loop, array_merge([
                 'local_cert' => $this->config['certFile'],
                 'passphrase' => $this->config['passphrase'],
-            ], $this->config['ssl_context_options']));
+            ], $this->config['sslContextOptions']));
             $this->getLogger()->info('Enabled ssl');
         }
 
@@ -196,7 +196,7 @@ class WebSocketServer
             'ssl' => false,
             'certFile' => '',
             'passphrase' => '',
-            'ssl_context_options' => [],
+            'sslContextOptions' => [],
         ], $config);
 
         if ($this->config['ssl'] && !is_file($this->config['certFile'])) {

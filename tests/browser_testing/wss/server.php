@@ -6,7 +6,7 @@ $foo = new \Nekland\Woketo\Server\WebSocketServer(9001, '127.0.0.1', [
     'prod' => false,
     'ssl' => true,
     'certFile' => 'certificate/test.pem',
-    'ssl_context_options' => [
+    'sslContextOptions' => [
         'verify_peer' => false,
         'allow_self_signed' => true
     ]

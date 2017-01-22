@@ -1,6 +1,15 @@
 Getting started with Woketo
 ===========================
 
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration Reference](#configuration-reference)
+- [Cookbooks](#cookbooks)
+  * [Logs](logs)
+  * [Message Handlers](message-handlers)
+  * [WebSocket Secured](#websocket-secured-aka-wss)
+- [Contributing](contributing-to-the-development-of-woketo)
+
 Installation
 ------------
 
@@ -99,9 +108,15 @@ $defaultConfiguration = [
         'maxMessagesBuffering' => 100 // 100 * 0.5 MiB max in memory
     ],
     'messageHandlers' => [],          // Empty by default, you can add some
-    'prod' => true,
+    'prod' => true,                   // When set to false, it allows you to launch woketo with xdebug
+    'ssl' => true,                    // to use wss
+    'certFile' => '',                 // pem file, see ssl doc section for more details
+    'sslContextOptions' => [],        // PHP SSL configuration see http://php.net/manual/fr/context.ssl.php
 ];
 ```
+
+Cookbooks
+---------
 
 ### Logs
 
@@ -117,13 +132,43 @@ $server->run();
 
 > Notice that the logger you give will be accessible from `Connection::getLogger()`.
 
-### Message Handler
+### Message Handlers
 
 A message handler is an object you can re-use that handle a specific type of message and throw a specific related
 exception or answer a close message if needed. This class must implement `Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface`.
 
 Please consider that Woketo only catches `WebsocketException` which mean that if you need to throw an exception, that
 needs to be catch, it must have this type.
+
+### WebSocket Secured (a.k.a. WSS)
+
+In new apps you often use https. So you should use wss with WebSockets to secure data exchange. Woketo
+supports wss out of the box, you just need to add the related options (`ssl` and `certFile`).
+
+You should instanciate woketo like this:
+
+```php
+$server = new \Nekland\Woketo\Server\WebSocketServer(9001, '127.0.0.1', [
+    'ssl' => true,
+    'certFile' => 'path/to/certificate/cert.pem',
+    'sslContextOptions' => [
+        'verify_peer' => false,
+        'allow_self_signed' => true
+    ]
+]);
+```
+
+> ❓ Why is there only one cert file required while I have 2 files (cert and private key) ?
+
+PHP uses a PEM formatted certificate that contains the certificate *and* the private key.
+
+Here is a way to generate your PEM formatted certificate for a local usage:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout acme.key -out acme.crt
+cat acme.key > acme.pem
+car acme.crt >> acme.pem
+```
 
 Contributing to the development of Woketo
 -----------------------------------------
