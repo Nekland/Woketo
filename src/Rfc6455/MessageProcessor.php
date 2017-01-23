@@ -219,5 +219,6 @@ class MessageProcessor
     public function close(ConnectionInterface $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(), $socket);
+        $socket->end();
     }
 }
