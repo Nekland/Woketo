@@ -167,7 +167,7 @@ Here is a way to generate your PEM formatted certificate for a local usage:
 ```bash
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout acme.key -out acme.crt
 cat acme.key > acme.pem
-car acme.crt >> acme.pem
+cat acme.crt >> acme.pem
 ```
 
 Contributing to the development of Woketo
