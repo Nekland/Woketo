@@ -11,6 +11,7 @@
 
 namespace Nekland\Woketo\Server;
 
+use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
@@ -111,6 +112,11 @@ class WebSocketServer
         $this->messageHandler = $messageHandler;
     }
 
+    /**
+     * Launch the websocket server.
+     *
+     * @throws \Exception
+     */
     public function start()
     {
         if ($this->config['prod'] && \extension_loaded('xdebug')) {
@@ -118,8 +124,16 @@ class WebSocketServer
         }
         
         $this->loop = \React\EventLoop\Factory::create();
-
         $socket = new \React\Socket\Server($this->loop);
+
+        if ($this->config['ssl']) {
+            $socket = new \React\Socket\SecureServer($socket, $this->loop, array_merge([
+                'local_cert' => $this->config['certFile'],
+                'passphrase' => $this->config['passphrase'],
+            ], $this->config['sslContextOptions']));
+            $this->getLogger()->info('Enabled ssl');
+        }
+
         $socket->on('connection', function ($socketStream) {
             $this->onNewConnection($socketStream);
         });
@@ -170,6 +184,7 @@ class WebSocketServer
      * Sets the configuration
      *
      * @param array $config
+     * @throws ConfigException
      */
     private function setConfig(array $config)
     {
@@ -177,8 +192,16 @@ class WebSocketServer
             'frame' => [],
             'message' => [],
             'messageHandlers' => [],
-            'prod' => true
+            'prod' => true,
+            'ssl' => false,
+            'certFile' => '',
+            'passphrase' => '',
+            'sslContextOptions' => [],
         ], $config);
+
+        if ($this->config['ssl'] && !is_file($this->config['certFile'])) {
+            throw new ConfigException('With ssl configuration, you need to specify a certificate file.');
+        }
     }
 
     /**
