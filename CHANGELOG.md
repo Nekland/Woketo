@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+
+## [1.1.0] - 2017-01-24
+### Added
 - Support for different handlers depending on specified URI in the request
 - Add wss support
 
