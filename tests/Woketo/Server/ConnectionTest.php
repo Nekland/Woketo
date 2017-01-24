@@ -49,7 +49,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $handler->onMessage('Hello', Argument::type(Connection::class))->shouldBeCalled();
 
         // Init
-        $connection = new Connection($reactMock, $handler->reveal(), $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
+        $connection = new Connection($reactMock, function () use ($handler) {return $handler->reveal();}, $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
 
         $reactMock->emit('data', [$handshake]);
         $reactMock->emit('data', [$helloFrame]);
@@ -81,7 +81,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $handler->onBinary($binary, Argument::type(Connection::class))->shouldBeCalled();
 
         // Init
-        $connection = new Connection($reactMock, $handler->reveal(), $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
+        $connection = new Connection($reactMock, function () use ($handler) {return $handler->reveal();}, $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
 
         $reactMock->emit('data', [$handshake]);
         $reactMock->emit('data', [$binaryFrame]);

@@ -27,6 +27,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
+use React\Socket\ServerInterface;
 
 class WebSocketServer
 {
@@ -46,9 +47,9 @@ class WebSocketServer
     private $handshake;
 
     /**
-     * @var MessageHandlerInterface
+     * @var MessageHandlerInterface[]
      */
-    private $messageHandler;
+    private $messageHandlers;
 
     /**
      * @var array
@@ -59,6 +60,11 @@ class WebSocketServer
      * @var LoopInterface
      */
     private $loop;
+
+    /**
+     * @var ServerInterface
+     */
+    private $server;
 
     /**
      * @var MessageProcessor
@@ -94,7 +100,11 @@ class WebSocketServer
         \set_time_limit(0); // It's by default on most server for cli apps but better be sure of that fact
     }
 
-    public function setMessageHandler($messageHandler)
+    /**
+     * @param MessageHandlerInterface|string $messageHandler An instance of a class as string
+     * @param string                         $uri            The URI you want to bind on
+     */
+    public function setMessageHandler($messageHandler, $uri = '*')
     {
         if (!$messageHandler instanceof MessageHandlerInterface &&  !\is_string($messageHandler)) {
             throw new \InvalidArgumentException('The message handler must be an instance of MessageHandlerInterface or a string.');
@@ -109,11 +119,11 @@ class WebSocketServer
                 throw new \InvalidArgumentException('The messageHandler must be a string representing a class.');
             }
         }
-        $this->messageHandler = $messageHandler;
+        $this->messageHandlers[$uri] = $messageHandler;
     }
 
     /**
-     * Launch the websocket server.
+     * Launch the WebSocket server and an infinite loop that act on event.
      *
      * @throws \Exception
      */
@@ -122,22 +132,22 @@ class WebSocketServer
         if ($this->config['prod'] && \extension_loaded('xdebug')) {
             throw new \Exception('xdebug is enabled, it\'s a performance issue. Disable that extension or specify "prod" option to false.');
         }
-        
-        $this->loop = \React\EventLoop\Factory::create();
-        $socket = new \React\Socket\Server($this->loop);
+
+        $this->loop = $this->loop ?? \React\EventLoop\Factory::create();
+        $this->server = $this->server ?? new \React\Socket\Server($this->loop);
 
         if ($this->config['ssl']) {
-            $socket = new \React\Socket\SecureServer($socket, $this->loop, array_merge([
+            $this->server = new \React\Socket\SecureServer($this->server, $this->loop, array_merge([
                 'local_cert' => $this->config['certFile'],
                 'passphrase' => $this->config['passphrase'],
             ], $this->config['sslContextOptions']));
             $this->getLogger()->info('Enabled ssl');
         }
 
-        $socket->on('connection', function ($socketStream) {
+        $this->server->on('connection', function ($socketStream) {
             $this->onNewConnection($socketStream);
         });
-        $socket->listen($this->port);
+        $this->server->listen($this->port);
 
         $this->getLogger()->info('Listening on ' . $this->host . ':' . $this->port);
 
@@ -149,14 +159,40 @@ class WebSocketServer
      */
     private function onNewConnection(ConnectionInterface $socketStream)
     {
-        $messageHandler = $this->messageHandler;
-        if (\is_string($messageHandler)) {
-            $messageHandler = new $messageHandler;
-        }
+        $connection = new Connection($socketStream, function ($uri, Connection $connection) {
+            return $this->getMessageHandler($uri, $connection);
+        }, $this->loop, $this->messageProcessor);
 
-        $connection = new Connection($socketStream, $messageHandler, $this->loop, $this->messageProcessor);
         $connection->setLogger($this->getLogger());
         $this->connections[] = $connection;
+    }
+
+    /**
+     * @param string $uri
+     * @param Connection $connection
+     * @return MessageHandlerInterface|null
+     */
+    private function getMessageHandler(string $uri, Connection $connection)
+    {
+        $handler = null;
+
+        if (!empty($this->messageHandlers[$uri])) {
+            $handler = $this->messageHandlers[$uri];
+        }
+
+        if (null === $handler && !empty($this->messageHandlers['*'])) {
+            $handler = $this->messageHandlers['*'];
+        }
+
+        if (null !== $handler) {
+            if (\is_string($handler)) {
+                $handler = new $handler;
+            }
+
+            return $handler;
+        }
+
+        return null;
     }
 
     /**
@@ -225,6 +261,30 @@ class WebSocketServer
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+
+        return $this;
+    }
+
+    /**
+     * Allows to specify a loop that will be used instead of the reactphp generated loop.
+     *
+     * @param LoopInterface $loop
+     * @return WebSocketServer
+     */
+    public function setLoop(LoopInterface $loop)
+    {
+        $this->loop = $loop;
+
+        return $this;
+    }
+
+    /**
+     * @param ServerInterface $server
+     * @return WebSocketServer
+     */
+    public function setSocketServer(ServerInterface $server)
+    {
+        $this->server = $server;
 
         return $this;
     }
