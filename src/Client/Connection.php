@@ -14,8 +14,11 @@ namespace Nekland\Woketo\Client;
 
 use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\Http\IncompleteHttpMessageException;
+use Nekland\Woketo\Exception\RuntimeException;
+use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
+use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Handshake\ClientHandShake;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
@@ -39,7 +42,7 @@ class Connection extends AbstractConnection
      */
     private $buffer;
 
-    public function __construct(string $uri, string $host, PromiseInterface $clientPromise, MessageProcessor $messageProcessor)
+    public function __construct(string $uri, string $host, PromiseInterface $clientPromise, MessageProcessor $messageProcessor, MessageHandlerInterface $handler)
     {
         parent::__construct($messageProcessor, new ClientHandShake());
 
@@ -47,6 +50,7 @@ class Connection extends AbstractConnection
         $this->uri = $uri;
         $this->host = $host;
         $this->buffer = '';
+        $this->handler = $handler;
 
         $clientPromise->then(function (Stream $stream) {
             $this->stream = $stream;
@@ -126,6 +130,20 @@ class Connection extends AbstractConnection
                     $this->messageProcessor->timeout($this->stream);
                 });
             }
+        }
+    }
+
+    /**
+     * @param string|Frame $frame
+     * @param int          $opCode An int representing binary or text data (const of Frame class)
+     * @throws \Nekland\Woketo\Exception\RuntimeException
+     */
+    public function write($frame, int $opCode = Frame::OP_TEXT)
+    {
+        try {
+            $this->messageProcessor->writeMasked($frame, $this->stream, $opCode);
+        } catch (WebsocketException $e) {
+            throw new RuntimeException($e);
         }
     }
 

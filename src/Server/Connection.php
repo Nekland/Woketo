@@ -25,8 +25,6 @@ use React\Socket\ConnectionInterface;
 
 class Connection extends AbstractConnection
 {
-
-
     public function __construct(
         ConnectionInterface $socketStream,
         \Closure $messageHandler,
@@ -149,7 +147,7 @@ class Connection extends AbstractConnection
         $response = Response::createSwitchProtocolResponse();
         $this->handshake->sign($response, $this->handshake->extractKeyFromRequest($request));
         $response->send($this->stream);
-        
+
         $this->handshakeDone = true;
         $this->getHandler()->onConnection($this);
     }

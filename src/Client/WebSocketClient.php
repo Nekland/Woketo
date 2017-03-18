@@ -12,6 +12,7 @@
 namespace Nekland\Woketo\Client;
 
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\MessageProcessor;
 
 class WebSocketClient
 {
@@ -29,6 +30,11 @@ class WebSocketClient
      * @var array
      */
     private $config;
+
+    /**
+     * @var Connection
+     */
+    private $connection;
 
     /**
      * @var ConnectorFactoryInterface
@@ -49,7 +55,13 @@ class WebSocketClient
             throw new \Exception('xdebug is enabled, it\'s a performance issue. Disable that extension or specify "prod" option to false.');
         }
 
-        $connection = new Connection($this->connectorFactory->createConnector($this->host, $this->port));
+        $this->connection = new Connection(
+            $this->port,
+            $this->host,
+            $this->connectorFactory->createConnector($this->host, $this->port),
+            $this->getMessageProcessor(),
+            $handler
+        );
     }
 
     /**
@@ -63,5 +75,14 @@ class WebSocketClient
         ], $config);
 
         return $this;
+    }
+
+    private function getMessageProcessor()
+    {
+        if (!empty($this->messageProcessor)) {
+            return $this->messageProcessor;
+        }
+
+        return $this->messageProcessor = new MessageProcessor();
     }
 }
