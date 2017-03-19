@@ -78,4 +78,20 @@ class FrameFactory
     {
         return new Frame($rawData, $this->configuration);
     }
+
+    /**
+     * This generates a string of 4 random bytes.
+     *
+     * @return string
+     */
+    public static function generateMask() : string
+    {
+        $str = '';
+
+        for($i = 0; $i < 4; $i++) {
+            $str .= chr(mt_rand(0, 127));
+        }
+
+        return $str;
+    }
 }

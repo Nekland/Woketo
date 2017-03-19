@@ -16,6 +16,7 @@ use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
 use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 /**
  * Class MessageProcessor
@@ -181,10 +182,10 @@ class MessageProcessor
 
     /**
      * @param Frame|string        $frame
-     * @param ConnectionInterface $socket
+     * @param Stream              $socket
      * @param int                 $opCode An int representing binary or text data (const of Frame class)
      */
-    public function write($frame, ConnectionInterface $socket, int $opCode = Frame::OP_TEXT)
+    public function write($frame, Stream $socket, int $opCode = Frame::OP_TEXT)
     {
         if (!$frame instanceof Frame) {
             $data = $frame;
@@ -196,6 +197,19 @@ class MessageProcessor
         $socket->write($frame->getRawData());
     }
 
+    public function writeMasked($frame, Stream $socket, int $opCode = Frame::OP_TEXT)
+    {
+        if (!$frame instanceof Frame) {
+            $data = $frame;
+            $frame = new Frame();
+            $frame->setPayload($data);
+            $frame->setOpcode($opCode);
+        }
+
+        $frame->setMaskingKey(FrameFactory::generateMask());
+        $this->write($frame, $socket, $opCode);
+    }
+
     /**
      * @return FrameFactory
      */
@@ -205,18 +219,18 @@ class MessageProcessor
     }
 
     /**
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    public function timeout(ConnectionInterface $socket)
+    public function timeout(Stream $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
         $socket->close();
     }
 
     /**
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    public function close(ConnectionInterface $socket)
+    public function close(Stream $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(), $socket);
         $socket->end();

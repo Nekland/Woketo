@@ -11,20 +11,18 @@
 
 namespace Nekland\Woketo\Client;
 
+use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use React\EventLoop\Factory as LoopFactory;
+use React\EventLoop\LoopInterface;
 
 class WebSocketClient
 {
     /**
-     * @var int
+     * @var Url
      */
-    private $port;
-
-    /**
-     * @var string
-     */
-    private $host;
+    private $url;
 
     /**
      * @var array
@@ -41,11 +39,15 @@ class WebSocketClient
      */
     private $connectorFactory;
 
-    public function __construct(int $port, string $host, array $config = [], ConnectorFactoryInterface $connectorFactory = null)
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    public function __construct(string $url, array $config = [], ConnectorFactoryInterface $connectorFactory = null)
     {
-        $this->port = $port;
-        $this->host = $host;
-        $this->connectorFactory = $connectorFactory ?: new ConnectorFactory();
+        $this->url = new Url($url);
+        $this->connectorFactory = $connectorFactory;
         $this->setConfig($config);
     }
 
@@ -56,12 +58,13 @@ class WebSocketClient
         }
 
         $this->connection = new Connection(
-            $this->port,
-            $this->host,
-            $this->connectorFactory->createConnector($this->host, $this->port),
+            $this->url,
+            $this->getConnectorFactory()->createConnector($this->url->getHost(), $this->url->getPort()),
             $this->getMessageProcessor(),
             $handler
         );
+
+        $this->loop->run();
     }
 
     /**
@@ -75,6 +78,36 @@ class WebSocketClient
         ], $config);
 
         return $this;
+    }
+
+    /**
+     * @return ConnectorFactory
+     */
+    private function getConnectorFactory() : ConnectorFactory
+    {
+        if ($this->connectorFactory === null) {
+            $this->connectorFactory = new ConnectorFactory();
+        }
+        $this->connectorFactory->setLoop($this->getLoop());
+
+        $this->connectorFactory->enableDns();
+        if ($this->url->isSecured()) {
+            $this->connectorFactory->enableSsl();
+        }
+
+        return $this->connectorFactory;
+    }
+
+    /**
+     * @return LoopInterface
+     */
+    private function getLoop() : LoopInterface
+    {
+        if (null !== $this->loop) {
+            return $this->loop;
+        }
+
+        return $this->loop = LoopFactory::create();
     }
 
     private function getMessageProcessor()

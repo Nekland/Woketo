@@ -17,7 +17,9 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Handshake\HandshakeInterface;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use Nekland\Woketo\Utils\SimpleLogger;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Socket\Connection;
@@ -94,7 +96,7 @@ abstract class AbstractConnection
             return;
         } catch (WebsocketException $e) {
             $this->messageProcessor->close($this->stream);
-            $this->logger->notice('Connection to ' . $this->getIp() . ' closed with error : ' . $e->getMessage());
+            $this->getLogger()->notice('Connection to ' . $this->getIp() . ' closed with error : ' . $e->getMessage());
             $this->handler->onError($e, $this);
         }
     }
@@ -105,17 +107,14 @@ abstract class AbstractConnection
     /**
      * @return string
      */
-    public function getIp()
-    {
-        return $this->stream->getRemoteAddress();
-    }
+    public abstract function getIp();
 
     /**
      * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
     {
-        return $this->logger;
+        return $this->logger ?: $this->logger = new SimpleLogger();
     }
 
     /**

@@ -16,11 +16,11 @@ use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\Http\IncompleteHttpMessageException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Exception\WebsocketException;
-use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
+use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
-use Nekland\Woketo\Rfc6455\Handshake\ClientHandShake;
+use Nekland\Woketo\Rfc6455\Handshake\ClientHandshake;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\Promise\PromiseInterface;
 use React\Stream\Stream;
@@ -35,20 +35,20 @@ class Connection extends AbstractConnection
     /**
      * @var string
      */
-    private $host;
-
-    /**
-     * @var string
-     */
     private $buffer;
 
-    public function __construct(string $uri, string $host, PromiseInterface $clientPromise, MessageProcessor $messageProcessor, MessageHandlerInterface $handler)
+    /**
+     * @var Url
+     */
+    private $url;
+
+    public function __construct(Url $url, PromiseInterface $clientPromise, MessageProcessor $messageProcessor, MessageHandlerInterface $handler)
     {
-        parent::__construct($messageProcessor, new ClientHandShake());
+        parent::__construct($messageProcessor, new ClientHandshake());
 
         $this->requestSent = false;
-        $this->uri = $uri;
-        $this->host = $host;
+        $this->url = $url;
+        $this->uri = $this->url->getUri();
         $this->buffer = '';
         $this->handler = $handler;
 
@@ -58,16 +58,16 @@ class Connection extends AbstractConnection
         }, function (\Exception $error){
             $this->onError($error);
         });
-
-        // This is done because the handshake should come from the client.
-        $this->processHandshake('');
     }
 
     private function onConnection(Stream $stream)
     {
-        $stream->on('message', function (string $data) {
+        $stream->on('data', function (string $data) {
             $this->onMessage($data);
         });
+
+        // This is done because the handshake should come from the client.
+        $this->processHandshake('');
     }
 
     /**
@@ -77,8 +77,9 @@ class Connection extends AbstractConnection
     {
         // Sending initialization request
         if (!$this->requestSent) {
-            $request = Request::createClientRequest($this->uri, $this->host);
+            $request = $this->handshake->getRequest($this->url->getUri(), $this->url->getHost());
             $this->stream->write($request->getRequestAsString());
+            $this->requestSent = true;
             return;
         }
 
@@ -126,7 +127,7 @@ class Connection extends AbstractConnection
             } else {
                 // We wait for more data so we start a timeout.
                 $this->timeout = $this->loop->addTimer(Connection::DEFAULT_TIMEOUT, function () {
-                    $this->logger->notice('Connection to ' . $this->getIp() . ' timed out.');
+                    $this->getLogger()->notice('Connection to ' . $this->getIp() . ' timed out.');
                     $this->messageProcessor->timeout($this->stream);
                 });
             }
@@ -154,6 +155,16 @@ class Connection extends AbstractConnection
     {
         $error = $error instanceof \Exception ? $error->getMessage() : $error;
 
-        $this->logger->error(sprintf('An error occured: %s', $error));
+        $this->getLogger()->error(sprintf('An error occured: %s', $error));
+    }
+
+    /**
+     * May return ip or hostname
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->url->getHost();
     }
 }

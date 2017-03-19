@@ -4,7 +4,7 @@ require __DIR__ . '/../../../vendor/autoload.php';
 
 use Nekland\Woketo\Core\AbstractConnection;
 
-$client = new \Nekland\Woketo\Client\WebSocketClient(8080, '127.0.0.1');
+$client = new \Nekland\Woketo\Client\WebSocketClient( 'ws://127.0.0.1:8080/', ['prod' => false]);
 
 $client->start(new class implements \Nekland\Woketo\Message\MessageHandlerInterface {
     public function onConnection(AbstractConnection $connection)
@@ -14,13 +14,10 @@ $client->start(new class implements \Nekland\Woketo\Message\MessageHandlerInterf
 
     public function onMessage(string $data, AbstractConnection $connection)
     {
-        // TODO: Implement onMessage() method.
+        echo 'Data receive: ' . $data . "\n";
     }
 
-    public function onBinary(string $data, AbstractConnection $connection)
-    {
-        // TODO: Implement onBinary() method.
-    }
+    public function onBinary(string $data, AbstractConnection $connection) {}
 
     public function onError(\Nekland\Woketo\Exception\WebsocketException $e, AbstractConnection $connection)
     {

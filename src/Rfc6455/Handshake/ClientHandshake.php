@@ -88,4 +88,32 @@ class ClientHandshake implements HandshakeInterface
 
         return true;
     }
+
+    /**
+     * @param string $uri
+     * @param string $host
+     * @return Request
+     */
+    public function getRequest(string $uri, string $host)
+    {
+        $request = Request::createClientRequest($uri, $host);
+        $request->setVersion(13);
+        $request->setKey(base64_encode(ClientHandshake::generateRandom16BytesKey()));
+
+        return $request;
+    }
+
+    /**
+     * @return string
+     */
+    public static function generateRandom16BytesKey()
+    {
+        $bytes = '';
+
+        for($i = 0; $i < 16; $i++) {
+            $bytes .= chr(mt_rand(0, 255));
+        }
+
+        return $bytes;
+    }
 }

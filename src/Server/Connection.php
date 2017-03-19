@@ -159,4 +159,12 @@ class Connection extends AbstractConnection
     {
         $this->messageProcessor->close($this->stream);
     }
+
+    /**
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->stream->getRemoteAddress();
+    }
 }

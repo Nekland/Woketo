@@ -74,7 +74,7 @@ abstract class AbstractHttpMessage
      */
     public function getHeaders()
     {
-        return $this->headers;
+        return $this->headers ?: new HttpHeadersBag();
     }
 
     /**

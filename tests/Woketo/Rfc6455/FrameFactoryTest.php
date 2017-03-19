@@ -52,4 +52,9 @@ class FrameFactoryTest extends \PHPUnit_Framework_TestCase
         $frame = $this->factory->createPongFrame($message);
         $this->assertEquals($message, $frame->getPayload());
     }
+
+    public function testItGeneratesMaskingKey()
+    {
+        $this->assertSame(4, strlen(FrameFactory::generateMask()));
+    }
 }
