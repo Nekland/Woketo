@@ -224,33 +224,20 @@ class BitManipulation
      * @param int|null $size  In bytes. This value should always be precise. Be careful if you don't !
      * @return string
      */
-    public static function intToString(int $frame, int $size = null) : string
+    public static function intToBinary(int $frame, int $size = 0) : string
     {
-        $res = '';
-        $startingBytes = true;
-        for ($i = 8; $i >= 0; $i--) {
-            $code = ($frame & (255 << ($i * 8))) >> ($i * 8);
+        $format = '*';
 
-            // This condition avoid to take care of front zero bytes (that are always present but we should ignore)
-            if ($code !== 0 || !$startingBytes) {
-                $startingBytes = false;
-                $res .= \chr($code);
-            }
+        switch(true) {
+            case $size <= 2:
+                $format = 'n*';break;
+            case $size <= 4:
+                $format = 'N*';break;
+            case $size > 4:
+                $format = 'J*';break;
         }
 
-        if ($size !== null) {
-            $actualSize = BitManipulation::frameSize($res);
-            if ($size < $actualSize) {
-                $res = \substr($res, $size - $actualSize);
-            } else if ($size > $actualSize) {
-                $missingChars = $size - $actualSize;
-                for ($i = 0; $i < $missingChars; $i++) {
-                    $res = \chr(0) . $res;
-                }
-            }
-        }
-
-        return $res;
+        return pack($format, $frame);
     }
 
     /**
