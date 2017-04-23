@@ -97,8 +97,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
     public function testItTransformIntFrameToString()
     {
-          // This test doesn't work and i think it's not good
-//        $this->assertSame(BitManipulation::intToBinary(6382179), 'abc');
+        $this->assertSame(BitManipulation::intToBinary(6382179), 'abc');
         $this->assertSame(BitManipulation::intToBinary(1000), BitManipulation::hexArrayToString(['03', 'E8']));
         $this->assertSame(BitManipulation::intToBinary(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
         $this->assertSame(BitManipulation::intToBinary(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
@@ -107,7 +106,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
     public function testItTransformStringFrameToInt()
     {
-        $this->assertSame(BitManipulation::stringToInt('abc'), 6382179);
+        $this->assertSame(BitManipulation::binaryToInt('abc'), 6382179);
     }
 
     /**
@@ -117,7 +116,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
      */
     public function testItTransformToHex($a, $b)
     {
-        $this->assertSame($a, BitManipulation::frameToHex($b));
+        $this->assertSame($a, BitManipulation::binaryToHex($b));
     }
 
     public function testItRetrieveSubFrames()

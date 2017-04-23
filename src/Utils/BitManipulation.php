@@ -247,10 +247,9 @@ class BitManipulation
      * @param string $frame
      * @return int
      */
-    public static function stringToInt(string $frame) : int
+    public static function binaryToInt(string $frame) : int
     {
         $len = BitManipulation::frameSize($frame);
-        $res = 0;
 
         if ($len > 8) {
             throw new \InvalidArgumentException(
@@ -258,11 +257,18 @@ class BitManipulation
             );
         }
 
-        for ($i = $len - 1; $i >= 0; $i--) {
-            $res += \ord($frame[$len - $i - 1]) << ($i * 8);
+        $format = '*';
+
+        switch(true) {
+            case $len <= 2:
+                $format = 'n';break;
+            case $len <= 4:
+                $format = 'N';break;
+            case $len > 4:
+                $format = 'J';break;
         }
 
-        return $res;
+        return unpack($format, $frame)[1];
     }
 
     /**
@@ -272,20 +278,9 @@ class BitManipulation
      * @param string $frame
      * @return string
      */
-    public static function frameToHex(string $frame) : string
+    public static function binaryToHex(string $frame) : string
     {
-        $len = BitManipulation::frameSize($frame);
-        $res = '';
-
-        for ($i = 0; $i < $len; $i++) {
-            $hex = \dechex(\ord($frame[$i]));
-            if (\strlen($hex) < 2) {
-                $hex = '0' . $hex;
-            }
-            $res .= $hex;
-        }
-
-        return $res;
+        return unpack('H*', $frame)[1];
     }
 
     /**
