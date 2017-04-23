@@ -66,7 +66,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($helloMaskedFrame->isMasked(), true);
         $this->assertSame($helloMaskedFrame->isFinal(), true);
-        $this->assertSame(BitManipulation::stringToInt($helloMaskedFrame->getMaskingKey()), 939139389);
+        $this->assertSame(BitManipulation::binaryToInt($helloMaskedFrame->getMaskingKey()), 939139389);
         $this->assertSame($helloMaskedFrame->getPayload(), 'Hello');
     }
 
