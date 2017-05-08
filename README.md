@@ -49,7 +49,7 @@ $server->start(); // And that's all <3
 namespace Your\Namespace;
 
 use Nekland\Woketo\Server\Connection;
-use Nekland\Woketo\Message\TextMessageHandler
+use Nekland\Woketo\Message\TextMessageHandler;
 
 class YourMessageHandler extends TextMessageHandler
 {
