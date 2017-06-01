@@ -153,7 +153,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                BitManipulation::intToBinary(939139389),
+                BitManipulation::intToBinaryString(939139389),
                 'Hello',
                 Frame::OP_TEXT,
                 BitManipulation::hexArrayToString(
