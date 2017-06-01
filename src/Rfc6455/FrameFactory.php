@@ -44,7 +44,7 @@ class FrameFactory
         $frame = $this->createNewFrame();
 
         $frame->setOpcode(Frame::OP_CLOSE);
-        $content = BitManipulation::intToBinary($status);
+        $content = BitManipulation::intToBinaryString($status);
         if (null !== $reason) {
             $content .= $reason;
         }

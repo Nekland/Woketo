@@ -72,7 +72,7 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testItClosesWithProtocolErrorOnWrongCloseCode(int $codeFrameIn, int $codeFrameOut)
     {
-        $frameIn = BitManipulation::intToBinary($codeFrameIn, 2);
+        $frameIn = BitManipulation::intToBinaryString($codeFrameIn, 2);
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);

@@ -212,12 +212,12 @@ class Frame
             $secondLen = $this->payloadLen;
         }
 
-        $data .= BitManipulation::intToBinary(
+        $data .= BitManipulation::intToBinaryString(
             ((((null === $this->final ? 1 : (int) $this->final) << 7) + $this->opcode) << 8)
             + ($this->isMasked() << 7) + $firstLen
         );
         if (null !== $secondLen) {
-            $data .= BitManipulation::intToBinary($secondLen, $firstLen === 126 ? 2 : 8);
+            $data .= BitManipulation::intToBinaryString($secondLen, $firstLen === 126 ? 2 : 8);
         }
         if ($this->isMasked()) {
             $data .= $this->getMaskingKey();
@@ -339,7 +339,7 @@ class Frame
 
         $value = BitManipulation::bytesFromTo($this->rawData, $start, $start + 3);
 
-        return $this->mask = BitManipulation::intToBinary($value, 4);
+        return $this->mask = BitManipulation::intToBinaryString($value, 4);
     }
 
     /**

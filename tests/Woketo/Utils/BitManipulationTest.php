@@ -98,11 +98,11 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
     public function testItTransformIntFrameToString()
     {
           // This test doesn't work and i think it's not good
-//        $this->assertSame(BitManipulation::intToBinary(6382179), 'abc');
-        $this->assertSame(BitManipulation::intToBinary(1000), BitManipulation::hexArrayToString(['03', 'E8']));
-        $this->assertSame(BitManipulation::intToBinary(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
-        $this->assertSame(BitManipulation::intToBinary(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
-        $this->assertSame(BitManipulation::intToBinary(33024), BitManipulation::hexArrayToString(['81', '00']));
+//        $this->assertSame(BitManipulation::intToBinaryString(6382179), 'abc');
+        $this->assertSame(BitManipulation::intToBinaryString(1000), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(33024), BitManipulation::hexArrayToString(['81', '00']));
     }
 
 //    public function testItTransformStringFrameToInt()
