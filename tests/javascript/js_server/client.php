@@ -21,6 +21,7 @@ $client->start(new class implements \Nekland\Woketo\Message\MessageHandlerInterf
 
     public function onError(\Nekland\Woketo\Exception\WebsocketException $e, AbstractConnection $connection)
     {
-        var_dump('error', $e->getMessage());
+        var_dump($e->getMessage());
+        echo $e->getTraceAsString();
     }
 });

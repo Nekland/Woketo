@@ -101,6 +101,14 @@ class Request extends AbstractHttpMessage
     }
 
     /**
+     * @return string|null
+     */
+    public function getKey()
+    {
+        return $this->getHeader('Sec-WebSocket-Key');
+    }
+
+    /**
      * @param string $host
      * @return self
      */

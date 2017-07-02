@@ -28,9 +28,9 @@ use React\Stream\Stream;
 class Connection extends AbstractConnection
 {
     /**
-     * @var bool
+     * @var string|null
      */
-    private $requestSent;
+    private $handshakeKey;
 
     /**
      * @var string
@@ -46,7 +46,6 @@ class Connection extends AbstractConnection
     {
         parent::__construct($messageProcessor, new ClientHandshake());
 
-        $this->requestSent = false;
         $this->url = $url;
         $this->uri = $this->url->getUri();
         $this->buffer = '';
@@ -76,10 +75,11 @@ class Connection extends AbstractConnection
     protected function processHandshake(string $data)
     {
         // Sending initialization request
-        if (!$this->requestSent) {
+        if (null === $this->handshakeKey) {
             $request = $this->handshake->getRequest($this->url->getUri(), $this->url->getHost());
             $this->stream->write($request->getRequestAsString());
-            $this->requestSent = true;
+            $this->handshakeKey = $request->getKey();
+
             return;
         }
 
@@ -93,7 +93,7 @@ class Connection extends AbstractConnection
         }
 
         // Verifying response data
-        $this->handshake->verify($response);
+        $this->handshake->verify($response, $this->handshakeKey);
 
         // Signaling the handshake is done to jump in the message exchange process
         $this->handshakeDone = true;
