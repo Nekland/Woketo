@@ -15,6 +15,10 @@ $client->start(new class implements \Nekland\Woketo\Message\MessageHandlerInterf
     public function onMessage(string $data, AbstractConnection $connection)
     {
         echo 'Data receive: ' . $data . "\n";
+
+        if ($data === 'world') {
+            $connection->close();
+        }
     }
 
     public function onBinary(string $data, AbstractConnection $connection) {}

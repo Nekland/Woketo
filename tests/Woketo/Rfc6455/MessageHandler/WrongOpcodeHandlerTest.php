@@ -17,7 +17,7 @@ use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -42,7 +42,7 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(ConnectionInterface::class);
+        $socket = $this->prophesize(Stream::class);
 
         $frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR, Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();

@@ -14,6 +14,7 @@ namespace Nekland\Woketo\Core;
 use Nekland\Woketo\Exception\NoHandlerException;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Handshake\HandshakeInterface;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
@@ -136,4 +137,19 @@ abstract class AbstractConnection
 
         return $this->handler;
     }
+
+    /**
+     * Close the connection with normal close.
+     */
+    public function close()
+    {
+        $this->messageProcessor->close($this->stream);
+    }
+
+    /**
+     * @param string|Frame  $frame
+     * @param int           $opCode
+     * @throws \Nekland\Woketo\Exception\RuntimeException
+     */
+    public abstract function write($frame, int $opCode = Frame::OP_TEXT);
 }

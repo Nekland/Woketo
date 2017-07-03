@@ -15,7 +15,6 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use React\Socket\ConnectionInterface;
 use React\Stream\Stream;
 
 /**
@@ -70,11 +69,11 @@ class MessageProcessor
      *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message with a control frame in the middle of the bin-frame.
      *
      * @param string              $data
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      * @param Message|null        $message
      * @return \Generator
      */
-    public function onData(string $data, ConnectionInterface $socket, Message $message = null)
+    public function onData(string $data, Stream $socket, Message $message = null)
     {
         do {
             if (null === $message) {
@@ -143,9 +142,9 @@ class MessageProcessor
 
     /**
      * @param Message $message
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    protected function processHelper(Message $message, ConnectionInterface $socket)
+    protected function processHelper(Message $message, Stream $socket)
     {
         foreach ($this->handlers as $handler) {
             if ($handler->supports($message)) {
@@ -156,11 +155,11 @@ class MessageProcessor
 
     /**
      * @param Frame $frame
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      *
      * @return Message
      */
-    protected function processControlFrame(Frame $frame, ConnectionInterface $socket) : Message
+    protected function processControlFrame(Frame $frame, Stream $socket) : Message
     {
         $controlFrameMessage = new Message();
         $controlFrameMessage->addFrame($frame);

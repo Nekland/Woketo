@@ -51,6 +51,10 @@ class WebSocketClient
         $this->setConfig($config);
     }
 
+    /**
+     * @param MessageHandlerInterface $handler
+     * @throws \Exception
+     */
     public function start(MessageHandlerInterface $handler)
     {
         if ($this->config['prod'] && \extension_loaded('xdebug')) {
@@ -59,7 +63,7 @@ class WebSocketClient
 
         $this->connection = new Connection(
             $this->url,
-            $this->getConnectorFactory()->createConnector($this->url->getHost(), $this->url->getPort()),
+            $this->getConnectorFactory()->createConnector()->connect($this->url->getHost() . ':' . $this->url->getPort()),
             $this->getMessageProcessor(),
             $handler
         );
@@ -74,23 +78,32 @@ class WebSocketClient
     public function setConfig(array $config = [])
     {
         $this->config = array_merge([
-            'prod' => true
+            'prod' => true,
+            'ssl' => [],
+            'dns' => null,
         ], $config);
 
         return $this;
     }
 
     /**
-     * @return ConnectorFactory
+     * Creates a connector factory with the given configuration if none given in the constructor.
+     *
+     * @return ConnectorFactoryInterface
      */
-    private function getConnectorFactory() : ConnectorFactory
+    private function getConnectorFactory() : ConnectorFactoryInterface
     {
-        if ($this->connectorFactory === null) {
-            $this->connectorFactory = new ConnectorFactory();
+        if ($this->connectorFactory !== null) {
+            return $this->connectorFactory;
         }
+        $this->connectorFactory = new ConnectorFactory();
         $this->connectorFactory->setLoop($this->getLoop());
+        $this->connectorFactory->setSslOptions($this->config['ssl']);
 
         $this->connectorFactory->enableDns();
+        if (null !== $this->config['dns']) {
+            $this->connectorFactory->setDnsServer($this->config['dns']);
+        }
         if ($this->url->isSecured()) {
             $this->connectorFactory->enableSsl();
         }
@@ -110,7 +123,10 @@ class WebSocketClient
         return $this->loop = LoopFactory::create();
     }
 
-    private function getMessageProcessor()
+    /**
+     * @return MessageProcessor
+     */
+    private function getMessageProcessor(): MessageProcessor
     {
         if (!empty($this->messageProcessor)) {
             return $this->messageProcessor;

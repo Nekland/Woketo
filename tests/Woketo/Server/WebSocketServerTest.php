@@ -21,6 +21,7 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
+use React\Stream\Stream;
 use React\Stream\WritableStreamInterface;
 
 class WebSocketServerTest extends \PHPUnit_Framework_TestCase
@@ -132,9 +133,13 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
 /**
  * Mock for react php
  */
-class FakeServerAndConnection implements ServerInterface, ConnectionInterface {
+class FakeServerAndConnection extends Stream implements ServerInterface, ConnectionInterface {
     private $onData;
     private $onConnect;
+    public function __construct()
+    {
+    }
+
     public function sendHandshake($handshake)
     {
         $onData = $this->onData;

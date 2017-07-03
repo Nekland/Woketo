@@ -31,6 +31,11 @@ class Request extends AbstractHttpMessage
      */
     private $host;
 
+    /**
+     * @var int
+     */
+    private $port;
+
     private function __construct() {}
 
     /**
@@ -120,6 +125,17 @@ class Request extends AbstractHttpMessage
     }
 
     /**
+     * @param int $port
+     * @return Request
+     */
+    public function setPort($port)
+    {
+        $this->port = $port;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getExtensions() : array
@@ -164,7 +180,7 @@ class Request extends AbstractHttpMessage
     public function getRequestAsString() : string
     {
         $request = mb_strtoupper($this->method) . ' ' . $this->uri . " HTTP/1.1\r\n";
-        $request .= 'Host: ' . $this->host . "\r\n";
+        $request .= 'Host: ' . $this->host . ($this->port ? ':' . $this->port : '') . "\r\n";
         $request .= 'User-Agent: Woketo/' . Meta::VERSION . "\r\n";
         $request .= "Upgrade: websocket\r\n";
         $request .= "Connection: Upgrade\r\n";
@@ -209,11 +225,12 @@ class Request extends AbstractHttpMessage
     }
 
     /**
-     * @param string $uri
-     * @param string $host
+     * @param string   $uri
+     * @param string   $host
+     * @param int|null $port
      * @return Request
      */
-    public static function createClientRequest(string $uri, string $host)
+    public static function createClientRequest(string $uri, string $host, int $port = null)
     {
         $request = new Request();
 
@@ -221,6 +238,9 @@ class Request extends AbstractHttpMessage
         $request->setUri($uri);
         $request->setHttpVersion('1.1');
         $request->setHost($host);
+        if ($port) {
+            $request->setPort($port);
+        }
 
         return $request;
     }

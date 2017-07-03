@@ -19,7 +19,7 @@ use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,7 +43,7 @@ class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(ConnectionInterface::class);
+        $socket = $this->prophesize(Stream::class);
 
         $frameFactory->createPongFrame(Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();

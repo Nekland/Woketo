@@ -11,16 +11,12 @@
 
 namespace Nekland\Woketo\Client;
 
-use React\Promise\PromiseInterface;
+use React\SocketClient\ConnectorInterface;
 
 interface ConnectorFactoryInterface
 {
     /**
-     * @param string $host
-     * @param int    $port
-     * @param bool   $secured
-     * @param array  $sslConfig
-     * @return PromiseInterface
+     * @return ConnectorInterface
      */
-    public function createConnector(string $host, int $port, bool $secured = false, array $sslConfig = []);
+    public function createConnector(): ConnectorInterface;
 }

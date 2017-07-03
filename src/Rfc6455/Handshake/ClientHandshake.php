@@ -17,6 +17,7 @@ use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Http\AbstractHttpMessage;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
+use Nekland\Woketo\Http\Url;
 
 class ClientHandshake implements HandshakeInterface
 {
@@ -90,13 +91,12 @@ class ClientHandshake implements HandshakeInterface
     }
 
     /**
-     * @param string $uri
-     * @param string $host
+     * @param Url $url
      * @return Request
      */
-    public function getRequest(string $uri, string $host)
+    public function getRequest(Url $url)
     {
-        $request = Request::createClientRequest($uri, $host);
+        $request = Request::createClientRequest($url->getUri(), $url->getHost(), $url->getPort());
         $request->setVersion(13);
         $request->setKey(base64_encode(ClientHandshake::generateRandom16BytesKey()));
 

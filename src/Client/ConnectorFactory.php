@@ -11,9 +11,9 @@
 
 namespace Nekland\Woketo\Client;
 
-use React\EventLoop\Factory as LoopFactory;
 use React\Dns\Resolver\Factory as DnsResolverFactory;
 use React\EventLoop\LoopInterface;
+use React\SocketClient\ConnectorInterface;
 use React\SocketClient\DnsConnector;
 use React\SocketClient\SecureConnector;
 use React\SocketClient\TcpConnector;
@@ -41,17 +41,23 @@ class ConnectorFactory implements ConnectorFactoryInterface
      */
     private $loop;
 
+    /**
+     * @var array
+     */
+    private $sslOptions;
+
     public function __construct()
     {
         $this->dnsEnabled = false;
         $this->sslEnabled = false;
         $this->dnsServer = '8.8.8.8'; // Google DNS
+        $this->sslOptions = [];
     }
 
     /**
      * @return ConnectorFactory
      */
-    public function enableDns() : ConnectorFactory
+    public function enableDns(): ConnectorFactory
     {
         $this->dnsEnabled = true;
 
@@ -61,7 +67,7 @@ class ConnectorFactory implements ConnectorFactoryInterface
     /**
      * @return ConnectorFactory
      */
-    public function disableDns() : ConnectorFactory
+    public function disableDns(): ConnectorFactory
     {
         $this->dnsEnabled = false;
 
@@ -71,7 +77,7 @@ class ConnectorFactory implements ConnectorFactoryInterface
     /**
      * @return ConnectorFactory
      */
-    public function enableSsl() : ConnectorFactory
+    public function enableSsl(): ConnectorFactory
     {
         $this->sslEnabled = true;
 
@@ -81,7 +87,7 @@ class ConnectorFactory implements ConnectorFactoryInterface
     /**
      * @return ConnectorFactory
      */
-    public function disableSsl() : ConnectorFactory
+    public function disableSsl(): ConnectorFactory
     {
         $this->sslEnabled = true;
 
@@ -92,7 +98,7 @@ class ConnectorFactory implements ConnectorFactoryInterface
      * @param string $server    Ip address of the DNS server you want to contact.
      * @return ConnectorFactory
      */
-    public function setDnsServer(string $server) : ConnectorFactory
+    public function setDnsServer(string $server): ConnectorFactory
     {
         $this->dnsServer = $server;
 
@@ -100,17 +106,30 @@ class ConnectorFactory implements ConnectorFactoryInterface
     }
 
     /**
+     * This allows the user to use its own loop to potentially use it for something else.
+     *
      * @param LoopInterface $loop
-     * @return ConnectorFactory
+     * @return ConnectorFactoryInterface
      */
-    public function setLoop(LoopInterface $loop) : ConnectorFactory
+    public function setLoop(LoopInterface $loop): ConnectorFactoryInterface
     {
         $this->loop = $loop;
 
         return $this;
     }
 
-    public function createConnector(string $host, int $port, bool $secured = false, array $sslConfig = [])
+    /**
+     * @param array $options
+     * @return ConnectorFactory
+     */
+    public function setSslOptions(array $options): ConnectorFactory
+    {
+        $this->sslOptions = $options;
+
+        return $this;
+    }
+
+    public function createConnector(): ConnectorInterface
     {
         $connector = new TcpConnector($this->loop);
 
@@ -120,11 +139,11 @@ class ConnectorFactory implements ConnectorFactoryInterface
         }
 
         if ($this->sslEnabled) {
-            $connector = new SecureConnector($connector, $this->loop, $sslConfig);
+            $connector = new SecureConnector($connector, $this->loop, $this->sslOptions);
         }
 
         $connector = new TimeoutConnector($connector, 3.0, $this->loop);
 
-        return $connector->connect($host . ':' . $port);
+        return $connector;
     }
 }

@@ -13,7 +13,7 @@ namespace Nekland\Woketo\Rfc6455\MessageHandler;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 class PingFrameHandler implements Rfc6455MessageHandlerInterface
 {
@@ -22,7 +22,7 @@ class PingFrameHandler implements Rfc6455MessageHandlerInterface
         return $message->getFirstFrame()->getOpcode() === Frame::OP_PING;
     }
 
-    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
+    public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
     {
         $messageProcessor->write($messageProcessor->getFrameFactory()->createPongFrame($message->getContent()), $socket);
     }

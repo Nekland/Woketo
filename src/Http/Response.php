@@ -130,9 +130,12 @@ class Response extends AbstractHttpMessage
             throw new IncompleteHttpMessageException();
         }
 
+        // Split response headers from potential content
         $exploded = explode("\r\n\r\n", $data);
         $responseString = '';
+
         if (count($exploded) > 1) {
+            // Removes the request keep content in data reference
             $responseString = $exploded[0];
             unset($exploded[0]);
             $data = implode("\r\n\r\n", $exploded);
@@ -146,10 +149,10 @@ class Response extends AbstractHttpMessage
         unset($lines[0]);
         Response::initHeaders($lines, $response);
 
-        if ($response->getHeader('Upgrade') !== 'websocket') {
+        if (strtolower($response->getHeader('Upgrade')) !== 'websocket') {
             throw new HttpException('Missing or wrong upgrade header.');
         }
-        if ($response->getHeader('Connection') !== 'Upgrade') {
+        if (strtolower($response->getHeader('Connection')) !== 'upgrade') {
             throw new HttpException('Missing upgrade header.');
         }
 
@@ -173,7 +176,7 @@ class Response extends AbstractHttpMessage
 
         if ($httpElements[1] != 101) {
             throw new HttpException(
-                sprintf('Attempted 101 response but got %s', $httpElements[1])
+                sprintf('Attempted 101 response but got %s, message: %s', $httpElements[1], $firstLine)
             );
         }
         $response->setStatusCode($httpElements[1]);

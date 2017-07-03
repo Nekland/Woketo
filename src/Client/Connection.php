@@ -76,7 +76,7 @@ class Connection extends AbstractConnection
     {
         // Sending initialization request
         if (null === $this->handshakeKey) {
-            $request = $this->handshake->getRequest($this->url->getUri(), $this->url->getHost());
+            $request = $this->handshake->getRequest($this->url);
             $this->stream->write($request->getRequestAsString());
             $this->handshakeKey = $request->getKey();
 
@@ -87,7 +87,7 @@ class Connection extends AbstractConnection
 
         // Receiving the response
         try {
-            $response = Response::create($data);
+            $response = Response::create($this->buffer);
         } catch (IncompleteHttpMessageException $e) {
             return;
         }
@@ -98,6 +98,12 @@ class Connection extends AbstractConnection
         // Signaling the handshake is done to jump in the message exchange process
         $this->handshakeDone = true;
         $this->getHandler()->onConnection($this);
+
+        if (!empty($this->buffer)) {
+            $buffer = $this->buffer;
+            $this->buffer = '';
+            $this->onMessage($buffer);
+        }
     }
 
     protected function processMessage(string $data)

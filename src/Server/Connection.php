@@ -106,11 +106,6 @@ class Connection extends AbstractConnection
         }
     }
 
-    /**
-     * @param string|Frame $frame
-     * @param int          $opCode An int representing binary or text data (const of Frame class)
-     * @throws \Nekland\Woketo\Exception\RuntimeException
-     */
     public function write($frame, int $opCode = Frame::OP_TEXT)
     {
         try {
@@ -150,14 +145,6 @@ class Connection extends AbstractConnection
 
         $this->handshakeDone = true;
         $this->getHandler()->onConnection($this);
-    }
-
-    /**
-     * Close the connection with normal close.
-     */
-    public function close()
-    {
-        $this->messageProcessor->close($this->stream);
     }
 
     /**

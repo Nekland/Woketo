@@ -68,6 +68,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($response->getReason(), 'Switching Protocols');
         $this->assertEquals($response->getAcceptKey(), 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
         $this->assertEquals($response->getHeader('Sec-WebSocket-Accept'), 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
+        $this->assertEquals($response->getHeader('Upgrade'), 'websocket');
     }
     
     public function testItCreateAResponseFromBadResponseText()

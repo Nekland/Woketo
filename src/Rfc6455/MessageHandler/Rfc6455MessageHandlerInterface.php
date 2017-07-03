@@ -14,7 +14,7 @@ namespace Nekland\Woketo\Rfc6455\MessageHandler;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 interface Rfc6455MessageHandlerInterface
 {
@@ -27,8 +27,8 @@ interface Rfc6455MessageHandlerInterface
     /**
      * @param Message             $message
      * @param MessageProcessor    $messageProcessor
-     * @param ConnectionInterface $socket
+     * @param Stream              $socket
      * @return null
      */
-    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket);
+    public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket);
 }

@@ -21,6 +21,7 @@ use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 use React\Stream\WritableStreamInterface;
 
 class ConnectionTest extends \PHPUnit_Framework_TestCase
@@ -106,8 +107,12 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 }
 
-class ReactConnectionMock implements ConnectionInterface
+class ReactConnectionMock extends Stream implements ConnectionInterface
 {
+    public function __construct()
+    {
+    }
+
     private $on = [];
 
     public function on($event, callable $listener)

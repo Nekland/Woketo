@@ -14,13 +14,12 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
-use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,7 +30,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $this->socket = $this->prophesize(ConnectionInterface::class);
+        $this->socket = $this->prophesize(Stream::class);
         $this->frameFactory = $this->getMockBuilder(FrameFactory::class)
             ->setMethods(['createCloseFrame'])
             ->getMock()
@@ -135,7 +134,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
                 return $message->getFirstFrame()->getOpcode() === Frame::OP_CLOSE;
             }
 
-            public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
+            public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
             {
                 $messageProcessor->write((new FrameFactory())->createCloseFrame(), $socket);
             }

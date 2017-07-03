@@ -72,10 +72,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request = Request::createClientRequest('/chat', 'www.example.com');
         $request->setVersion(13);
         $request->setKey('sOmEaWeSoMeKey');
+        $request->setPort(9000);
 
         $this->assertSame($request->getRequestAsString(),
             "GET /chat HTTP/1.1\r\n"
-            . "Host: www.example.com\r\n"
+            . "Host: www.example.com:9000\r\n"
             . "User-Agent: Woketo/2.0\r\n"
             . "Upgrade: websocket\r\n"
             . "Connection: Upgrade\r\n"
