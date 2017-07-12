@@ -22,6 +22,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Handshake\ClientHandshake;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
 use React\Stream\Stream;
 
@@ -42,9 +43,9 @@ class Connection extends AbstractConnection
      */
     private $url;
 
-    public function __construct(Url $url, PromiseInterface $clientPromise, MessageProcessor $messageProcessor, MessageHandlerInterface $handler)
+    public function __construct(Url $url, PromiseInterface $clientPromise, MessageProcessor $messageProcessor, MessageHandlerInterface $handler, LoopInterface $loop)
     {
-        parent::__construct($messageProcessor, new ClientHandshake());
+        parent::__construct($messageProcessor, $loop, new ClientHandshake());
 
         $this->url = $url;
         $this->uri = $this->url->getUri();

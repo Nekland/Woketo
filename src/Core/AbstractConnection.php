@@ -79,10 +79,11 @@ abstract class AbstractConnection
      */
     protected $loop;
 
-    public function __construct(MessageProcessor $messageProcessor, HandshakeInterface $handshake = null)
+    public function __construct(MessageProcessor $messageProcessor, LoopInterface $loop, HandshakeInterface $handshake = null)
     {
         $this->handshake = $handshake;
         $this->messageProcessor = $messageProcessor;
+        $this->loop = $loop;
     }
 
     protected function onMessage(string $data)

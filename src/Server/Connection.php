@@ -32,11 +32,10 @@ class Connection extends AbstractConnection
         MessageProcessor $messageProcessor,
         ServerHandshake $handshake = null
     ) {
-        parent::__construct($messageProcessor, $handshake ?: new ServerHandshake);
+        parent::__construct($messageProcessor, $loop, $handshake ?: new ServerHandshake);
         $this->stream = $socketStream;
         $this->initListeners();
         $this->handler = $messageHandler;
-        $this->loop = $loop;
     }
 
     private function initListeners()

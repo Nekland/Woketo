@@ -65,7 +65,8 @@ class WebSocketClient
             $this->url,
             $this->getConnectorFactory()->createConnector()->connect($this->url->getHost() . ':' . $this->url->getPort()),
             $this->getMessageProcessor(),
-            $handler
+            $handler,
+            $this->loop
         );
 
         $this->loop->run();

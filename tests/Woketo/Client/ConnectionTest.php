@@ -8,6 +8,7 @@ use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Prophecy\Argument;
+use React\EventLoop\LoopInterface;
 use React\Promise\LazyPromise;
 use React\Promise\Promise;
 use React\Stream\Stream;
@@ -27,6 +28,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $socket = $this->prophesize(Stream::class);
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $messageHandler = $this->prophesize(MessageHandlerInterface::class);
+        $loop = $this->prophesize(LoopInterface::class);
 
         $socket->write(Argument::that(function ($arg) {
             $request =
@@ -46,7 +48,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $promise = new Promise(function (callable $resolve, callable $reject) use ($socket) {
             $resolve($socket->reveal());
         });
-        $connection = new Connection(new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal());
+        $connection = new Connection(new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal(), $loop->reveal());
     }
 
     public function testItSendsMessagesWithMessageProcessor()
@@ -54,6 +56,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $socket = $this->prophesize(Stream::class);
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $messageHandler = $this->prophesize(MessageHandlerInterface::class);
+        $loop = $this->prophesize(LoopInterface::class);
 
         $socket->write(Argument::type('string'))->shouldBeCalled();
         $socket->on('data', Argument::type('callable'))->shouldBeCalled();
@@ -64,7 +67,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $promise = new Promise(function (callable $resolve, callable $reject) use ($socket) {
             $resolve($socket->reveal());
         });
-        $connection = new Connection(new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal());
+        $connection = new Connection(new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal(), $loop->reveal());
         $connection->write('hello');
     }
 }
