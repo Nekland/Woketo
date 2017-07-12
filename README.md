@@ -3,6 +3,8 @@ Woketo
 
 A PHP WebSocket library. With following features:
 
+* Server
+* Client (alpha)
 * Autobahn test suite passed (WebSocket test suite reference)
 * Binary/text messages supported
 * Built on top of reactphp (async socket communication)
@@ -82,9 +84,18 @@ composer install
 
 ### Functionnal tests suite
 
+#### Server test suite
+
 ```bash
 php tests/echo-server.php
 wstest -m fuzzingclient
+```
+
+#### Client test suite
+
+```bash
+wstest -m fuzzingserver
+php tests/client_autobahn.php
 ```
 
 > wstest is the Autobahn test tool. You can install it with `sudo pip install autobahntestsuite`.

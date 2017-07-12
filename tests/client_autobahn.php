@@ -2,6 +2,13 @@
 
 require '../vendor/autoload.php';
 
+/**
+ * Usage:
+ *
+ * `php client_autobahn.php` will run the complete autobahn client suite.
+ */
+
+
 const AGENT = 'Woketo/2.x';
 
 use Nekland\Woketo\Core\AbstractConnection;
