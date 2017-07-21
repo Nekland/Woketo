@@ -53,7 +53,6 @@ class CloseFrameHandler implements Rfc6455MessageHandlerInterface
             }
         }
 
-
         $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame($code), $socket);
         $socket->end();
     }

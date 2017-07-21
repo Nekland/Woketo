@@ -149,7 +149,7 @@ class Connection extends AbstractConnection
     public function write($frame, int $opCode = Frame::OP_TEXT)
     {
         try {
-            $this->messageProcessor->writeMasked($frame, $this->stream, $opCode);
+            $this->messageProcessor->write($frame, $this->stream, $opCode);
         } catch (WebsocketException $e) {
             throw new RuntimeException($e);
         }

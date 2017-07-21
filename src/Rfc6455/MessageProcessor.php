@@ -40,8 +40,14 @@ class MessageProcessor
      */
     private $handlers;
 
-    public function __construct(FrameFactory $factory = null, MessageFactory $messageFactory = null)
+    /**
+     * @var boolean
+     */
+    private $writeMasked;
+
+    public function __construct($writeMasked = false, FrameFactory $factory = null, MessageFactory $messageFactory = null)
     {
+        $this->writeMasked = $writeMasked;
         $this->frameFactory = $factory ?: new FrameFactory();
         $this->messageFactory = $messageFactory ?: new MessageFactory();
         $this->handlers = [];
@@ -193,20 +199,11 @@ class MessageProcessor
             $frame->setOpcode($opCode);
         }
 
-        $socket->write($frame->getRawData());
-    }
-
-    public function writeMasked($frame, Stream $socket, int $opCode = Frame::OP_TEXT)
-    {
-        if (!$frame instanceof Frame) {
-            $data = $frame;
-            $frame = new Frame();
-            $frame->setPayload($data);
-            $frame->setOpcode($opCode);
+        if ($this->writeMasked) {
+            $frame->setMaskingKey(FrameFactory::generateMask());
         }
 
-        $frame->setMaskingKey(FrameFactory::generateMask());
-        $this->write($frame, $socket, $opCode);
+        $socket->write($frame->getRawData());
     }
 
     /**

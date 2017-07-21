@@ -61,7 +61,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $socket->write(Argument::type('string'))->shouldBeCalled();
         $socket->on('data', Argument::type('callable'))->shouldBeCalled();
 
-        $messageProcessor->writeMasked('hello', $socket, Argument::any())->shouldBeCalled();
+        $messageProcessor->write('hello', $socket, Argument::any())->shouldBeCalled();
 
 
         $promise = new Promise(function (callable $resolve, callable $reject) use ($socket) {

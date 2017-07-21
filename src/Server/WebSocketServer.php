@@ -201,6 +201,7 @@ class WebSocketServer
     private function buildMessageProcessor()
     {
         $this->messageProcessor = new MessageProcessor(
+            false,
             new FrameFactory($this->config['frame']),
             new MessageFactory($this->config['message'])
         );

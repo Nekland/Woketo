@@ -13,6 +13,10 @@ namespace Nekland\Woketo\Client;
 
 use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
+use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
+use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
+use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\EventLoop\Factory as LoopFactory;
 use React\EventLoop\LoopInterface;
@@ -43,6 +47,11 @@ class WebSocketClient
      * @var LoopInterface
      */
     private $loop;
+
+    /**
+     * @var MessageProcessor
+     */
+    private $messageProcessor;
 
     public function __construct(string $url, array $config = [], ConnectorFactoryInterface $connectorFactory = null)
     {
@@ -133,6 +142,13 @@ class WebSocketClient
             return $this->messageProcessor;
         }
 
-        return $this->messageProcessor = new MessageProcessor();
+        $this->messageProcessor = new MessageProcessor(true);
+
+        $this->messageProcessor->addHandler(new PingFrameHandler());
+        $this->messageProcessor->addHandler(new CloseFrameHandler());
+        $this->messageProcessor->addHandler(new WrongOpcodeHandler());
+        $this->messageProcessor->addHandler(new RsvCheckFrameHandler());
+
+        return $this->messageProcessor;
     }
 }

@@ -177,7 +177,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(Frame::CLOSE_TOO_BIG_TO_PROCESS))
             ->will($this->returnValue(new Frame(BitManipulation::hexArrayToString(['88','02','03','E8']))))
         ;
-        $processor = new MessageProcessor($this->frameFactory);
+        $processor = new MessageProcessor(false, $this->frameFactory);
 
         $messages = iterator_to_array($processor->onData(
             BitManipulation::hexArrayToString(['89','7f','ff','ff','ff', 'ff', 'ff','ff','ff','ff']),
@@ -196,7 +196,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(new Frame(BitManipulation::hexArrayToString(['88','02','03','E8']))))
         ;
 
-        $processor = new MessageProcessor($this->frameFactory);
+        $processor = new MessageProcessor(false, $this->frameFactory);
 
         $messages = iterator_to_array($processor->onData(
             BitManipulation::hexArrayToString(['89','7e','00','7e','00','00 ','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','23','a9','af','ec','ec','ec','ec','ec','ec']),
@@ -214,7 +214,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(Frame::CLOSE_INCOHERENT_DATA))
             ->will($this->returnValue(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef']))))
         ;
-        $processor = new MessageProcessor($this->frameFactory);
+        $processor = new MessageProcessor(false, $this->frameFactory);
 
         $messages = iterator_to_array($processor->onData(
             BitManipulation::hexArrayToString(['81','94','e8','e7','96','54','26','5d','77','e9','51','28','15','9a','54','29','23','b9','48','67','f3','30','81','93','f3','30']),
@@ -262,7 +262,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         $frame1 = new Frame($incompleteFrame);
 
         $framefactory = $this->prophesize(FrameFactory::class);
-        $processor = new MessageProcessor($framefactory->reveal());
+        $processor = new MessageProcessor(false, $framefactory->reveal());
 
         $expectedMessage = new Message();
         $expectedMessage->addFrame($frame1);
@@ -317,7 +317,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(Frame::CLOSE_PROTOCOL_ERROR))
             ->will($this->returnValue(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef']))))
         ;
-        $processor = new MessageProcessor($this->frameFactory);
+        $processor = new MessageProcessor(false, $this->frameFactory);
 
         $messages = iterator_to_array($processor->onData(
             BitManipulation::hexArrayToString(['80','98','53','3d','b9','b3','3d','52','d7','9e','30','52','d7','c7','3a','53','cc','d2','27','54','d6','dd','73','4d','d8','ca','3f','52','d8','d7']),
@@ -340,7 +340,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(Frame::CLOSE_PROTOCOL_ERROR))
             ->will($this->returnValue(new Frame(BitManipulation::hexArrayToString(['88','02','03','ef']))))
         ;
-        $processor = new MessageProcessor($this->frameFactory);
+        $processor = new MessageProcessor(false, $this->frameFactory);
 
         $messages = iterator_to_array($processor->onData(
             $multipleFrameData,
