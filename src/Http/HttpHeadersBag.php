@@ -11,6 +11,11 @@
 namespace Nekland\Woketo\Http;
 
 
+/**
+ * Class HttpHeadersBag
+ *
+ * @internal
+ */
 class HttpHeadersBag implements \ArrayAccess, \Iterator
 {
     /**

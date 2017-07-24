@@ -71,7 +71,7 @@ class Connection extends AbstractConnection
     }
 
     /**
-     * @param string $data
+     * {@inheritdoc}
      */
     protected function processHandshake(string $data)
     {
@@ -107,6 +107,9 @@ class Connection extends AbstractConnection
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function processMessage(string $data)
     {
         // It may be a timeout going (we were waiting for data), let's clear it.
@@ -114,7 +117,6 @@ class Connection extends AbstractConnection
             $this->timeout->cancel();
             $this->timeout = null;
         }
-
 
         foreach ($this->messageProcessor->onData($data, $this->stream, $this->currentMessage) as $message) {
             $this->currentMessage = $message;
@@ -166,9 +168,7 @@ class Connection extends AbstractConnection
     }
 
     /**
-     * May return ip or hostname
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getIp()
     {

@@ -10,10 +10,11 @@ require '../vendor/autoload.php';
  */
 
 
-const AGENT = 'Woketo/2.x';
-
 use Nekland\Woketo\Client\WebSocketClient;
 use Nekland\Woketo\Core\AbstractConnection;
+use Nekland\Woketo\Meta;
+
+const AGENT = 'Woketo/' . Meta::VERSION;
 
 $numberOfTests = null;
 $tests = explode(',', $argv[1] ?? []);

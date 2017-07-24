@@ -21,6 +21,8 @@ use Nekland\Woketo\Http\Url;
 
 class ClientHandshake implements HandshakeInterface
 {
+    const WEBSOCKET_VERSION = 13;
+    
     /**
      * {@inheritdoc}
      */
@@ -97,7 +99,7 @@ class ClientHandshake implements HandshakeInterface
     public function getRequest(Url $url)
     {
         $request = Request::createClientRequest($url->getUri(), $url->getHost(), $url->getPort());
-        $request->setVersion(13);
+        $request->setVersion(ClientHandshake::WEBSOCKET_VERSION);
         $request->setKey(base64_encode(ClientHandshake::generateRandom16BytesKey()));
 
         return $request;

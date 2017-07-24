@@ -14,6 +14,11 @@ namespace Nekland\Woketo\Http;
 use Nekland\Woketo\Exception\Http\HttpException;
 use Nekland\Woketo\Meta;
 
+/**
+ * Class Request
+ *
+ * @internal
+ */
 class Request extends AbstractHttpMessage
 {
     /**
@@ -234,10 +239,13 @@ class Request extends AbstractHttpMessage
     {
         $request = new Request();
 
-        $request->setMethod('GET');
-        $request->setUri($uri);
-        $request->setHttpVersion('1.1');
-        $request->setHost($host);
+        $request
+            ->setMethod('GET')
+            ->setUri($uri)
+            ->setHttpVersion('1.1')
+            ->setHost($host)
+        ;
+        
         if ($port) {
             $request->setPort($port);
         }

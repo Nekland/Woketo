@@ -80,18 +80,12 @@ class FrameFactory
     }
 
     /**
-     * This generates a string of 4 random bytes.
+     * This generates a string of 4 random bytes. (WebSocket mask according to the RFC)
      *
      * @return string
      */
     public static function generateMask() : string
     {
-        $str = '';
-
-        for($i = 0; $i < 4; $i++) {
-            $str .= chr(mt_rand(0, 127));
-        }
-
-        return $str;
+        return random_bytes(4);
     }
 }

@@ -17,6 +17,8 @@ use Nekland\Tools\StringTools;
  * Class Url
  *
  * Represent a WebSocket URL
+ *
+ * @internal
  */
 class Url
 {
@@ -129,6 +131,11 @@ class Url
         return $this;
     }
 
+    /**
+     * Fill the object with given URL as string.
+     *
+     * @param string $url
+     */
     private function initialize(string $url)
     {
         $match = preg_match('/^wss?:\/\/(.+):([\d]{2,5})(\/.+)?/', $url, $matches);
@@ -143,6 +150,9 @@ class Url
         $this->uri = isset($matches[3]) ? $matches[3] : '/';
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         $str = $this->secured ? 'wss://' : 'ws://';

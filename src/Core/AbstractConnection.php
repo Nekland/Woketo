@@ -86,6 +86,11 @@ abstract class AbstractConnection
         $this->loop = $loop;
     }
 
+    /**
+     * Behavior on new raw data received.
+     *
+     * @param string $data
+     */
     protected function onMessage(string $data)
     {
         try {
@@ -103,10 +108,21 @@ abstract class AbstractConnection
         }
     }
 
+    /**
+     * @param string $data
+     * @return void
+     */
     protected abstract function processHandshake(string $data);
+
+    /**
+     * @param string $data
+     * @return void
+     */
     protected abstract function processMessage(string $data);
 
     /**
+     * May return ip or hostname
+     *
      * @return string
      */
     public abstract function getIp();

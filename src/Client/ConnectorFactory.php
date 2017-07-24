@@ -46,12 +46,13 @@ class ConnectorFactory implements ConnectorFactoryInterface
      */
     private $sslOptions;
 
-    public function __construct()
+    public function __construct(LoopInterface $loop)
     {
         $this->dnsEnabled = false;
         $this->sslEnabled = false;
         $this->dnsServer = '8.8.8.8'; // Google DNS
         $this->sslOptions = [];
+        $this->loop = $loop;
     }
 
     /**
@@ -89,7 +90,7 @@ class ConnectorFactory implements ConnectorFactoryInterface
      */
     public function disableSsl(): ConnectorFactory
     {
-        $this->sslEnabled = true;
+        $this->sslEnabled = false;
 
         return $this;
     }

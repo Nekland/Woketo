@@ -15,6 +15,11 @@ use Nekland\Woketo\Exception\Http\HttpException;
 use Nekland\Woketo\Exception\Http\IncompleteHttpMessageException;
 use React\Socket\ConnectionInterface;
 
+/**
+ * Class Response
+ *
+ * @internal
+ */
 class Response extends AbstractHttpMessage
 {
     const SWITCHING_PROTOCOLS = '101 Switching Protocols';
@@ -61,10 +66,13 @@ class Response extends AbstractHttpMessage
 
     /**
      * @param int $statusCode
+     * @return Response
      */
     public function setStatusCode(int $statusCode)
     {
         $this->statusCode = $statusCode;
+
+        return $this;
     }
 
     /**
@@ -77,10 +85,13 @@ class Response extends AbstractHttpMessage
 
     /**
      * @param string $reason
+     * @return Response
      */
     public function setReason(string $reason)
     {
         $this->reason = $reason;
+
+        return $this;
     }
 
     /**
@@ -153,7 +164,7 @@ class Response extends AbstractHttpMessage
             throw new HttpException('Missing or wrong upgrade header.');
         }
         if (strtolower($response->getHeader('Connection')) !== 'upgrade') {
-            throw new HttpException('Missing upgrade header.');
+            throw new HttpException('Missing "Connection: Upgrade" header.');
         }
 
         return $response;

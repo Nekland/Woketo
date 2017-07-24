@@ -106,8 +106,7 @@ class WebSocketClient
         if ($this->connectorFactory !== null) {
             return $this->connectorFactory;
         }
-        $this->connectorFactory = new ConnectorFactory();
-        $this->connectorFactory->setLoop($this->getLoop());
+        $this->connectorFactory = new ConnectorFactory($this->getLoop());
         $this->connectorFactory->setSslOptions($this->config['ssl']);
 
         $this->connectorFactory->enableDns();

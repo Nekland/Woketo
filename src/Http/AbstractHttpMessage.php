@@ -13,6 +13,11 @@ namespace Nekland\Woketo\Http;
 
 use Nekland\Woketo\Exception\Http\HttpException;
 
+/**
+ * Class AbstractHttpMessage
+ *
+ * @internal
+ */
 abstract class AbstractHttpMessage
 {
     /**
@@ -89,6 +94,10 @@ abstract class AbstractHttpMessage
         }
     }
 
+    /**
+     * @param string $line
+     * @return HttpException
+     */
     protected static function createNotHttpException($line)
     {
         return new HttpException(
