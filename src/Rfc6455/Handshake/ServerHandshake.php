@@ -36,6 +36,16 @@ class ServerHandshake implements HandshakeInterface
         return $signature;
     }
 
+    /**
+     * https://tools.ietf.org/html/rfc6455#section-4.2
+     * 
+     * @param AbstractHttpMessage $request
+     * @param string|null         $key
+     * @return bool
+     * @throws RuntimeException
+     * @throws WebsocketException
+     * @throws WebsocketVersionException
+     */
     public function verify(AbstractHttpMessage $request, string $key = null)
     {
         if (!$request instanceof Request) {

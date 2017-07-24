@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 namespace Nekland\Woketo\Utils;
+use Nekland\Woketo\Exception\Utils\NotLongEnoughException;
 
 /**
  * Class BitManipulation
@@ -163,7 +164,7 @@ class BitManipulation
 
         if (\is_string($frame)) {
             if ((BitManipulation::frameSize($frame) - 1) < $to) {
-                throw new \InvalidArgumentException('The frame is not long enough.');
+                throw new NotLongEnoughException('The frame is not long enough.');
             }
 
             $subStringLength = $to - $from + 1;

@@ -13,9 +13,9 @@ namespace Test\Woketo\Server;
 
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
+use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
-use Nekland\Woketo\Rfc6455\ServerHandshake;
 use Nekland\Woketo\Server\Connection;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;

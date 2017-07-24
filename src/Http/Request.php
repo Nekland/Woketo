@@ -21,6 +21,7 @@ use Nekland\Woketo\Meta;
  */
 class Request extends AbstractHttpMessage
 {
+    const HTTP_1_1 = '1.1';
     /**
      * @var string
      */
@@ -242,7 +243,7 @@ class Request extends AbstractHttpMessage
         $request
             ->setMethod('GET')
             ->setUri($uri)
-            ->setHttpVersion('1.1')
+            ->setHttpVersion(Request::HTTP_1_1)
             ->setHost($host)
         ;
         

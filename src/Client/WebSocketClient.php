@@ -13,6 +13,8 @@ namespace Nekland\Woketo\Client;
 
 use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\FrameFactory;
+use Nekland\Woketo\Rfc6455\MessageFactory;
 use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
@@ -88,6 +90,8 @@ class WebSocketClient
     public function setConfig(array $config = [])
     {
         $this->config = array_merge([
+            'frame' => [],
+            'message' => [],
             'prod' => true,
             'ssl' => [],
             'dns' => null,
@@ -141,7 +145,11 @@ class WebSocketClient
             return $this->messageProcessor;
         }
 
-        $this->messageProcessor = new MessageProcessor(true);
+        $this->messageProcessor = new MessageProcessor(
+            true,
+            new FrameFactory($this->config['frame']),
+            new MessageFactory($this->config['message'])
+        );
 
         $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
