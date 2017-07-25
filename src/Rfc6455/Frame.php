@@ -17,6 +17,7 @@ use Nekland\Woketo\Exception\Frame\InvalidFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
+use Nekland\Woketo\Exception\Utils\NotLongEnoughException;
 use Nekland\Woketo\Utils\BitManipulation;
 
 /**
@@ -444,21 +445,25 @@ class Frame
         $payloadLen = $this->secondByte & 127;
         $this->payloadLenSize = 7;
 
-        if ($payloadLen === 126) {
-            $this->payloadLenSize += 16;
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 3);
-        } else if ($payloadLen === 127) {
-            $this->payloadLenSize += 64;
+        try {
+            if ($payloadLen === 126) {
+                $this->payloadLenSize += 16;
+                $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 3);
+            } else if ($payloadLen === 127) {
+                $this->payloadLenSize += 64;
 
-            $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 9, true);
+                $payloadLen = BitManipulation::bytesFromTo($this->rawData, 2, 9, true);
+            }
+
+            // Check < 0 because 64th bit is the negative one in PHP.
+            if ($payloadLen < 0 || $payloadLen > $this->config['maxPayloadSize']) {
+                throw new TooBigFrameException($this->config['maxPayloadSize']);
+            }
+
+            return $this->payloadLen = $payloadLen;
+        } catch (NotLongEnoughException $e) {
+            throw new IncompleteFrameException('Impossible to determine the length of the frame because message is too small.');
         }
-
-        // Check < 0 because 64th bit is the negative one in PHP.
-        if ($payloadLen < 0 || $payloadLen > $this->config['maxPayloadSize']) {
-            throw new TooBigFrameException($this->config['maxPayloadSize']);
-        }
-
-        return $this->payloadLen = $payloadLen;
     }
 
     /**

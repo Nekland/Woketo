@@ -8,7 +8,7 @@
  * on the root directory of this project
  */
 
-namespace Nekland\Woketo\Exception;
+namespace Nekland\Woketo\Exception\Http;
 
 
 class HttpException extends \Exception

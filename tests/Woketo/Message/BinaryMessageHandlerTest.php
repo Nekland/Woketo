@@ -11,6 +11,7 @@
 namespace Test\Woketo\Message;
 
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\UnsupportedException;
 use Nekland\Woketo\Message\BinaryMessageHandler;
 use Nekland\Woketo\Server\Connection;
@@ -27,5 +28,5 @@ class BinaryMessageHandlerTest extends \PHPUnit_Framework_TestCase
 
 class BinaryMessageHandlerImplementation extends BinaryMessageHandler
 {
-    public function onBinary(string $data, Connection $connection) {}
+    public function onBinary(string $data, AbstractConnection $connection) {}
 }

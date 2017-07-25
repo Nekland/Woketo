@@ -11,6 +11,6 @@
 namespace Nekland\Woketo\Exception;
 
 
-class UnsupportedException extends \Exception
+class UnsupportedException extends WebsocketException
 {
 }

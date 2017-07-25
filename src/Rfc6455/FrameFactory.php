@@ -78,4 +78,14 @@ class FrameFactory
     {
         return new Frame($rawData, $this->configuration);
     }
+
+    /**
+     * This generates a string of 4 random bytes. (WebSocket mask according to the RFC)
+     *
+     * @return string
+     */
+    public static function generateMask() : string
+    {
+        return random_bytes(4);
+    }
 }

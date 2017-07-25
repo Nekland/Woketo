@@ -1,0 +1,9 @@
+{
+  "name": "woketo-test-js-server",
+  "description": "this project test communication between ws lib and woketo via WebSockets",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "ws": "~1.1.1"
+  }
+}

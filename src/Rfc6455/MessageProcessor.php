@@ -15,7 +15,7 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
-use React\Socket\ConnectionInterface;
+use React\Stream\Stream;
 
 /**
  * Class MessageProcessor
@@ -40,8 +40,14 @@ class MessageProcessor
      */
     private $handlers;
 
-    public function __construct(FrameFactory $factory = null, MessageFactory $messageFactory = null)
+    /**
+     * @var boolean
+     */
+    private $writeMasked;
+
+    public function __construct($writeMasked = false, FrameFactory $factory = null, MessageFactory $messageFactory = null)
     {
+        $this->writeMasked = $writeMasked;
         $this->frameFactory = $factory ?: new FrameFactory();
         $this->messageFactory = $messageFactory ?: new MessageFactory();
         $this->handlers = [];
@@ -69,11 +75,11 @@ class MessageProcessor
      *   => buffer 2 ws-frames from 1 bin-frame to generate 1 Message with a control frame in the middle of the bin-frame.
      *
      * @param string              $data
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      * @param Message|null        $message
      * @return \Generator
      */
-    public function onData(string $data, ConnectionInterface $socket, Message $message = null)
+    public function onData(string $data, Stream $socket, Message $message = null)
     {
         do {
             if (null === $message) {
@@ -142,9 +148,9 @@ class MessageProcessor
 
     /**
      * @param Message $message
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    protected function processHelper(Message $message, ConnectionInterface $socket)
+    protected function processHelper(Message $message, Stream $socket)
     {
         foreach ($this->handlers as $handler) {
             if ($handler->supports($message)) {
@@ -155,11 +161,11 @@ class MessageProcessor
 
     /**
      * @param Frame $frame
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      *
      * @return Message
      */
-    protected function processControlFrame(Frame $frame, ConnectionInterface $socket) : Message
+    protected function processControlFrame(Frame $frame, Stream $socket) : Message
     {
         $controlFrameMessage = new Message();
         $controlFrameMessage->addFrame($frame);
@@ -181,16 +187,20 @@ class MessageProcessor
 
     /**
      * @param Frame|string        $frame
-     * @param ConnectionInterface $socket
+     * @param Stream              $socket
      * @param int                 $opCode An int representing binary or text data (const of Frame class)
      */
-    public function write($frame, ConnectionInterface $socket, int $opCode = Frame::OP_TEXT)
+    public function write($frame, Stream $socket, int $opCode = Frame::OP_TEXT)
     {
         if (!$frame instanceof Frame) {
             $data = $frame;
             $frame = new Frame();
             $frame->setPayload($data);
             $frame->setOpcode($opCode);
+        }
+
+        if ($this->writeMasked) {
+            $frame->setMaskingKey(FrameFactory::generateMask());
         }
 
         $socket->write($frame->getRawData());
@@ -205,18 +215,18 @@ class MessageProcessor
     }
 
     /**
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    public function timeout(ConnectionInterface $socket)
+    public function timeout(Stream $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
         $socket->close();
     }
 
     /**
-     * @param ConnectionInterface $socket
+     * @param Stream $socket
      */
-    public function close(ConnectionInterface $socket)
+    public function close(Stream $socket)
     {
         $this->write($this->frameFactory->createCloseFrame(), $socket);
         $socket->end();

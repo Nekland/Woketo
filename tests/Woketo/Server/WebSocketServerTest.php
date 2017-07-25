@@ -11,6 +11,7 @@
 namespace Test\Woketo\Server;
 
 
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
@@ -20,6 +21,7 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
+use React\Stream\Stream;
 use React\Stream\WritableStreamInterface;
 
 class WebSocketServerTest extends \PHPUnit_Framework_TestCase
@@ -85,12 +87,12 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
         return [
             [
                 new class extends TextMessageHandler {
-                    public function onConnection(Connection $connection)
+                    public function onConnection(AbstractConnection $connection)
                     {
                         echo 'foo';
                     }
 
-                    public function onMessage(string $data, Connection $connection){}
+                    public function onMessage(string $data, AbstractConnection $connection){}
                 },
                 '/foo',
                 '/foo',
@@ -98,12 +100,12 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
             ],
             [
                 new class extends TextMessageHandler {
-                    public function onConnection(Connection $connection)
+                    public function onConnection(AbstractConnection $connection)
                     {
                         echo 'bar';
                     }
 
-                    public function onMessage(string $data, Connection $connection){}
+                    public function onMessage(string $data, AbstractConnection $connection){}
                 },
                 '/bar',
                 '/bar',
@@ -113,12 +115,12 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
             // Wrong URI asked/handler matching
             [
                 new class extends TextMessageHandler {
-                    public function onConnection(Connection $connection)
+                    public function onConnection(AbstractConnection $connection)
                     {
                         echo 'bar';
                     }
 
-                    public function onMessage(string $data, Connection $connection){}
+                    public function onMessage(string $data, AbstractConnection $connection){}
                 },
                 '/bar',
                 '/baz',
@@ -131,9 +133,13 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
 /**
  * Mock for react php
  */
-class FakeServerAndConnection implements ServerInterface, ConnectionInterface {
+class FakeServerAndConnection extends Stream implements ServerInterface, ConnectionInterface {
     private $onData;
     private $onConnect;
+    public function __construct()
+    {
+    }
+
     public function sendHandshake($handshake)
     {
         $onData = $this->onData;
