@@ -225,23 +225,31 @@ class BitManipulation
      * @param int|null $size  In bytes. This value should always be precise. Be careful if you don't !
      * @return string
      */
-    public static function intToBinaryString(int $frame, int $size = 0) : string
+    public static function intToBinaryString(int $frame, int $size = null) : string
     {
-        $format = '*';
+        $format = 'J*';
 
-        switch(true) {
-            case $size <= 2:
-                $format = 'n*';
-                break;
-            case $size <= 4:
-                $format = 'N*';
-                break;
-            case $size > 4:
-                $format = 'J*';
-                break;
+        if ($size !== null) {
+            switch (true) {
+                case $size <= 2:
+                    $format = 'n*';
+                    break;
+                case $size <= 4:
+                    $format = 'N*';
+                    break;
+                case $size > 4:
+                    $format = 'J*';
+                    break;
+            }
         }
 
-        return pack($format, $frame);
+        $res = pack($format, $frame);
+
+        if ($size === null) {
+            $res = ltrim($res, "\0");
+        }
+
+        return $res;
     }
 
     /**
@@ -260,15 +268,16 @@ class BitManipulation
             );
         }
 
-        $format = '*';
-
         switch(true) {
             case $len <= 2:
-                $format = 'n';break;
+                $format = 'n';
+                break;
             case $len <= 4:
-                $format = 'N';break;
+                $format = 'N';
+                break;
             case $len > 4:
-                $format = 'J';break;
+                $format = 'J';
+                break;
         }
 
         return unpack($format, $frame)[1];
