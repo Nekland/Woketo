@@ -30,7 +30,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
         $realRes = BitManipulation::nthBit($byte, $n);
 
-        $this->assertEquals($realRes, $res);
+        $this->assertEquals($res, $realRes);
     }
 
     /**
@@ -48,7 +48,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
         $realRes = BitManipulation::nthByte($bytes, $n);
 
-        $this->assertEquals($realRes, $res);
+        $this->assertEquals($res, $realRes);
     }
 
     /**
@@ -64,7 +64,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             $this->expectException('\InvalidArgumentException');
         }
 
-        $this->assertEquals(BitManipulation::partOfByte($byte, $n), $res);
+        $this->assertEquals($res, BitManipulation::partOfByte($byte, $n));
     }
 
     /**
@@ -75,7 +75,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
      */
     public function testItTransformsArrayOfHexToString(array $hexParts, string $result)
     {
-        $this->assertEquals(BitManipulation::hexArrayToString($hexParts), $result);
+        $this->assertEquals($result, BitManipulation::hexArrayToString($hexParts));
     }
 
     /**
@@ -92,7 +92,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
             $this->expectException($res);
         }
 
-        $this->assertSame(BitManipulation::bytesFromTo($frame, $from, $to), $res);
+        $this->assertSame($res, BitManipulation::bytesFromTo($frame, $from, $to));
     }
 
     public function testItTransformIntFrameToString()

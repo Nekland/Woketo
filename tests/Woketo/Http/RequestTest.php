@@ -19,9 +19,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $request = Request::create($this->getStandardRequest());
 
-        $this->assertEquals($request->getMethod(), 'GET');
-        $this->assertEquals($request->getUri(), '/foo');
-        $this->assertEquals($request->getHttpVersion(), 'HTTP/1.1');
+        $this->assertEquals('GET', $request->getMethod());
+        $this->assertEquals('/foo', $request->getUri());
+        $this->assertEquals('HTTP/1.1', $request->getHttpVersion());
 
         $headers = $request->getHeaders();
         $headersToCheck = [
