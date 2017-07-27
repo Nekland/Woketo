@@ -38,10 +38,10 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             BitManipulation::hexArrayToString(['81', '05', '48', '65', '6c', '6c', '6f'])
         );
 
-        $this->assertSame($helloUnmaskedFrame->getPayloadLength(), 5);
-        $this->assertSame($helloUnmaskedFrame->isMasked(), false);
-        $this->assertSame($helloUnmaskedFrame->isFinal(), true);
-        $this->assertSame($helloUnmaskedFrame->getPayload(), 'Hello');
+        $this->assertSame(5, $helloUnmaskedFrame->getPayloadLength());
+        $this->assertFalse($helloUnmaskedFrame->isMasked());
+        $this->assertTrue($helloUnmaskedFrame->isFinal());
+        $this->assertSame('Hello', $helloUnmaskedFrame->getPayload());
     }
 
     public function testItSupportsPayloadOn8Bits()
@@ -51,8 +51,8 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             BitManipulation::hexArrayToString(['81', '7F', '00', '00', '00', '00', '00', '00', '00', '05', '48', '65', '6c', '6c','6f'])
         );
 
-        $this->assertSame($frame->getPayloadLength(), 5);
-        $this->assertSame($frame->getPayload(), 'Hello');
+        $this->assertSame(5, $frame->getPayloadLength());
+        $this->assertSame('Hello',$frame->getPayload());
     }
 
     public function testMaskedFrameContainingHello()
@@ -66,7 +66,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($helloMaskedFrame->isMasked(), true);
         $this->assertSame($helloMaskedFrame->isFinal(), true);
-        $this->assertSame(BitManipulation::stringToInt($helloMaskedFrame->getMaskingKey()), 939139389);
+        $this->assertSame(939139389, BitManipulation::stringToInt($helloMaskedFrame->getMaskingKey()));
         $this->assertSame($helloMaskedFrame->getPayload(), 'Hello');
     }
 
@@ -76,10 +76,10 @@ class FrameTest extends \PHPUnit_Framework_TestCase
             BitManipulation::hexArrayToString('89', '05', '48', '65', '6c', '6c', '6f')
         );
 
-        $this->assertSame($helloUnmaskedPingFrame->isMasked(), false);
-        $this->assertSame($helloUnmaskedPingFrame->isFinal(), true);
-        $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
-        $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PING);
+        $this->assertFalse($helloUnmaskedPingFrame->isMasked());
+        $this->assertTrue($helloUnmaskedPingFrame->isFinal());
+        $this->assertSame('Hello', $helloUnmaskedPingFrame->getPayload());
+        $this->assertSame(Frame::OP_PING, $helloUnmaskedPingFrame->getOpcode());
     }
 
     public function testPongMaskedFrameContainingHello()
@@ -87,11 +87,11 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $raw = BitManipulation::hexArrayToString('8a', '85', '37', 'fa', '21', '3d', '7f', '9f', '4d', '51', '58');
         $helloUnmaskedPingFrame = new Frame($raw);
 
-        $this->assertSame($helloUnmaskedPingFrame->isMasked(), true);
-        $this->assertSame($helloUnmaskedPingFrame->isFinal(), true);
-        $this->assertSame($helloUnmaskedPingFrame->getPayload(), 'Hello');
-        $this->assertSame($helloUnmaskedPingFrame->getOpcode(), Frame::OP_PONG);
-        $this->assertSame($helloUnmaskedPingFrame->getRawData(), $raw);
+        $this->assertTrue($helloUnmaskedPingFrame->isMasked());
+        $this->assertTrue($helloUnmaskedPingFrame->isFinal());
+        $this->assertSame('Hello', $helloUnmaskedPingFrame->getPayload());
+        $this->assertSame(Frame::OP_PONG, $helloUnmaskedPingFrame->getOpcode());
+        $this->assertSame($raw, $helloUnmaskedPingFrame->getRawData());
     }
 
     public function testItSupportsEmptyFrames()
@@ -100,9 +100,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $frame->setPayload('');
         $frame->setOpcode(Frame::OP_TEXT);
 
-        $this->assertSame($frame->getRawData(), BitManipulation::hexArrayToString([
-            '81', '00'
-        ]));
+        $this->assertSame(BitManipulation::hexArrayToString(['81', '00']), $frame->getRawData());
     }
 
     /**
@@ -125,8 +123,8 @@ class FrameTest extends \PHPUnit_Framework_TestCase
 
         $frame = new Frame($entryData);
 
-        $this->assertSame($frame->getRawData(), $firstDataFrame);
-        $this->assertSame($frame->getPayload(), 'Hello');
+        $this->assertSame($firstDataFrame, $frame->getRawData());
+        $this->assertSame('Hello', $frame->getPayload());
     }
 
     /**
@@ -283,7 +281,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     {
         $frame = new Frame($binFrame);
 
-        $this->assertSame($frame->getContent(), $content);
+        $this->assertSame($content, $frame->getContent());
     }
 
     public function getFramesAndContent()

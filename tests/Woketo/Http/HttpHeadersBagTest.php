@@ -19,14 +19,14 @@ class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
     {
         $bag = new HttpHeadersBag();
         $bag->set('Content-Type', 'text/html');
-        $this->assertSame($bag->get('Content-Type'), 'text/html');
+        $this->assertSame('text/html', $bag->get('Content-Type'));
     }
 
     public function testItIsNonCaseSensitive()
     {
         $bag = new HttpHeadersBag();
         $bag->set('Custom-Header', 'foobar');
-        $this->assertSame($bag->get('Custom-Header'), 'foobar');
+        $this->assertSame('foobar', $bag->get('Custom-Header'));
     }
 
     public function testItSupportsManytimesSameHeader()
@@ -35,13 +35,13 @@ class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
         $bag->add('Sec-WebSocket-Extensions', 'yolo');
         $bag->add('Sec-WebSocket-Extensions', 'loyo');
         
-        $this->assertSame($bag->get('Sec-WebSocket-Extensions'), ['yolo', 'loyo']);
+        $this->assertSame(['yolo', 'loyo'], $bag->get('Sec-WebSocket-Extensions'));
 
         $bag->set('Sec-WebSocket-Extensions', 'oups');
-        $this->assertSame($bag->get('Sec-WebSocket-Extensions'), 'oups');
+        $this->assertSame('oups', $bag->get('Sec-WebSocket-Extensions'));
         
         $bag->add('Sec-WebSocket-Extensions', 'yolo');
-        $this->assertSame($bag->get('Sec-WebSocket-Extensions'), ['oups', 'yolo']);
+        $this->assertSame(['oups', 'yolo'], $bag->get('Sec-WebSocket-Extensions'));
     }
     
     public function testItCanBeInitializedWithArrayOfHeaders()
@@ -51,14 +51,14 @@ class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
             'Sec-WebSocket-Extensions' => 'test'
         ]);
         
-        $this->assertSame($bag->get('Content-Type'), 'text/javascript');
+        $this->assertSame('text/javascript', $bag->get('Content-Type'));
     }
     
     public function testItReturnDefaultValueWhenSpecifiedIfHeaderDoesNotExists()
     {
         $bag = new HttpHeadersBag();
         
-        $this->assertSame($bag->get('Content-Not-Specified'), null);
-        $this->assertSame($bag->get('Content-Specified', 'Hello'), 'Hello');
+        $this->assertNull($bag->get('Content-Not-Specified'));
+        $this->assertSame('Hello', $bag->get('Content-Specified', 'Hello'));
     }
 }

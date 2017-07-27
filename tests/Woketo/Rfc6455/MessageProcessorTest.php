@@ -64,8 +64,8 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 
         $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
 
-        $this->assertSame(count($messages), 2);
-        $this->assertSame($messages[1]->getContent(), 'Hello');
+        $this->assertCount(2, $messages);
+        $this->assertSame('Hello', $messages[1]->getContent());
     }
 
     public function testItContinueFrameEvaluationAfterControlFrame()
@@ -82,10 +82,10 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
         /** @var Message[] $messages */
         $messages = iterator_to_array($processor->onData($multipleFrameData, $this->socket->reveal()));
 
-        $this->assertSame(count($messages), 3);
-        $this->assertSame($messages[1]->getContent(), 'Hello');
-        $this->assertSame($messages[0]->getFirstFrame()->getOpcode(), Frame::OP_PING);
-        $this->assertSame($messages[2]->getFirstFrame()->getOpcode(), Frame::OP_PING);
+        $this->assertCount(3, $messages);
+        $this->assertSame('Hello', $messages[1]->getContent());
+        $this->assertSame(Frame::OP_PING, $messages[0]->getFirstFrame()->getOpcode());
+        $this->assertSame(Frame::OP_PING, $messages[2]->getFirstFrame()->getOpcode());
     }
 
     public function testItBuildPartialMessage()
@@ -99,7 +99,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $socket
         ));
 
-        $this->assertSame($messages[0]->isComplete(), false);
+        $this->assertFalse($messages[0]->isComplete());
 
         iterator_to_array($processor->onData(
             // "lo" normal frame unmasked
@@ -108,8 +108,8 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $messages[0]
         ));
 
-        $this->assertSame($messages[0]->isComplete(), true);
-        $this->assertSame($messages[0]->getContent(), 'Hello');
+        $this->assertTrue($messages[0]->isComplete());
+        $this->assertSame('Hello', $messages[0]->getContent());
     }
 
     public function testItBuildOnlyCompleteMessagesOrYieldLastOnly()
@@ -122,7 +122,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             BitManipulation::hexArrayToString('01', '03', '48', '65', '6c', '80', '02', '6c', '6f'),
             $socket
         ));
-        $this->assertSame(count($messages), 1);
+        $this->assertCount(1, $messages);
     }
 
     public function testItHandleSpecialMessagesWithHandler()
@@ -147,7 +147,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages[0]->getOpcode(), Frame::OP_CLOSE);
+        $this->assertSame(Frame::OP_CLOSE, $messages[0]->getOpcode());
     }
 
     public function testItReturnTheFrameFactory()
@@ -184,7 +184,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages, []);
+        $this->assertSame([], $messages);
     }
 
     public function testItCatchesTooBigControlFrameException()
@@ -203,7 +203,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages, []);
+        $this->assertSame([], $messages);
     }
 
     public function testItCatchesNotGoodEncodingException()
@@ -221,7 +221,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages, []);
+        $this->assertSame([], $messages);
     }
 
     public function testItSupportsMessageInManyFrames()
@@ -245,12 +245,12 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages[0]->getContent(), $expectedMessage->getContent());
+        $this->assertSame($expectedMessage->getContent(), $messages[0]->getContent());
         $this->assertTrue($messages[0]->isComplete());
-        $this->assertSame($messages[0]->isComplete(), $expectedMessage->isComplete());
-        $this->assertSame($messages[0]->getOpcode(), Frame::OP_TEXT);
-        $this->assertSame($messages[0]->getContent(), 'Hello');
-        $this->assertSame(count($messages[0]->getFrames()), 2);
+        $this->assertSame($expectedMessage->isComplete(), $messages[0]->isComplete());
+        $this->assertSame(Frame::OP_TEXT, $messages[0]->getOpcode());
+        $this->assertSame('Hello', $messages[0]->getContent());
+        $this->assertCount(2, $messages[0]->getFrames());
     }
 
     public function testItThrowsIncompleteExceptionAndSpecifiesIncompleteMessage()
@@ -297,16 +297,16 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages[0]->getContent(), 'ping payload');
-        $this->assertSame($messages[1]->getContent(), 'fragment1fragment2');
+        $this->assertSame('ping payload', $messages[0]->getContent());
+        $this->assertSame('fragment1fragment2', $messages[1]->getContent());
         $this->assertTrue($messages[0]->isComplete());
         $this->assertTrue($messages[1]->isComplete());
-        $this->assertSame($messages[0]->isComplete(), true);
-        $this->assertSame($messages[1]->isComplete(), true);
-        $this->assertSame($messages[0]->getOpcode(), Frame::OP_PING);
-        $this->assertSame($messages[1]->getOpcode(), Frame::OP_TEXT);
-        $this->assertSame(count($messages[0]->getFrames()), 1);
-        $this->assertSame(count($messages[1]->getFrames()), 2);
+        $this->assertTrue($messages[0]->isComplete());
+        $this->assertTrue($messages[1]->isComplete());
+        $this->assertSame(Frame::OP_PING, $messages[0]->getOpcode());
+        $this->assertSame(Frame::OP_TEXT, $messages[1]->getOpcode());
+        $this->assertCount(1, $messages[0]->getFrames());
+        $this->assertCount(2, $messages[1]->getFrames());
     }
 
     public function testItCatchesWrongContinutionFrameException()
@@ -324,7 +324,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages, []);
+        $this->assertSame([], $messages);
     }
 
     public function testItCatchesWrongTextFragmentedFrameException()
@@ -347,6 +347,6 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
             $this->socket->reveal()
         ));
 
-        $this->assertSame($messages, []);
+        $this->assertSame([], $messages);
     }
 }
