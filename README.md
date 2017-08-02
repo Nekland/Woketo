@@ -9,7 +9,7 @@ A PHP WebSocket library. With following features:
 * Binary/text messages supported
 * Built on top of reactphp (async socket communication)
 * *Not dependent of any other big framework/library which mean you can use it with guzzle (any version) or Symfony (any version)*
-* Woketo follow semver
+* Woketo follows semver
 
 [![Build Status](https://travis-ci.org/Nekland/Woketo.svg?branch=master)](https://travis-ci.org/Nekland/Woketo) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master)
 
