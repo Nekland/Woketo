@@ -30,7 +30,7 @@ class SimpleMessageHandlerTest extends \PHPUnit_Framework_TestCase
         $res = $this->instance->onConnection($this->prophesize(Connection::class)->reveal());
         $out = \ob_get_clean();
 
-        $this->assertEquals(null, $res);
+        $this->assertNull($res);
         $this->assertEquals('', $out);
     }
 

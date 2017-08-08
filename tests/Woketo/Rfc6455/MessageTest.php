@@ -102,7 +102,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $frame = new Frame($message->getBuffer());
         $updatedBuffer = $message->removeFromBuffer($frame);
 
-        $this->assertSame($updatedBuffer, $expectedBuffer);
+        $this->assertSame($expectedBuffer, $updatedBuffer);
     }
 
     public function testItAddsAndClearsBuffer()

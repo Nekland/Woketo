@@ -40,7 +40,7 @@ class FrameFactoryTest extends \PHPUnit_Framework_TestCase
         // With:
         // payload: 000 0010
         // close code: 0000 0011  1110 1000
-        $this->assertEquals($data, BitManipulation::hexArrayToString(['88', '02', '03', 'E8']));
+        $this->assertEquals(BitManipulation::hexArrayToString(['88', '02', '03', 'E8']), $data);
     }
 
     public function testCreatePongFrame()

@@ -30,7 +30,7 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
         $wrongMessage = new Message();
         $wrongMessage->addFrame(new Frame($frame));
 
-        $this->assertSame($handler->supports($wrongMessage), $result);
+        $this->assertSame($result, $handler->supports($wrongMessage));
     }
 
     public function testItCloseWithProtocolError()
