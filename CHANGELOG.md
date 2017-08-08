@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [BC Break] Message handlers now use an `AbstractConnection` class in their methods
 - **Internal:** the method `processHandcheck` is now `processHandshake` and follows `AbstractConnection` class requirements
 - **Internal:** the `MessageProcessor` now needs to be aware of its quality of client or server.
+- **Internal:** the `BitManipulation` class now uses PHP native functions
+- **Internal:** the `BitManipulation` class use new method names
 
 
 ## [1.1.0] - 2017-01-24
