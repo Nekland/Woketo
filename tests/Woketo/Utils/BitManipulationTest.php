@@ -120,7 +120,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
      */
     public function testItTransformToHex($a, $b)
     {
-        $this->assertSame($a, BitManipulation::binaryToHex($b));
+        $this->assertSame($a, BitManipulation::binaryStringToHex($b));
     }
 
     public function testItRetrieveSubFrames()

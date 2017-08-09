@@ -268,7 +268,7 @@ class BitManipulation
             );
         }
 
-        if (\in_array(\strlen($frame), [1, 3])) {
+        if (\in_array(BitManipulation::frameSize($frame), [1, 3])) {
             $frame = "\0" . $frame;
         }
 
@@ -284,7 +284,7 @@ class BitManipulation
 
                 do {
                     $frame = "\0" . $frame;
-                } while (\strlen($frame) !== 8);
+                } while (BitManipulation::frameSize($frame) !== 8);
 
                 break;
         }
@@ -299,7 +299,7 @@ class BitManipulation
      * @param string $frame
      * @return string
      */
-    public static function binaryToHex(string $frame) : string
+    public static function binaryStringToHex(string $frame) : string
     {
         return \unpack('H*', $frame)[1];
     }
