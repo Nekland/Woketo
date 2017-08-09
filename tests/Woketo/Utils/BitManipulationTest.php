@@ -106,7 +106,11 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
     public function testItTransformStringFrameToInt()
     {
-        $this->assertSame(BitManipulation::binaryToInt('abc'), 6382179);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abcde'), 418262508645);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abcd'), 1633837924);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abc'), 6382179);
+        $this->assertSame(BitManipulation::binaryStringtoInt('ab'), 24930);
+        $this->assertSame(BitManipulation::binaryStringtoInt('a'), 97);
     }
 
     /**

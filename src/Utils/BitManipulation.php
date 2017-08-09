@@ -243,10 +243,10 @@ class BitManipulation
             }
         }
 
-        $res = pack($format, $frame);
+        $res = \pack($format, $frame);
 
         if ($size === null) {
-            $res = ltrim($res, "\0");
+            $res = \ltrim($res, "\0");
         }
 
         return $res;
@@ -258,7 +258,7 @@ class BitManipulation
      * @param string $frame
      * @return int
      */
-    public static function binaryToInt(string $frame) : int
+    public static function binaryStringtoInt(string $frame) : int
     {
         $len = BitManipulation::frameSize($frame);
 
@@ -266,6 +266,10 @@ class BitManipulation
             throw new \InvalidArgumentException(
                 \sprintf('The string %s cannot be converted to int because an int cannot be more than 8 bytes (64b).', $frame)
             );
+        }
+
+        if (\in_array(\strlen($frame), [1, 3])) {
+            $frame = "\0" . $frame;
         }
 
         switch(true) {
@@ -277,10 +281,15 @@ class BitManipulation
                 break;
             case $len > 4:
                 $format = 'J';
+
+                do {
+                    $frame = "\0" . $frame;
+                } while (\strlen($frame) !== 8);
+
                 break;
         }
 
-        return unpack($format, $frame)[1];
+        return \unpack($format, $frame)[1];
     }
 
     /**
@@ -292,7 +301,7 @@ class BitManipulation
      */
     public static function binaryToHex(string $frame) : string
     {
-        return unpack('H*', $frame)[1];
+        return \unpack('H*', $frame)[1];
     }
 
     /**
