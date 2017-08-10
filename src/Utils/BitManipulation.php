@@ -225,30 +225,28 @@ class BitManipulation
      * @param int|null $size  In bytes. This value should always be precise. Be careful if you don't !
      * @return string
      */
-    public static function intToString(int $frame, int $size = null) : string
+    public static function intToBinaryString(int $frame, int $size = null) : string
     {
-        $res = '';
-        $startingBytes = true;
-        for ($i = 8; $i >= 0; $i--) {
-            $code = ($frame & (255 << ($i * 8))) >> ($i * 8);
+        $format = 'J*';
 
-            // This condition avoid to take care of front zero bytes (that are always present but we should ignore)
-            if ($code !== 0 || !$startingBytes) {
-                $startingBytes = false;
-                $res .= \chr($code);
+        if ($size !== null) {
+            switch (true) {
+                case $size <= 2:
+                    $format = 'n*';
+                    break;
+                case $size <= 4:
+                    $format = 'N*';
+                    break;
+                case $size > 4:
+                    $format = 'J*';
+                    break;
             }
         }
 
-        if ($size !== null) {
-            $actualSize = BitManipulation::frameSize($res);
-            if ($size < $actualSize) {
-                $res = \substr($res, $size - $actualSize);
-            } else if ($size > $actualSize) {
-                $missingChars = $size - $actualSize;
-                for ($i = 0; $i < $missingChars; $i++) {
-                    $res = \chr(0) . $res;
-                }
-            }
+        $res = \pack($format, $frame);
+
+        if ($size === null) {
+            $res = \ltrim($res, "\0");
         }
 
         return $res;
@@ -260,10 +258,9 @@ class BitManipulation
      * @param string $frame
      * @return int
      */
-    public static function stringToInt(string $frame) : int
+    public static function binaryStringtoInt(string $frame) : int
     {
         $len = BitManipulation::frameSize($frame);
-        $res = 0;
 
         if ($len > 8) {
             throw new \InvalidArgumentException(
@@ -271,11 +268,28 @@ class BitManipulation
             );
         }
 
-        for ($i = $len - 1; $i >= 0; $i--) {
-            $res += \ord($frame[$len - $i - 1]) << ($i * 8);
+        if (\in_array(BitManipulation::frameSize($frame), [1, 3])) {
+            $frame = "\0" . $frame;
         }
 
-        return $res;
+        switch(true) {
+            case $len <= 2:
+                $format = 'n';
+                break;
+            case $len <= 4:
+                $format = 'N';
+                break;
+            case $len > 4:
+                $format = 'J';
+
+                do {
+                    $frame = "\0" . $frame;
+                } while (BitManipulation::frameSize($frame) !== 8);
+
+                break;
+        }
+
+        return \unpack($format, $frame)[1];
     }
 
     /**
@@ -285,20 +299,9 @@ class BitManipulation
      * @param string $frame
      * @return string
      */
-    public static function frameToHex(string $frame) : string
+    public static function binaryStringToHex(string $frame) : string
     {
-        $len = BitManipulation::frameSize($frame);
-        $res = '';
-
-        for ($i = 0; $i < $len; $i++) {
-            $hex = \dechex(\ord($frame[$i]));
-            if (\strlen($hex) < 2) {
-                $hex = '0' . $hex;
-            }
-            $res .= $hex;
-        }
-
-        return $res;
+        return \unpack('H*', $frame)[1];
     }
 
     /**

@@ -97,16 +97,20 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
 
     public function testItTransformIntFrameToString()
     {
-        $this->assertSame(BitManipulation::intToString(6382179), 'abc');
-        $this->assertSame(BitManipulation::intToString(1000), BitManipulation::hexArrayToString(['03', 'E8']));
-        $this->assertSame(BitManipulation::intToString(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
-        $this->assertSame(BitManipulation::intToString(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
-        $this->assertSame(BitManipulation::intToString(33024), BitManipulation::hexArrayToString(['81', '00']));
+        $this->assertSame(BitManipulation::intToBinaryString(6382179), 'abc');
+        $this->assertSame(BitManipulation::intToBinaryString(1000), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(1000, 2), BitManipulation::hexArrayToString(['03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(1000, 4), BitManipulation::hexArrayToString(['00', '00', '03', 'E8']));
+        $this->assertSame(BitManipulation::intToBinaryString(33024), BitManipulation::hexArrayToString(['81', '00']));
     }
 
     public function testItTransformStringFrameToInt()
     {
-        $this->assertSame(BitManipulation::stringToInt('abc'), 6382179);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abcde'), 418262508645);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abcd'), 1633837924);
+        $this->assertSame(BitManipulation::binaryStringtoInt('abc'), 6382179);
+        $this->assertSame(BitManipulation::binaryStringtoInt('ab'), 24930);
+        $this->assertSame(BitManipulation::binaryStringtoInt('a'), 97);
     }
 
     /**
@@ -116,7 +120,7 @@ class BitManipulationTest extends \PHPUnit_Framework_TestCase
      */
     public function testItTransformToHex($a, $b)
     {
-        $this->assertSame($a, BitManipulation::frameToHex($b));
+        $this->assertSame($a, BitManipulation::binaryStringToHex($b));
     }
 
     public function testItRetrieveSubFrames()
