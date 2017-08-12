@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Woketo\Rfc6455\MessageHandler;
+namespace Test\Woketo\Rfc6455\FrameHandler;
 
 /**
  * This file is a part of Woketo package.
@@ -15,7 +15,7 @@ use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
-use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;

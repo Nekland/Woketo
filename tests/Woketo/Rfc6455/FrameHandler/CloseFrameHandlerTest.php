@@ -8,12 +8,12 @@
  * on the root directory of this project
  */
 
-namespace Test\Woketo\Rfc6455\MessageHandler;
+namespace Test\Woketo\Rfc6455\FrameHandler;
 
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
-use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;

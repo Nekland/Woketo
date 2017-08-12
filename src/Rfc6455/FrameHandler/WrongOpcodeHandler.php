@@ -8,7 +8,7 @@
  * on the root directory of this project
  */
 
-namespace Nekland\Woketo\Rfc6455\MessageHandler;
+namespace Nekland\Woketo\Rfc6455\FrameHandler;
 
 
 use Nekland\Woketo\Rfc6455\Frame;
@@ -17,7 +17,7 @@ use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\Socket\ConnectionInterface;
 use React\Stream\Stream;
 
-class WrongOpcodeHandler implements Rfc6455MessageHandlerInterface
+class WrongOpcodeHandler implements Rfc6455FrameHandlerInterface
 {
     /**
      * The following opcode are wrong for now but may represent something in the future depending on how the spec evolves.

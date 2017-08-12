@@ -8,7 +8,7 @@
  * on the root directory of this project
  */
 
-namespace Nekland\Woketo\Rfc6455\MessageHandler;
+namespace Nekland\Woketo\Rfc6455\FrameHandler;
 
 
 use Nekland\Woketo\Rfc6455\Frame;
@@ -16,7 +16,7 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\Stream\Stream;
 
-class RsvCheckFrameHandler implements Rfc6455MessageHandlerInterface
+class RsvCheckFrameHandler implements Rfc6455FrameHandlerInterface
 {
     public function supports(Message $message)
     {
