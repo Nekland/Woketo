@@ -21,7 +21,6 @@ use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
-use React\Stream\Stream;
 use React\Stream\WritableStreamInterface;
 
 class ConnectionTest extends \PHPUnit_Framework_TestCase
@@ -107,7 +106,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 }
 
-class ReactConnectionMock extends Stream implements ConnectionInterface
+class ReactConnectionMock implements ConnectionInterface
 {
     public function __construct()
     {
@@ -133,7 +132,7 @@ class ReactConnectionMock extends Stream implements ConnectionInterface
 
     public function removeAllListeners($event = null) {}
 
-    public function listeners($event) {}
+    public function listeners($event = null) {}
 
     public function isReadable(){}
 
@@ -150,4 +149,6 @@ class ReactConnectionMock extends Stream implements ConnectionInterface
     public function write($data) {}
 
     public function end($data = null) {}
+
+    public function getLocalAddress(){}
 }

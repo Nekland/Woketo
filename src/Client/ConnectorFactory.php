@@ -13,11 +13,11 @@ namespace Nekland\Woketo\Client;
 
 use React\Dns\Resolver\Factory as DnsResolverFactory;
 use React\EventLoop\LoopInterface;
-use React\SocketClient\ConnectorInterface;
-use React\SocketClient\DnsConnector;
-use React\SocketClient\SecureConnector;
-use React\SocketClient\TcpConnector;
-use React\SocketClient\TimeoutConnector;
+use React\Socket\ConnectorInterface;
+use React\Socket\DnsConnector;
+use React\Socket\SecureConnector;
+use React\Socket\TcpConnector;
+use React\Socket\TimeoutConnector;
 
 class ConnectorFactory implements ConnectorFactoryInterface
 {

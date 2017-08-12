@@ -246,7 +246,7 @@ class Request extends AbstractHttpMessage
             ->setHttpVersion(Request::HTTP_1_1)
             ->setHost($host)
         ;
-        
+
         if ($port) {
             $request->setPort($port);
         }

@@ -14,10 +14,13 @@ namespace Nekland\Woketo\Rfc6455\FrameHandler;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class RsvCheckFrameHandler implements Rfc6455FrameHandlerInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function supports(Message $message)
     {
         foreach ($message->getFrames() as $frame) {
@@ -29,7 +32,10 @@ class RsvCheckFrameHandler implements Rfc6455FrameHandlerInterface
         return false;
     }
 
-    public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
+    /**
+     * {@inheritdoc}
+     */
+    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
     {
         $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
         $socket->end();

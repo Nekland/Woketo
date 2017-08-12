@@ -24,7 +24,7 @@ use Nekland\Woketo\Rfc6455\Handshake\ClientHandshake;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class Connection extends AbstractConnection
 {
@@ -52,15 +52,15 @@ class Connection extends AbstractConnection
         $this->buffer = '';
         $this->handler = $handler;
 
-        $clientPromise->then(function (Stream $stream) {
+        $clientPromise->then(function (ConnectionInterface $stream) {
             $this->stream = $stream;
             $this->onConnection($stream);
-        }, function (\Exception $error){
+        }, function (\Exception $error) {
             $this->onError($error);
         });
     }
 
-    private function onConnection(Stream $stream)
+    private function onConnection(ConnectionInterface $stream)
     {
         $stream->on('data', function (string $data) {
             $this->onMessage($data);

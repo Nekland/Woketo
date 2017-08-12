@@ -20,7 +20,6 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
-use React\Stream\Stream;
 use React\Stream\WritableStreamInterface;
 
 class WebSocketServerTest extends \PHPUnit_Framework_TestCase
@@ -132,7 +131,7 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
 /**
  * Mock for react php
  */
-class FakeServerAndConnection extends Stream implements ServerInterface, ConnectionInterface {
+class FakeServerAndConnection implements ServerInterface, ConnectionInterface {
     private $onData;
     private $onConnect;
     public function __construct()
@@ -163,7 +162,7 @@ class FakeServerAndConnection extends Stream implements ServerInterface, Connect
     public function once($event, callable $listener){}
     public function removeListener($event, callable $listener){}
     public function removeAllListeners($event = null){}
-    public function listeners($event){}
+    public function listeners($event = null){}
     public function emit($event, array $arguments = []){}
     public function listen($port, $host = '127.0.0.1'){}
     public function getPort(){}
@@ -177,6 +176,9 @@ class FakeServerAndConnection extends Stream implements ServerInterface, Connect
     public function isWritable(){}
     public function write($data){}
     public function end($data = null){}
+
+    public function getLocalAddress(){}
+    public function getAddress(){}
 }
 
 /**

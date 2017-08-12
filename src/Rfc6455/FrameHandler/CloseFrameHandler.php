@@ -14,16 +14,22 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class CloseFrameHandler implements Rfc6455FrameHandlerInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function supports(Message $message)
     {
         return $message->getFirstFrame()->getOpcode() === Frame::OP_CLOSE;
     }
 
-    public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
+    /**
+     * {@inheritdoc}
+     */
+    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
     {
         $code = Frame::CLOSE_NORMAL;
 
