@@ -46,12 +46,12 @@ class MyMessageHandler implements MessageHandlerInterface
     
     public function onMessage(string $data, AbstractConnection $connection)
     {
-        // This method is called when a text message is send
+        // This method is called when a text message is sent
     }
     
     public function onBinary(string $data, AbstractConnection $connection)
     {
-        // This method is called when a binary message is send
+        // This method is called when a binary message is sent
     }
     
     public function onError(WebsocketException $e, AbstractConnection $connection)
@@ -105,12 +105,12 @@ class MyMessageHandler implements MessageHandlerInterface
     
     public function onMessage(string $data, AbstractConnection $connection)
     {
-        // This method is called when a text message is send
+        // This method is called when a text message is sent
     }
     
     public function onBinary(string $data, AbstractConnection $connection)
     {
-        // This method is called when a binary message is send
+        // This method is called when a binary message is sent
     }
     
     public function onError(WebsocketException $e, AbstractConnection $connection)
