@@ -15,7 +15,6 @@ use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
-use Nekland\Woketo\Server\Connection;
 use Nekland\Woketo\Server\WebSocketServer;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;

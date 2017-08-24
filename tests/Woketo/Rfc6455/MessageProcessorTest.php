@@ -14,8 +14,8 @@ use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
-use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
-use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\FrameHandler\PingFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\Rfc6455FrameHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
@@ -128,7 +128,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
     public function testItHandleSpecialMessagesWithHandler()
     {
         $processor = new MessageProcessor();
-        $this->assertSame($processor->addHandler(new class() implements Rfc6455MessageHandlerInterface {
+        $this->assertSame($processor->addHandler(new class() implements Rfc6455FrameHandlerInterface {
             public function supports(Message $message)
             {
                 return $message->getFirstFrame()->getOpcode() === Frame::OP_CLOSE;

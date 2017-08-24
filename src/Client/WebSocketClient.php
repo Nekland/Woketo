@@ -15,10 +15,10 @@ use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\MessageFactory;
-use Nekland\Woketo\Rfc6455\MessageHandler\CloseFrameHandler;
-use Nekland\Woketo\Rfc6455\MessageHandler\PingFrameHandler;
-use Nekland\Woketo\Rfc6455\MessageHandler\RsvCheckFrameHandler;
-use Nekland\Woketo\Rfc6455\MessageHandler\WrongOpcodeHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\CloseFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\PingFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\RsvCheckFrameHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\WrongOpcodeFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\EventLoop\Factory as LoopFactory;
 use React\EventLoop\LoopInterface;
@@ -153,7 +153,7 @@ class WebSocketClient
 
         $this->messageProcessor->addHandler(new PingFrameHandler());
         $this->messageProcessor->addHandler(new CloseFrameHandler());
-        $this->messageProcessor->addHandler(new WrongOpcodeHandler());
+        $this->messageProcessor->addHandler(new WrongOpcodeFrameHandler());
         $this->messageProcessor->addHandler(new RsvCheckFrameHandler());
 
         return $this->messageProcessor;

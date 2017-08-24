@@ -14,7 +14,7 @@ use Nekland\Woketo\Exception\Frame\IncoherentDataException;
 use Nekland\Woketo\Exception\Frame\IncompleteFrameException;
 use Nekland\Woketo\Exception\Frame\ProtocolErrorException;
 use Nekland\Woketo\Exception\LimitationException;
-use Nekland\Woketo\Rfc6455\MessageHandler\Rfc6455MessageHandlerInterface;
+use Nekland\Woketo\Rfc6455\FrameHandler\Rfc6455FrameHandlerInterface;
 use React\Stream\Stream;
 
 /**
@@ -36,7 +36,7 @@ class MessageProcessor
     private $messageFactory;
 
     /**
-     * @var Rfc6455MessageHandlerInterface[]
+     * @var Rfc6455FrameHandlerInterface[]
      */
     private $handlers;
 
@@ -175,10 +175,10 @@ class MessageProcessor
     }
 
     /**
-     * @param Rfc6455MessageHandlerInterface $handler
+     * @param Rfc6455FrameHandlerInterface $handler
      * @return self
      */
-    public function addHandler(Rfc6455MessageHandlerInterface $handler)
+    public function addHandler(Rfc6455FrameHandlerInterface $handler)
     {
         $this->handlers[] = $handler;
 
