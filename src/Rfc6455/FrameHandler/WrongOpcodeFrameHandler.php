@@ -17,7 +17,7 @@ use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\Socket\ConnectionInterface;
 use React\Stream\Stream;
 
-class WrongOpcodeHandler implements Rfc6455FrameHandlerInterface
+class WrongOpcodeFrameHandler implements Rfc6455FrameHandlerInterface
 {
     /**
      * The following opcode are wrong for now but may represent something in the future depending on how the spec evolves.

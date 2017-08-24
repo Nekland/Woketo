@@ -13,20 +13,20 @@ namespace Test\Woketo\Rfc6455\FrameHandler;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
-use Nekland\Woketo\Rfc6455\FrameHandler\WrongOpcodeHandler;
+use Nekland\Woketo\Rfc6455\FrameHandler\WrongOpcodeFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
 use React\Stream\Stream;
 
-class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
+class WrongOpcodeFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider getFrameWithWrongOpCode
      */
     public function testItSupportsMessageWithWrongOpcode($result, $frame)
     {
-        $handler = new WrongOpcodeHandler();
+        $handler = new WrongOpcodeFrameHandler();
         $wrongMessage = new Message();
         $wrongMessage->addFrame(new Frame($frame));
 
@@ -49,7 +49,7 @@ class WrongOpcodeHandlerTest extends \PHPUnit_Framework_TestCase
         $messageProcessor->getFrameFactory()->willReturn($frameFactory->reveal());
         $socket->end()->shouldBeCalled();
 
-        $handler = new WrongOpcodeHandler();
+        $handler = new WrongOpcodeFrameHandler();
         $handler->process($wrongMessage, $messageProcessor->reveal(), $socket->reveal());
     }
 
