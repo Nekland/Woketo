@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [Unreleased]
+
+## [2.0.0] - 2017-08-25
 ### Added
 - `WebSocketClient` class that allows you to dial with a standard WebSocket server
 - Javascript server that proves that woketo server works with anything (not just autobahn testsuite)
