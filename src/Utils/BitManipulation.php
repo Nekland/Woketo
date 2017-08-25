@@ -134,7 +134,7 @@ class BitManipulation
         if (\is_array($hexArray[0])) {
             $hexArray = $hexArray[0];
         }
-        
+
         $res = '';
         foreach ($hexArray as $hexNum) {
             $res .= \chr(\hexdec($hexNum));
@@ -279,14 +279,12 @@ class BitManipulation
             case $len <= 4:
                 $format = 'N';
                 break;
-            case $len > 4:
+            default: // also known as "$len > 4" :)
                 $format = 'J';
 
                 do {
                     $frame = "\0" . $frame;
                 } while (BitManipulation::frameSize($frame) !== 8);
-
-                break;
         }
 
         return \unpack($format, $frame)[1];
