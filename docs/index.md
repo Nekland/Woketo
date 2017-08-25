@@ -3,12 +3,15 @@ Getting started with Woketo
 
 - [Installation](#installation)
 - [Usage](#usage)
+  * [Serveur](#server)
+  * [Client](#client)
 - [Configuration Reference](#configuration-reference)
 - [Cookbooks](#cookbooks)
-  * [Logs](logs)
-  * [Message Handlers](message-handlers)
+  * [Logs](#logs)
+  * [Message Handlers](#message-handlers)
   * [WebSocket Secured](#websocket-secured-aka-wss)
-- [Contributing](contributing-to-the-development-of-woketo)
+- [Optimization](#optimization)
+- [Contributing](#contributing-to-the-development-of-woketo)
 
 Installation
 ------------
@@ -18,7 +21,9 @@ Checkout the [README to learn about installation](../README.md#how-to-install).
 Usage
 -----
 
-### How it works
+### Server
+
+#### How it works
 
 Basically, you just need to create a class that will handle websocket messages and process them. You give this an instance
 of this class to Woketo that call `onMessage` method. This class must implements the
@@ -28,24 +33,28 @@ Here is how your class may look:
 
 ```php
 <?php
+use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Core\AbstractConnection;
+use Nekland\Woketo\Exception\WebsocketException;
+
 class MyMessageHandler implements MessageHandlerInterface
 {
-    public function onConnection(Connection $connection)
+    public function onConnection(AbstractConnection $connection)
     {
         // This method is called when a new client is connected to your server
     }
     
-    public function onMessage(string $data, Connection $connection)
+    public function onMessage(string $data, AbstractConnection $connection)
     {
-        // This method is called when a text message is send
+        // This method is called when a text message is sent
     }
     
-    public function onBinary(string $data, Connection $connection)
+    public function onBinary(string $data, AbstractConnection $connection)
     {
-        // This method is called when a binary message is send
+        // This method is called when a binary message is sent
     }
     
-    public function onError(WebsocketException $e, Connection $connection)
+    public function onError(WebsocketException $e, AbstractConnection $connection)
     {
         // This method is called when an error occurs
     }
@@ -64,10 +73,10 @@ $server->setMessageHandler(new YourMessageHandler(), '/path');
 $server->start();
 ```
 
-The `Websocket` instantiation take the following parameters:
+The `WebSocketServer` instantiation takes the following parameters:
 - `1337`: the port you want to bind your server on (notice that for low ports you need root rights)
 - `"127.0.0.1"`: the host you bind on, this is the default value and what you need most part of the time
-- `[]`: an (optional) array of configuration option documented in the [configuration reference](#configuration-reference)
+- `[]`: an (optional) array of configuration option documented in the [configuration reference](#server-configuration)
 
 The `setMessageHandler` method takes 2 parameters:
 - Your message handler
@@ -77,6 +86,52 @@ The `Connection` object has the following methods you can use:
 - `write($message, $opCode = Frame::OP_TEXT)`, you may change to `Frame::OP_BINARY` if you want to send binary data
 - `getIp()`, that returns the current IP
 - `getLogger()`, that returns the logger of woketo
+
+### Client
+
+The client usage is as simple as is the server usage. First you create your message handler:
+```php
+<?php
+use Nekland\Woketo\Message\MessageHandlerInterface;
+use Nekland\Woketo\Core\AbstractConnection;
+use Nekland\Woketo\Exception\WebsocketException;
+
+class MyMessageHandler implements MessageHandlerInterface
+{
+    public function onConnection(AbstractConnection $connection)
+    {
+        // This method is called when a new client is connected to your server
+    }
+    
+    public function onMessage(string $data, AbstractConnection $connection)
+    {
+        // This method is called when a text message is sent
+    }
+    
+    public function onBinary(string $data, AbstractConnection $connection)
+    {
+        // This method is called when a binary message is sent
+    }
+    
+    public function onError(WebsocketException $e, AbstractConnection $connection)
+    {
+        // This method is called when an error occurs
+    }
+}
+```
+
+You can then run your client:
+
+```php
+$client = new WebSocketClient('ws://127.0.0.1:9000/foobar', []);
+$client->start();
+```
+
+
+The `WebSocketClient` instantiation takes the following parameters:
+- `"ws://127.0.0.1:9000/foobar""`: a WebSocket URL: the protocol (ws or wss), the host (127.0.0.1), the port (9000), the URI (foobar)
+- `[]`: an (optional) array of configuration option documented in the [configuration reference](#client-configuration)
+
 
 ### Use it your way
 
@@ -95,9 +150,11 @@ implement it.
 Configuration Reference
 -----------------------
 
+### Server configuration
+
 The configuration is split in some parts:
-- The `frame` key configure the way Frames are managed
-- The `message` key configure the way Frames are stacked
+- The `frame` key configures the way Frames are managed
+- The `message` key configures the way Frames are stacked
 - The `messageHandlers` key contains your custom message handler, checkout the [message handler doc](#message-handler)
 - The `prod` key defines if your running environment is prod or not (similar to `debug` parameter in some environment)
 
@@ -116,6 +173,29 @@ $defaultConfiguration = [
     'ssl' => true,                    // to use wss
     'certFile' => '',                 // pem file, see ssl doc section for more details
     'sslContextOptions' => [],        // PHP SSL configuration see http://php.net/manual/fr/context.ssl.php
+];
+```
+
+### Client configuration
+
+The configuration is split in some parts:
+- The `frame` key configures the way Frames are managed
+- The `message` key configures the way Frames are stacked
+- The `prod` key defines if your running environment is prod or not (similar to `debug` parameter in some environment)
+
+```php
+<?php
+
+$defaultConfiguration = [
+    'frame'           => [
+        'maxPayloadSize' => 524288,   // 0.5 MiB per Frame
+    ],
+    'message'         => [
+        'maxMessagesBuffering' => 100 // 100 * 0.5 MiB max in memory
+    ],
+    'prod' => true,                   // When set to false, it allows you to launch woketo with xdebug
+    'dns' => '',                      // Server address for DNS resolution (google by default)
+    'ssl' => [],                      // PHP SSL configuration see http://php.net/manual/fr/context.ssl.php
 ];
 ```
 
@@ -144,7 +224,7 @@ exception or answer a close message if needed. This class must implement `Neklan
 Please consider that Woketo only catches `WebsocketException` which mean that if you need to throw an exception, that
 needs to be catch, it must have this type.
 
-### WebSocket Secured (a.k.a. WSS)
+### WebSocket Secured (alias WSS)
 
 In new apps you often use https. So you should use wss with WebSockets to secure data exchange. Woketo
 supports wss out of the box, you just need to add the related options (`ssl` and `certFile`).
@@ -173,6 +253,17 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout acme.key -out acme.c
 cat acme.key > acme.pem
 cat acme.crt >> acme.pem
 ```
+
+Optimization
+------------
+
+### Libevent
+
+Woketo is based on ReactPHP and as ReactPHP is able to run a loop by itself, so woketo is.
+But something good to note is that you can install the **PHP extension libevent** to get better performance
+for your event loop. You use Woketo exactly the same with libevent, it will just be faster and safer.
+
+[Learn more about libevent](http://www.wangafu.net/~nickm/libevent-book/)
 
 Contributing to the development of Woketo
 -----------------------------------------

@@ -7,8 +7,9 @@ Code style
 Woketo follows most parts of the coding style of [PSR](http://www.php-fig.org/psr/) & [Symfony](http://symfony.com/doc/current/contributing/code/standards.html) except these points:
 
 1. `return` clause must be explicit. That means that when you return null, you should precise `return null;`
-2. comments in docblock should be aligned
+2. Comments in docblock should be aligned
 3. We put spaces around the `.` of concatenation and the `=` of default parameter in functions
+4. Functions are prefixed by `\\` to call them from global namespace explicitly
 
 *This code-style is a recommendation but can be pointed out in a pull-request code review.*
 

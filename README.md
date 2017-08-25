@@ -3,8 +3,9 @@ Woketo
 
 A PHP WebSocket library. With following features:
 
-* Server
-* Client (alpha)
+* **Server**
+* **Client**
+* WSS Support (WebSocket over **SSL**)
 * Autobahn test suite passed (WebSocket test suite reference)
 * Binary/text messages supported
 * Built on top of reactphp (async socket communication)
