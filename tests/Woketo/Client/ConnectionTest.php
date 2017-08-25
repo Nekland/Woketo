@@ -9,9 +9,8 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
-use React\Promise\LazyPromise;
 use React\Promise\Promise;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 /**
  * This file is a part of Woketo package.
@@ -25,7 +24,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 {
     public function testItProcessHandshake()
     {
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $messageHandler = $this->prophesize(MessageHandlerInterface::class);
         $loop = $this->prophesize(LoopInterface::class);
@@ -53,7 +52,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
     public function testItSendsMessagesWithMessageProcessor()
     {
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $messageHandler = $this->prophesize(MessageHandlerInterface::class);
         $loop = $this->prophesize(LoopInterface::class);

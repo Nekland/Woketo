@@ -15,7 +15,6 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use React\Socket\ConnectionInterface;
-use React\Stream\Stream;
 
 class WrongOpcodeFrameHandler implements Rfc6455FrameHandlerInterface
 {
@@ -37,7 +36,7 @@ class WrongOpcodeFrameHandler implements Rfc6455FrameHandlerInterface
      * @param ConnectionInterface $socket
      * @return null|void
      */
-    public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
+    public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
     {
         $messageProcessor->write($messageProcessor->getFrameFactory()->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR), $socket);
         $socket->end();

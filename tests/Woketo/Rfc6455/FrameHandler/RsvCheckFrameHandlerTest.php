@@ -18,7 +18,7 @@ use Nekland\Woketo\Rfc6455\FrameHandler\RsvCheckFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class RsvCheckFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,7 +28,7 @@ class RsvCheckFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
 
         $frameFactory->createCloseFrame(Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
@@ -53,7 +53,7 @@ class RsvCheckFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
 
         $frameFactory->createCloseFrame(Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldNotBeCalled();

@@ -11,7 +11,7 @@
 
 namespace Nekland\Woketo\Client;
 
-use React\SocketClient\ConnectorInterface;
+use React\Socket\ConnectorInterface;
 
 interface ConnectorFactoryInterface
 {

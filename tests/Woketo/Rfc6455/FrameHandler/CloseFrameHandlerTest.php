@@ -17,7 +17,7 @@ use Nekland\Woketo\Rfc6455\FrameHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,7 +27,7 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
 
         $frameFactory->createCloseFrame(Argument::cetera())->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
@@ -49,7 +49,7 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
 
         $frameFactory->createCloseFrame(Frame::CLOSE_PROTOCOL_ERROR)->willReturn($frame);
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();
@@ -76,7 +76,7 @@ class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor = $this->prophesize(MessageProcessor::class);
         $frameFactory = $this->prophesize(FrameFactory::class);
-        $socket = $this->prophesize(Stream::class);
+        $socket = $this->prophesize(ConnectionInterface::class);
 
         $frameFactory->createCloseFrame($codeFrameOut)->willReturn(new Frame());
         $messageProcessor->write(Argument::type(Frame::class), Argument::cetera())->shouldBeCalled();

@@ -18,7 +18,10 @@ use Nekland\Woketo\Rfc6455\Frame;
 const AGENT = 'Woketo/' . Meta::VERSION;
 
 $numberOfTests = null;
-$tests = explode(',', $argv[1] ?? []);
+$tests = [];
+if (!empty($argv[1])) {
+    $tests = explode(',', $argv[1]);
+}
 $clientConfiguration = [
     'prod' => false,
     'frame' => ['maxPayloadSize' => 16777216],

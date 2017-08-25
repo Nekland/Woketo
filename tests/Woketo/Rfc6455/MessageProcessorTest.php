@@ -19,7 +19,7 @@ use Nekland\Woketo\Rfc6455\FrameHandler\Rfc6455FrameHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use Prophecy\Argument;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface;
 
 class MessageProcessorTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,7 +30,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
-        $this->socket = $this->prophesize(Stream::class);
+        $this->socket = $this->prophesize(ConnectionInterface::class);
         $this->frameFactory = $this->getMockBuilder(FrameFactory::class)
             ->setMethods(['createCloseFrame'])
             ->getMock()
@@ -134,7 +134,7 @@ class MessageProcessorTest extends \PHPUnit_Framework_TestCase
                 return $message->getFirstFrame()->getOpcode() === Frame::OP_CLOSE;
             }
 
-            public function process(Message $message, MessageProcessor $messageProcessor, Stream $socket)
+            public function process(Message $message, MessageProcessor $messageProcessor, ConnectionInterface $socket)
             {
                 $messageProcessor->write((new FrameFactory())->createCloseFrame(), $socket);
             }
