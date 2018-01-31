@@ -1,0 +1,12 @@
+{
+    "name": "woketo/ratchet",
+    "require": {
+        "cboden/ratchet": "^0.4.1"
+    },
+    "authors": [
+        {
+            "name": "Maxime Veber",
+            "email": "nek.dev@gmail.com"
+        }
+    ]
+}
