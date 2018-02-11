@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.1] - 2018-02-11
+### Added
+- Add possibility to retrieve the loop #133
+
+### Fixed
+- Fix wrong doc about woketo client
+
 ## [2.0.0] - 2017-08-25
 ### Added
 - `WebSocketClient` class that allows you to dial with a standard WebSocket server
