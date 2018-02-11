@@ -1,28 +1,35 @@
 <?php
 
-use Nekland\Woketo\Server\WebSocketServer;
-
 require __DIR__ . '/../../../vendor/autoload.php';
 
-$foo = new WebSocketServer(9001, '127.0.0.1', [
+$foo = new \Nekland\Woketo\Server\WebSocketServer(9001, '127.0.0.1', [
     'prod' => true,
 ]);
-
-
-class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
+class SimpleMessageServer implements \Nekland\Woketo\Message\MessageHandlerInterface
 {
+    private $messages;
+
+    public function __construct($messages)
+    {
+        $this->messages = $messages;
+    }
+
     public function onConnection(\Nekland\Woketo\Core\AbstractConnection $connection) {}
 
     public function onDisconnect(\Nekland\Woketo\Core\AbstractConnection $connection) {}
 
     public function onMessage(string $data, \Nekland\Woketo\Core\AbstractConnection $connection)
     {
-        $connection->write($data);
+        foreach ($this->messages as $message) {
+            if ($message['message'] === $data) {
+                $connection->write($message['response']);
+            }
+        }
     }
 
     public function onBinary(string $data, \Nekland\Woketo\Core\AbstractConnection $connection)
     {
-        $connection->write($data, \Nekland\Woketo\Rfc6455\Frame::OP_BINARY);
+        // Should not occur ATM
     }
 
     public function onError(\Nekland\Woketo\Exception\WebsocketException $e, \Nekland\Woketo\Core\AbstractConnection $connection)
@@ -31,8 +38,7 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
     }
 }
 
-$foo->setMessageHandler(new EchoServer());
 
+$foo->setMessageHandler(new SimpleMessageServer(json_decode(file_get_contents(__DIR__ . '/../data/messages.json'), true)));
 
 $foo->start();
-

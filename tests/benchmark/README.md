@@ -41,10 +41,6 @@ This will open an echo WebSocket server on port 9003.
 Run the tests
 -------------
 
-Install thor and run it like this:
-
-```
-thor --amount 5000 ws://localhost:9001
-thor --amount 5000 ws://localhost:9002
-thor --amount 5000 ws://localhost:9003
+```bash
+php many_connections.php
 ```

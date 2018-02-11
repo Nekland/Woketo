@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-var server = new WebSocket.Server({ port: 9002 });
+var server = new WebSocket.Server({ port: 9003 });
 
 server.on('connection', function connection(ws) {
 

@@ -11,13 +11,17 @@ $foo = new WebSocketServer(9001, '127.0.0.1', [
 
 class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
 {
-    public function onConnection(\Nekland\Woketo\Core\AbstractConnection $connection) {}
-
-    public function onDisconnect(\Nekland\Woketo\Core\AbstractConnection $connection) {}
+    public function onConnection(\Nekland\Woketo\Core\AbstractConnection $connection)
+    {
+    }
 
     public function onMessage(string $data, \Nekland\Woketo\Core\AbstractConnection $connection)
     {
         $connection->write($data);
+        if ($data === 'yolo') {
+            $connection->close();
+            $connection->getLoop()->stop();
+        }
     }
 
     public function onBinary(string $data, \Nekland\Woketo\Core\AbstractConnection $connection)
