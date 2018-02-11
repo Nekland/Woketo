@@ -124,7 +124,7 @@ You can then run your client:
 
 ```php
 $client = new WebSocketClient('ws://127.0.0.1:9000/foobar', []);
-$client->start();
+$client->start(new MyMessageHandler);
 ```
 
 
