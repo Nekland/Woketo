@@ -165,6 +165,14 @@ abstract class AbstractConnection
     }
 
     /**
+     * @return LoopInterface
+     */
+    public function getLoop(): LoopInterface
+    {
+        return $this->loop;
+    }
+
+    /**
      * @param string|Frame  $frame
      * @param int           $opCode
      * @throws \Nekland\Woketo\Exception\RuntimeException

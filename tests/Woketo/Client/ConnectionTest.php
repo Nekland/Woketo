@@ -9,6 +9,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\StreamSelectLoop;
 use React\Promise\Promise;
 use React\Socket\ConnectionInterface;
 
@@ -62,11 +63,25 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
         $messageProcessor->write('hello', $socket, Argument::any())->shouldBeCalled();
 
-
         $promise = new Promise(function (callable $resolve, callable $reject) use ($socket) {
             $resolve($socket->reveal());
         });
         $connection = new Connection(new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal(), $loop->reveal());
         $connection->write('hello');
+    }
+
+    public function testItGivesTheLoopBack()
+    {
+        $socket = $this->prophesize(ConnectionInterface::class);
+        $messageProcessor = $this->prophesize(MessageProcessor::class);
+        $messageHandler = $this->prophesize(MessageHandlerInterface::class);
+        $promise = new Promise(function (callable $resolve, callable $reject) use ($socket) {
+            $resolve($socket->reveal());
+        });
+
+        $loop = new StreamSelectLoop();
+        $connection = new Connection (new Url('ws://localhost:9000'), $promise, $messageProcessor->reveal(), $messageHandler->reveal(), $loop);
+
+        $this->assertSame($loop, $connection->getLoop());
     }
 }
