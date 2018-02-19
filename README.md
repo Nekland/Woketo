@@ -52,18 +52,18 @@ $server->start(); // And that's all <3
 
 namespace Your\Namespace;
 
-use Nekland\Woketo\Server\Connection;
+use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Message\TextMessageHandler;
 
 class YourMessageHandler extends TextMessageHandler
 {
-    public function onConnection(Connection $connection)
+    public function onConnection(AbstractConnection $connection)
     {
         // Doing something when the client is connected ?
         // This method is totally optional.
     }
     
-    public function onMessage(string $data, Connection $connection)
+    public function onMessage(string $data, AbstractConnection $connection)
     {
         // Sending back the received data
         $connection->write($data);
