@@ -123,11 +123,11 @@ What Woketo does _not_ do ?
 
 Currently there is no support of the following:
 
-- WebSocket client (you still need to use [pawl](https://github.com/ratchetphp/Pawl), but we're working on it)
 - WebSocket extensions, currently not supported but will probably be in the future
 - [WAMP](http://wamp-proto.org/) implementation will probably never be done by Woketo itself as it's a layer on top of
   WebSockets. This includes JSON-RPC and other layers up to WebSockets.
-  
+- Woketo have no HTTP server layer and is not compatible with [PHP PM](https://github.com/php-pm/php-pm). This is planned for next releases (probably the v3).
+
 Thanks
 ------
 
