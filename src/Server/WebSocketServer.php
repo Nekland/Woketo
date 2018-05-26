@@ -134,7 +134,7 @@ class WebSocketServer
         }
 
         $this->loop = $this->loop ?? \React\EventLoop\Factory::create();
-        $this->server = $this->server ?? new \React\Socket\TcpServer($this->port, $this->loop);
+        $this->server = $this->server ?? new \React\Socket\TcpServer($this->host . ':' . $this->port, $this->loop);
 
         if ($this->config['ssl']) {
             $this->server = new \React\Socket\SecureServer($this->server, $this->loop, array_merge([
