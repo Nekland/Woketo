@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.2] - 2018-06-04
+### Fixed
+- Fix ability to specify hostname of the server on non secured protocol
+
 ## [2.0.1] - 2018-02-11
 ### Added
 - Add possibility to retrieve the loop #133
