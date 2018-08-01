@@ -16,10 +16,11 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\FrameHandler\WrongOpcodeFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\Socket\ConnectionInterface;
 
-class WrongOpcodeFrameHandlerTest extends \PHPUnit_Framework_TestCase
+class WrongOpcodeFrameHandlerTest extends TestCase
 {
     /**
      * @dataProvider getFrameWithWrongOpCode

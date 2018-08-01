@@ -18,12 +18,13 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Server\Connection;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Stream\WritableStreamInterface;
 
-class ConnectionTest extends \PHPUnit_Framework_TestCase
+class ConnectionTest extends TestCase
 {
     public function testItSupportsTextMessage()
     {

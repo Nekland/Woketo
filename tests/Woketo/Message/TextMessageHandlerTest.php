@@ -15,8 +15,9 @@ use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\UnsupportedException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\Connection;
+use PHPUnit\Framework\TestCase;
 
-class TextMessageHandlerTest extends \PHPUnit_Framework_TestCase
+class TextMessageHandlerTest extends TestCase
 {
     public function testItThrowsExceptionOnBinary()
     {

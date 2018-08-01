@@ -12,8 +12,9 @@
 namespace Test\Woketo\Http;
 
 use Nekland\Woketo\Http\HttpHeadersBag;
+use PHPUnit\Framework\TestCase;
 
-class HttpHeadersBagTest extends \PHPUnit_Framework_TestCase
+class HttpHeadersBagTest extends TestCase
 {
     public function testItKeepAndRetrieveHeaders()
     {

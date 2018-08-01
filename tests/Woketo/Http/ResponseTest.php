@@ -13,11 +13,13 @@ namespace Test\Woketo\Http;
 
 use Nekland\Woketo\Exception\Http\HttpException;
 use Nekland\Woketo\Http\Response;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 
-class ResponseTest extends \PHPUnit_Framework_TestCase
+class ResponseTest extends TestCase
 {
     /**
-     * @var \React\Stream\Stream
+     * @var \React\Stream\DuplexStreamInterface
      */
     private $stream;
 
@@ -52,7 +54,9 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response = Response::createSwitchProtocolResponse();
         $response->addHeader('Sec-WebSocket-Accept', 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
 
+        $this->stream->write(Argument::any())->shouldBeCalled();
         $this->stream = $this->stream->reveal();
+
         $response->send($this->stream);
     }
 

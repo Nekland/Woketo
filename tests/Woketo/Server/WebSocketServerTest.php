@@ -16,17 +16,19 @@ use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\WebSocketServer;
+use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Stream\WritableStreamInterface;
 
-class WebSocketServerTest extends \PHPUnit_Framework_TestCase
+class WebSocketServerTest extends TestCase
 {
     public function testItInstanciateWithoutConfiguration()
     {
         $server = new WebSocketServer(1000);
+        $this->assertInstanceOf(WebSocketServer::class, $server);
     }
 
     public function testItInstanciateWithConfiguration()
@@ -34,6 +36,7 @@ class WebSocketServerTest extends \PHPUnit_Framework_TestCase
         $server = new WebSocketServer(1000, '127.0.0.1', [
             'prod' => false
         ]);
+        $this->assertInstanceOf(WebSocketServer::class, $server);
     }
 
     public function testItThrowErrorOnWrongMessageHandlerInConfiguration()

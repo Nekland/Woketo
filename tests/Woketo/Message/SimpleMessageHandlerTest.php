@@ -14,8 +14,9 @@ use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Message\SimpleMessageHandler;
 use Nekland\Woketo\Server\Connection;
+use PHPUnit\Framework\TestCase;
 
-class SimpleMessageHandlerTest extends \PHPUnit_Framework_TestCase
+class SimpleMessageHandlerTest extends TestCase
 {
     private $instance;
 

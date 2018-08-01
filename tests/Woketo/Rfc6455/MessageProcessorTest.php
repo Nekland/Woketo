@@ -18,10 +18,11 @@ use Nekland\Woketo\Rfc6455\FrameHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\FrameHandler\Rfc6455FrameHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\Socket\ConnectionInterface;
 
-class MessageProcessorTest extends \PHPUnit_Framework_TestCase
+class MessageProcessorTest extends TestCase
 {
     private $socket;
     private $frameFactory;

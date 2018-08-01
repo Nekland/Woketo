@@ -13,8 +13,9 @@ namespace Test\Woketo\Rfc6455;
 
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageFactory;
+use PHPUnit\Framework\TestCase;
 
-class MessageFactoryTest extends \PHPUnit_Framework_TestCase
+class MessageFactoryTest extends TestCase
 {
     public function testItCreateMessages()
     {

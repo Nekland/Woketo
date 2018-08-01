@@ -18,6 +18,7 @@ use Nekland\Woketo\Exception\Frame\TooBigControlFrameException;
 use Nekland\Woketo\Exception\Frame\TooBigFrameException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class FrameTest
@@ -25,7 +26,7 @@ use Nekland\Woketo\Utils\BitManipulation;
  * These tests uses examples from the RFC:
  * https://tools.ietf.org/html/rfc6455#section-5.7
  */
-class FrameTest extends \PHPUnit_Framework_TestCase
+class FrameTest extends TestCase
 {
     public function setUp()
     {
@@ -192,6 +193,7 @@ class FrameTest extends \PHPUnit_Framework_TestCase
         $rawData = BitManipulation::hexArrayToString('81', '7F', '00', '00', '00', '00', '00', '13', '00', '01') . $payload;
 
         $frame = new Frame($rawData, ['maxPayloadSize' => 4194304]); // Allow 4Mo
+        $this->assertInstanceOf(Frame::class, $frame);
     }
 
     public function testItSupportsFrameWith65536PayloadFromRawData()
@@ -234,14 +236,14 @@ class FrameTest extends \PHPUnit_Framework_TestCase
     {
         $frame = BitManipulation::hexArrayToString(['81', '9d', '22', '4a', '47', '4d', '6a', '2f', '2b', '21', '4d', '67', '85', 'f8', '62', '89', 'd8', '8e', '94', '89', 'e3', '8e', '9e', '89', 'e7', '8e', '83', '67', '12', '19', '64', '67', '7f', '6c', '03']);
         $frame = new Frame($frame);
-        Frame::checkFrame($frame);
+        $this->assertNull(Frame::checkFrame($frame));
     }
 
     public function testItChecksAGoodControlFrame()
     {
         $frame = BitManipulation::hexArrayToString(['89','88','b5','c7','6d','58','b5','38','93','a5','49','3c','6d','a7']);
         $frame = new Frame($frame);
-        Frame::checkFrame($frame);
+        $this->assertNull(Frame::checkFrame($frame));
     }
 
     public function testItThrowsTooBigControlFrame()

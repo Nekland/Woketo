@@ -12,8 +12,9 @@
 namespace Test\Woketo\Utils;
 
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 
-class BitManipulationTest extends \PHPUnit_Framework_TestCase
+class BitManipulationTest extends TestCase
 {
     /**
      * @dataProvider bitInBytesDataProvider

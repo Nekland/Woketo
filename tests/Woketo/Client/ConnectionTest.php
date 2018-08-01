@@ -7,6 +7,7 @@ use Nekland\Woketo\Client\Connection;
 use Nekland\Woketo\Http\Url;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
@@ -21,7 +22,7 @@ use React\Socket\ConnectionInterface;
  * For the full license, take a look to the LICENSE file
  * on the root directory of this project
  */
-class ConnectionTest extends \PHPUnit_Framework_TestCase
+class ConnectionTest extends TestCase
 {
     public function testItProcessHandshake()
     {
