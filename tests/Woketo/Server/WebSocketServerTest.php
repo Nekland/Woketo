@@ -17,7 +17,7 @@ use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\WebSocketServer;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\Timer\TimerInterface;
+use React\EventLoop\TimerInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Stream\WritableStreamInterface;
@@ -186,18 +186,19 @@ class FakeServerAndConnection implements ServerInterface, ConnectionInterface {
  */
 class FakeLoop implements LoopInterface
 {
-    public function addReadStream($stream, callable $listener){}
-    public function addWriteStream($stream, callable $listener){}
-    public function removeReadStream($stream){}
-    public function removeWriteStream($stream){}
-    public function removeStream($stream){}
-    public function addTimer($interval, callable $callback){}
-    public function addPeriodicTimer($interval, callable $callback){}
-    public function cancelTimer(TimerInterface $timer){}
-    public function isTimerActive(TimerInterface $timer){}
-    public function nextTick(callable $listener){}
-    public function futureTick(callable $listener){}
-    public function tick(){}
-    public function run(){}
-    public function stop(){}
+    public function addReadStream($stream, $listener) {}
+    public function addWriteStream($stream, $listener) {}
+    public function removeReadStream($stream) {}
+    public function removeWriteStream($stream) {}
+    public function removeStream($stream) {}
+    public function addTimer($interval, $callback) {}
+    public function addPeriodicTimer($interval, $callback) {}
+    public function cancelTimer(TimerInterface $timer) {}
+    public function isTimerActive(TimerInterface $timer) {}
+    public function nextTick($listener) {}
+    public function futureTick($listener) {}
+    public function run() {}
+    public function stop() {}
+    public function addSignal($signal, $listener) {}
+    public function removeSignal($signal, $listener) {}
 }

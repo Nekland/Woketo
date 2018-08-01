@@ -22,7 +22,7 @@ use Nekland\Woketo\Utils\SimpleLogger;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\Timer\TimerInterface;
+use React\EventLoop\TimerInterface;
 use React\Socket\Connection;
 use React\Socket\ConnectionInterface;
 
