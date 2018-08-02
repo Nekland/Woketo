@@ -105,20 +105,20 @@ php tests/client_autobahn.php
 > You can read more about the installation of Autobahn on
 > [their documentation](http://autobahn.ws/testsuite/installation.html#installation).
 
-How to something else ?
+How to something else?
 -----------------------
 
-* How to learn more about Woketo usage ? [RTFM](docs/index.md) !
-* How to get information about how it works internally ? Read the [docs/dev.md](docs/dev.md) page of doc.
-* How to contribute ? Read the [CONTRIBUTING.md](CONTRIBUTING.md) page of doc.
-* How to get support ? [Use Gitter](http://gitter.im/Nekland/Woketo), _the issue tracker is **not** a forum_.
+* How to learn more about Woketo usage? [RTFM](docs/index.md)!
+* How to get information about how it works internally? Read the [docs/dev.md](docs/dev.md) page of doc.
+* How to contribute? Read the [CONTRIBUTING.md](CONTRIBUTING.md) page of doc.
+* How to get support? [Use Gitter](http://gitter.im/Nekland/Woketo), _the issue tracker is **not** a forum_.
 
-What's next ?
+What's next?
 -------------
 
 You can see what's planned for next versions in the [github milestones](https://github.com/Nekland/Woketo/milestones).
 
-What Woketo does _not_ do ?
+What Woketo does _not_ do?
 ---------------------------
 
 Currently there is no support of the following:
