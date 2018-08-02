@@ -15,8 +15,9 @@ use Nekland\Woketo\Exception\LimitationException;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 
-class MessageTest extends \PHPUnit_Framework_TestCase
+class MessageTest extends TestCase
 {
     public function testItStackFramesAndReturnCompleteMessage()
     {
@@ -125,7 +126,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         for($i = 0; $i <= 1000; $i++) {
             $frame = new Frame();
             $frame->setFinal(false);
-            $message->addFrame($frame);
+            $this->assertInstanceOf(Message::class, $message->addFrame($frame));
         }
     }
 }

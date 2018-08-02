@@ -15,9 +15,10 @@ use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\Handshake\ClientHandshake;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 
-class ClientHandshakeTest extends \PHPUnit_Framework_TestCase
+class ClientHandshakeTest extends TestCase
 {
     public function testItSignWith16BytesKeys()
     {

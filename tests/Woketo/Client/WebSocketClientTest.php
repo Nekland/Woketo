@@ -14,12 +14,14 @@ namespace Test\Woketo\Client;
 use Nekland\Woketo\Client\WebSocketClient;
 use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Message\TextMessageHandler;
+use PHPUnit\Framework\TestCase;
 
-class WebSocketClientTest extends \PHPUnit_Framework_TestCase
+class WebSocketClientTest extends TestCase
 {
     public function testItInstanciateWithoutConfiguration()
     {
         $client = new WebSocketClient('ws://localhost:8000');
+        $this->assertInstanceOf(WebSocketClient::class, $client);
     }
 
     public function testItCannotStartWithXdebug()

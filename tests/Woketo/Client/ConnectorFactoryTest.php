@@ -13,10 +13,11 @@ namespace Test\Woketo\Client;
 
 
 use Nekland\Woketo\Client\ConnectorFactory;
+use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
 use React\Socket\TimeoutConnector;
 
-class ConnectorFactoryTest extends \PHPUnit_Framework_TestCase
+class ConnectorFactoryTest extends TestCase
 {
     public function testItBuildATimeoutConnector()
     {

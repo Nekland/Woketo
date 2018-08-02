@@ -18,10 +18,11 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\FrameHandler\PingFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\Socket\ConnectionInterface;
 
-class PingFrameHandlerTest extends \PHPUnit_Framework_TestCase
+class PingFrameHandlerTest extends TestCase
 {
     public function testItSupportsPingFrame()
     {

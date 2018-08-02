@@ -16,10 +16,11 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\FrameHandler\CloseFrameHandler;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use React\Socket\ConnectionInterface;
 
-class CloseFrameHandlerTest extends \PHPUnit_Framework_TestCase
+class CloseFrameHandlerTest extends TestCase
 {
     public function testItProcessCloseFrame()
     {

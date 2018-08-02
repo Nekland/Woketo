@@ -12,8 +12,9 @@ namespace Test\Woketo\Utils;
 
 
 use Nekland\Woketo\Utils\SimpleLogger;
+use PHPUnit\Framework\TestCase;
 
-class SimpleLoggerTest extends \PHPUnit_Framework_TestCase
+class SimpleLoggerTest extends TestCase
 {
     public function testItEchoesLog()
     {

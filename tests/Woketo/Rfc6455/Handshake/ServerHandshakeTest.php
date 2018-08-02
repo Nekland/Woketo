@@ -15,8 +15,9 @@ use Nekland\Woketo\Http\HttpHeadersBag;
 use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
+use PHPUnit\Framework\TestCase;
 
-class ServerHandshakeTest extends \PHPUnit_Framework_TestCase
+class ServerHandshakeTest extends TestCase
 {
     public function testItSignWebSocket()
     {

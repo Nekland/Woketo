@@ -15,8 +15,9 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
+use PHPUnit\Framework\TestCase;
 
-class FrameFactoryTest extends \PHPUnit_Framework_TestCase
+class FrameFactoryTest extends TestCase
 {
     /**
      * @var FrameFactory

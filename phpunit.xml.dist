@@ -3,7 +3,7 @@
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
     <testsuites>
         <testsuite name="Nekland Woketo">
-            <directory suffix="Test.php">./tests</directory>
+            <directory suffix="Test.php">./tests/Woketo</directory>
         </testsuite>
     </testsuites>
 

@@ -77,7 +77,7 @@ class Connection extends AbstractConnection
     {
         // It may be a timeout going (we were waiting for data), let's clear it.
         if ($this->timeout !== null) {
-            $this->timeout->cancel();
+            $this->loop->cancelTimer($this->timeout);
             $this->timeout = null;
         }
 
