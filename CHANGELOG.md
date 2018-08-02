@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2018-08-02
+### Changed
+- Update of depedencies, no compatibility break on Woketo API
+- Update of PHPUnit and the test suite to have better tests
+
 ## [2.0.2] - 2018-06-04
 ### Fixed
 - Fix ability to specify hostname of the server on non secured protocol
