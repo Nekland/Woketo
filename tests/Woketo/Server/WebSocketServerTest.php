@@ -17,6 +17,7 @@ use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\WebSocketServer;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use React\Socket\ConnectionInterface;
@@ -56,6 +57,30 @@ class WebSocketServerTest extends TestCase
         $server = new WebSocketServer(1000, '127.0.0.1', [
             'ssl' => true, // Missing cert file
         ]);
+    }
+
+    public function testItCallTheConnectionMethodOfHandler()
+    {
+        $handler = new class extends TextMessageHandler {
+            public $called = false;
+            public function onMessage(string $data, AbstractConnection $connection) {}
+
+            public function onConnection(AbstractConnection $connection)
+            {
+                $this->called = true;
+            }
+        };
+
+        $server = new WebSocketServer(1000, '127.0.0.1', ['prod' => false]);
+        $server->setMessageHandler($handler);
+        $server->setLoop($this->prophesize(LoopInterface::class)->reveal());
+        $server->setSocketServer($socket = new FakeSocketServerForTestMethodHandlerConnection());
+        $server->setLogger(new NullLogger());
+        $server->start();
+        $socket->callCb($co = new ServerReactConnectionMock());
+
+        $co->emit('data', [self::getHandshake()]);
+        $this->assertTrue($handler->called);
     }
 
     /**
@@ -128,6 +153,24 @@ class WebSocketServerTest extends TestCase
                 'Connection closed.' // Log info message
             ]
         ];
+    }
+
+    public static function getHandshake()
+    {
+        return "GET /foo HTTP/1.1\r\n"
+            . "Host: 127.0.0.1:8088\r\n"
+            . "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0\r\n"
+            . "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+            . "Accept-Language: en-US,en;q=0.5\r\n"
+            . "Accept-Encoding: gzip, deflate\r\n"
+            . "Sec-WebSocket-Version: 13\r\n"
+            . "Origin: null\r\n"
+            . "Sec-WebSocket-Extensions: permessage-deflate\r\n"
+            . "Sec-WebSocket-Key: nm7Ml8Q7dGJGWWdqnfM7AQ==\r\n"
+            . "Connection: keep-alive, Upgrade\r\n"
+            . "Pragma: no-cache\r\n"
+            . "Cache-Control: no-cache\r\n"
+            . "Upgrade: websocket\r\n\r\n";
     }
 }
 
@@ -204,4 +247,75 @@ class FakeLoop implements LoopInterface
     public function stop() {}
     public function addSignal($signal, $listener) {}
     public function removeSignal($signal, $listener) {}
+}
+
+
+class FakeSocketServerForTestMethodHandlerConnection implements ServerInterface
+{
+    private $cb;
+    public function callCb(ConnectionInterface $connection)
+    {
+        $cb = $this->cb;
+        $cb($connection);
+    }
+    public function on($event, callable $listener) {
+        $this->cb = $listener;
+    }
+    public function once($event, callable $listener) {}
+    public function removeListener($event, callable $listener) {}
+    public function removeAllListeners($event = null) {}
+    public function listeners($event = null) {}
+    public function emit($event, array $arguments = []) {}
+    public function getAddress() {}
+    public function pause() {}
+    public function resume() {}
+    public function close() {}
+}
+
+
+class ServerReactConnectionMock implements ConnectionInterface
+{
+    public function __construct()
+    {
+    }
+
+    private $on = [];
+
+    public function on($event, callable $listener)
+    {
+        $this->on[$event] = $listener;
+    }
+
+    public function emit($event, array $arguments = [])
+    {
+        call_user_func_array($this->on[$event], $arguments);
+    }
+
+    public function getRemoteAddress() {}
+
+    public function once($event, callable $listener) {}
+
+    public function removeListener($event, callable $listener) {}
+
+    public function removeAllListeners($event = null) {}
+
+    public function listeners($event = null) {}
+
+    public function isReadable(){}
+
+    public function pause() {}
+
+    public function resume() {}
+
+    public function pipe(WritableStreamInterface $dest, array $options = array()) {}
+
+    public function close() {}
+
+    public function isWritable() {}
+
+    public function write($data) {}
+
+    public function end($data = null) {}
+
+    public function getLocalAddress(){}
 }

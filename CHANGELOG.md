@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [Unreleased]
+### Changed
+- Allow nekland/tools in 2.0 version (sill works with 1.0)
 
 ## [2.1.0] - 2018-08-02
 ### Changed
