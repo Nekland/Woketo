@@ -191,6 +191,7 @@ class WebSocketServer
             return $handler;
         }
 
+        $this->logger->warning('Connection on ' . $uri . ' but no handler found.');
         return null;
     }
 
