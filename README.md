@@ -1,7 +1,7 @@
-Woketo
+# Woketo
 ======
 
-A PHP WebSocket library. With following features:
+A PHP WebSocket library. With the following features:
 
 * **Server**
 * **Client**
@@ -9,7 +9,7 @@ A PHP WebSocket library. With following features:
 * Autobahn test suite passed (WebSocket test suite reference)
 * Binary/text messages supported
 * Built on top of reactphp (async socket communication)
-* *Not dependent of any other big framework/library which mean you can use it with guzzle (any version) or Symfony (any version)*
+* *Does not depend on any other big framework/library, which means that you can use it with guzzle (any version) or Symfony (any version)*
 * Woketo follows semver
 
 [![Build Status](https://travis-ci.org/Nekland/Woketo.svg?branch=master)](https://travis-ci.org/Nekland/Woketo) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master) [![Code Coverage](https://scrutinizer-ci.com/g/Nekland/Woketo/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Nekland/Woketo/?branch=master)
@@ -19,17 +19,17 @@ Requirements
 
 * PHP 7+
 
-How to install
+How to install Woketo:
 --------------
 
 ```bash
-# The installation is pretty much easier with composer. But you still can use it as git submodule !
+# The installation is easier with composer but you can still use it as a git submodule!
 composer require "nekland/woketo"
 ```
 
-And that's all ! :scream_cat: 
+And that's it! :scream_cat: 
 
-How to use it
+How to use Woketo:
 -------------
 
 The file `tests.php` is a basic echo server. That's all you need to make a websocket server with Woketo:
@@ -59,7 +59,7 @@ class YourMessageHandler extends TextMessageHandler
 {
     public function onConnection(AbstractConnection $connection)
     {
-        // Doing something when the client is connected ?
+        // Doing something when the client is connected?
         // This method is totally optional.
     }
     
@@ -71,7 +71,7 @@ class YourMessageHandler extends TextMessageHandler
 }
 ```
 
-How to test
+How to test Woketo:
 -----------
 
 ### Unit tests suite
@@ -84,7 +84,7 @@ composer install
 ```
 
 
-### Functionnal tests suite
+### Functional tests suite
 
 #### Server test suite
 
@@ -108,10 +108,10 @@ php tests/client_autobahn.php
 How to something else?
 -----------------------
 
-* How to learn more about Woketo usage? [RTFM](docs/index.md)!
-* How to get information about how it works internally? Read the [docs/dev.md](docs/dev.md) page of doc.
-* How to contribute? Read the [CONTRIBUTING.md](CONTRIBUTING.md) page of doc.
-* How to get support? [Use Gitter](http://gitter.im/Nekland/Woketo), _the issue tracker is **not** a forum_.
+* Learn more about Woketo usage? [RTFM](docs/index.md)!
+* Get more information about how it works internally? Read the [docs/dev.md](docs/dev.md) page of doc.
+* Contribute! You can read the [CONTRIBUTING.md](CONTRIBUTING.md) page of doc.
+* Do you need assistance? [Use Gitter](http://gitter.im/Nekland/Woketo), _the issue tracker is **not** a forum_.
 
 What's next?
 -------------
@@ -123,14 +123,14 @@ What Woketo does _not_ do?
 
 Currently there is no support of the following:
 
-- WebSocket extensions, currently not supported but will probably be in the future
-- [WAMP](http://wamp-proto.org/) implementation will probably never be done by Woketo itself as it's a layer on top of
+- WebSocket extensions, currently not supported but probably will be in the future
+- [WAMP](http://wamp-proto.org/) implementation might never be done by Woketo itself provided it's a layer on top of
   WebSockets. This includes JSON-RPC and other layers up to WebSockets.
-- Woketo have no HTTP server layer and is not compatible with [PHP PM](https://github.com/php-pm/php-pm). This is planned for next releases (probably the v3).
+- Woketo does not have an HTTP server layer and is not compatible with [PHP PM](https://github.com/php-pm/php-pm). This is planned in the future. (probably the v3).
 
-Thanks
+Thank you!
 ------
 
-Thank you to all code contributors (Hello [folliked](https://github.com/folliked) =)). And to any code reviewer (Hi [valanz](https://github.com/valanz)).
+Thank you to the code contributors (Hello [folliked](https://github.com/folliked) =)). As well as the code reviewers (Hi [valanz](https://github.com/valanz)).
 
 <3
