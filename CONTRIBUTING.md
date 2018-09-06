@@ -9,7 +9,7 @@ Woketo follows most parts of the coding style of [PSR](http://www.php-fig.org/ps
 1. `return` clause must be explicit. That means that when you return null, you should precise `return null;`
 2. Comments in docblock should be aligned
 3. We put spaces around the `.` of concatenation and the `=` of default parameter in functions
-4. Functions are prefixed by `\\` to call them from global namespace explicitly
+4. Functions are prefixed by `\` to call them from global namespace explicitly
 
 *This code-style is a recommendation but can be pointed out in a pull-request code review.*
 
