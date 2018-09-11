@@ -31,6 +31,8 @@ use React\Socket\ServerInterface;
 
 class WebSocketServer
 {
+    const FULL_DATE_FORMAT = 'Y-m-d H:i:s';
+
     /**
      * @var int
      */
@@ -52,7 +54,7 @@ class WebSocketServer
     private $messageHandlers;
 
     /**
-     * @var array
+     * @var Connection[]
      */
     private $connections;
 
@@ -82,9 +84,9 @@ class WebSocketServer
     private $logger;
 
     /**
-     * @param int    $port    The number of the port to bind
-     * @param string $host    The host to listen on (by default 127.0.0.1)
-     * @param array  $config
+     * @param int $port The number of the port to bind
+     * @param string $host The host to listen on (by default 127.0.0.1)
+     * @param array $config
      */
     public function __construct($port, $host = '127.0.0.1', $config = [])
     {
@@ -162,8 +164,49 @@ class WebSocketServer
             return $this->getMessageHandler($uri, $connection);
         }, $this->loop, $this->messageProcessor);
 
+        $socketStream->on('end', function () use($connection) {
+            $this->onDisconnect($connection);
+        });
+
         $connection->setLogger($this->getLogger());
+        $connection->getLogger()->info(sprintf('Ip "%s" establish connection at "%s" UTC',
+            $connection->getIp(),
+            date(self::FULL_DATE_FORMAT)
+        ));
         $this->connections[] = $connection;
+    }
+
+    /**
+     *
+     * @param Connection $connection
+     */
+    private function onDisconnect(Connection $connection)
+    {
+        $connection->disconnect();
+        $this->removeConnection($connection);
+        $connection->getLogger()->info(sprintf('Ip "%s" left connection at "%s" UTC',
+            $connection->getIp(),
+            date(self::FULL_DATE_FORMAT)
+        ));
+
+        unset($connection);
+    }
+
+    /**
+     * Remove a Connection instance by his object id, or log not found
+     * @param Connection $connection
+     */
+    private function removeConnection(Connection $connection)
+    {
+        $connectionId = spl_object_hash($connection);
+        foreach ($this->connections as $index => $connectionIt) {
+            if ($connectionId === spl_object_hash($connectionIt)) {
+                unset($this->connections[$index]);
+                return;
+            }
+        }
+
+        $this->logger->warning(sprintf('Impossible to find the connection with id "%d" in the running server.', $connectionId));
     }
 
     /**

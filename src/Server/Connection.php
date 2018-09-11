@@ -105,6 +105,11 @@ class Connection extends AbstractConnection
         }
     }
 
+    public function disconnect()
+    {
+        $this->getHandler()->onDisconnect($this);
+    }
+
     public function write($frame, int $opCode = Frame::OP_TEXT)
     {
         try {
