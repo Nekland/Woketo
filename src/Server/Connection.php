@@ -43,6 +43,9 @@ class Connection extends AbstractConnection
         $this->stream->on('data', function ($data) {
             $this->processData($data);
         });
+        $this->stream->on('end', function() {
+            $this->getHandler()->onDisconnect($this);
+        });
         $this->stream->on('error', function ($data) {
             $this->error($data);
         });

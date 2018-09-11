@@ -13,6 +13,7 @@ namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
+use Nekland\Woketo\Http\CloseEventDescriptor;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
@@ -52,7 +53,7 @@ class WebSocketServer
     private $messageHandlers;
 
     /**
-     * @var array
+     * @var Connection[]
      */
     private $connections;
 
@@ -82,8 +83,8 @@ class WebSocketServer
     private $logger;
 
     /**
-     * @param int    $port    The number of the port to bind
-     * @param string $host    The host to listen on (by default 127.0.0.1)
+     * @param int    $port   The number of the port to bind
+     * @param string $host   The host to listen on (by default 127.0.0.1)
      * @param array  $config
      */
     public function __construct($port, $host = '127.0.0.1', $config = [])
@@ -144,7 +145,7 @@ class WebSocketServer
             $this->getLogger()->info('Enabled ssl');
         }
 
-        $this->server->on('connection', function ($socketStream) {
+        $this->server->on('connection', function (ConnectionInterface $socketStream) {
             $this->onNewConnection($socketStream);
         });
 
@@ -162,8 +163,42 @@ class WebSocketServer
             return $this->getMessageHandler($uri, $connection);
         }, $this->loop, $this->messageProcessor);
 
+        $socketStream->on('end', function () use($connection) {
+            $this->onDisconnect($connection);
+        });
+
         $connection->setLogger($this->getLogger());
+        $connection->getLogger()->info(sprintf('Ip "%s" establish connection', $connection->getIp()));
         $this->connections[] = $connection;
+    }
+
+    /**
+     *
+     * @param Connection $connection
+     */
+    private function onDisconnect(Connection $connection)
+    {
+        $this->removeConnection($connection);
+        $connection->getLogger()->info(sprintf('Ip "%s" left connection', $connection->getIp()));
+    }
+
+    /**
+     * Remove a Connection instance by his object id
+     * @param Connection        $connection
+     * @throws RuntimeException This method throw an exception if the $connection instance object isn't findable in websocket server's connections
+     */
+    private function removeConnection(Connection $connection)
+    {
+        $connectionId = spl_object_hash($connection);
+        foreach ($this->connections as $index => $connectionItem) {
+            if ($connectionId === spl_object_hash($connectionItem)) {
+                unset($this->connections[$index]);
+                return;
+            }
+        }
+
+        $this->logger->critical('No connection found in the server connection list, impossible to delete the given connection id. Something wrong happened');
+        throw new RuntimeException('No connection found in the server connection list, impossible to delete the given connection id. Something wrong happened');
     }
 
     /**
