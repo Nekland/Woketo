@@ -28,4 +28,9 @@ $client->start(new class implements \Nekland\Woketo\Message\MessageHandlerInterf
         var_dump($e->getMessage());
         echo $e->getTraceAsString();
     }
+
+    public function onDisconnect(AbstractConnection $connection)
+    {
+        $connection->write('see you soon');
+    }
 });

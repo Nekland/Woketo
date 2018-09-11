@@ -2,6 +2,7 @@
     "name": "nekland/woketo",
     "license": "MIT",
     "type": "library",
+    "description": "I let you fill this part ;) ",
     "autoload": {
         "psr-4": {
             "Nekland\\Woketo\\": "src/"
