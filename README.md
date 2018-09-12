@@ -68,6 +68,12 @@ class YourMessageHandler extends TextMessageHandler
         // Sending back the received data
         $connection->write($data);
     }
+    
+    public function onDisconnect(AbstractConnection $connection)
+    {
+        // Doing something when the connection between client/server is disconnecting
+        // Optionnal
+    }
 }
 ```
 

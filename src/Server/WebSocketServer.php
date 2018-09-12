@@ -13,7 +13,6 @@ namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
-use Nekland\Woketo\Http\CloseEventDescriptor;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;

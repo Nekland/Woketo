@@ -34,7 +34,6 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
 
     public function onDisconnect(\Nekland\Woketo\Core\AbstractConnection $connection)
     {
-        echo 'disconnected' . PHP_EOL;
     }
 }
 
