@@ -225,10 +225,12 @@ class MessageProcessor
 
     /**
      * @param ConnectionInterface $socket
+     * @param int $status
+     * @param string|null $reason
      */
-    public function close(ConnectionInterface $socket)
+    public function close(ConnectionInterface $socket, int $status = Frame::CLOSE_NORMAL, string $reason = null)
     {
-        $this->write($this->frameFactory->createCloseFrame(), $socket);
+        $this->write($this->frameFactory->createCloseFrame($status, $reason), $socket);
         $socket->end();
     }
 }

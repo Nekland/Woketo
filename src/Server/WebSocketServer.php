@@ -13,6 +13,7 @@ namespace Nekland\Woketo\Server;
 
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
+use Nekland\Woketo\Http\CloseEventDescriptor;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\FrameFactory;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
@@ -31,8 +32,6 @@ use React\Socket\ServerInterface;
 
 class WebSocketServer
 {
-    const FULL_DATE_FORMAT = 'Y-m-d H:i:s';
-
     /**
      * @var int
      */
@@ -82,6 +81,11 @@ class WebSocketServer
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * @var CloseEventDescriptor
+     */
+    private $statusCodeDescriptor;
 
     /**
      * @param int $port The number of the port to bind
@@ -169,10 +173,7 @@ class WebSocketServer
         });
 
         $connection->setLogger($this->getLogger());
-        $connection->getLogger()->info(sprintf('Ip "%s" establish connection at "%s" UTC',
-            $connection->getIp(),
-            date(self::FULL_DATE_FORMAT)
-        ));
+        $connection->getLogger()->info(sprintf('Ip "%s" establish connection', $connection->getIp()));
         $this->connections[] = $connection;
     }
 
@@ -183,19 +184,18 @@ class WebSocketServer
     private function onDisconnect(Connection $connection)
     {
         $this->removeConnection($connection);
-        $connection->getLogger()->info(sprintf('Ip "%s" left connection at "%s" UTC',
-            $connection->getIp(),
-            date(self::FULL_DATE_FORMAT)
-        ));
+        $connection->getLogger()->info(sprintf('Ip "%s" left connection', $connection->getIp()));
 
         unset($connection);
     }
 
     /**
-     * Remove a Connection instance by his object id, or log not found
+     * Remove a Connection instance by his object id
      * @param Connection $connection
+     * @param bool $strict Define if the process should stop if unfindable
+     * @throws RuntimeException This method throw an exception if the $connection instance object isn't findable in websocket server's connections
      */
-    private function removeConnection(Connection $connection)
+    private function removeConnection(Connection $connection, bool $strict = true)
     {
         $connectionId = spl_object_hash($connection);
         foreach ($this->connections as $index => $connectionIt) {
@@ -205,7 +205,10 @@ class WebSocketServer
             }
         }
 
-        $this->logger->warning(sprintf('Impossible to find the connection with id "%d" in the running server.', $connectionId));
+        $this->logger->critical(sprintf('Connection instance with id "%s" is unfindable in websocket server\'s active connections !', $connectionId));
+        if ($strict) {
+            throw new RuntimeException(sprintf('Impossible to find the connection with id "%d" in the running server.', $connectionId));
+        }
     }
 
     /**

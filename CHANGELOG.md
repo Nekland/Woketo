@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [Unreleased]
+### Added
+- `onDisconnect` method could be implemented in a MessageHandler. This method is called when the client between client and server is resume
 ### Changed
 - Allow nekland/tools in 2.0 version (still works with 1.0)
 

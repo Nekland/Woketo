@@ -13,6 +13,7 @@
                 <button id="hello" class="btn btn-primary">Say Hello</button>
                 <button id="yolo" class="btn btn-primary">Say Yolo</button>
                 <button id="swagg" class="btn btn-primary">Say Swagg</button>
+                <button id="disconnect" class="btn btn-primary btn-warning">Disconnect</button>
 
                 <pre id="result">
                 </pre>
@@ -21,13 +22,16 @@
     </div>
 
     <script>
-        var ws = new WebSocket("ws://127.0.0.1:1337/foo");
+        var ws = new WebSocket("ws://127.0.0.1:8080");
         var pre = document.getElementById('result');
         ws.onopen = function () {
-            result.innerHTML += '\nConnection opened.';
+            pre.innerHTML += '\nConnection opened.';
         };
         ws.onmessage = function (e) {
-            result.innerHTML += '\nGot message: ' + e.data;
+            pre.innerHTML += '\nGot message: ' + e.data;
+        };
+        ws.onclose = function (event) {
+            pre.innerHTML += '\nConnection closed';
         };
 
         document.getElementById('hello').onclick = function () {
@@ -38,6 +42,10 @@
         };
         document.getElementById('swagg').onclick = function () {
             ws.send('OMG THIS IZ SO SWAGG11!11!1!11');
+        };
+        document.getElementById('disconnect').onclick = function () {
+            pre.innerHTML += '\nYou\'re closing connection';
+            ws.close();
         };
     </script>
 </body>

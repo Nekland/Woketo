@@ -158,10 +158,12 @@ abstract class AbstractConnection
 
     /**
      * Close the connection with normal close.
+     * @param int $status
+     * @param string|null $reason
      */
-    public function close()
+    public function close(int $status = Frame::CLOSE_NORMAL, string $reason = null)
     {
-        $this->messageProcessor->close($this->stream);
+        $this->messageProcessor->close($this->stream, $status, $reason);
     }
 
     /**
