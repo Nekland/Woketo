@@ -150,7 +150,7 @@ class WebSocketServer
             $this->getLogger()->info('Enabled ssl');
         }
 
-        $this->server->on('connection', function ($socketStream) {
+        $this->server->on('connection', function (ConnectionInterface $socketStream) {
             $this->onNewConnection($socketStream);
         });
 

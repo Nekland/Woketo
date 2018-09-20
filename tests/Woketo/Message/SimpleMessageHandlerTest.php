@@ -43,6 +43,16 @@ class SimpleMessageHandlerTest extends TestCase
 
         $this->assertContains('foobar', $out);
     }
+
+    public function testItDoNothingOnDisconnection()
+    {
+        \ob_start();
+        $res = $this->instance->onDisconnect($this->prophesize(Connection::class)->reveal());
+        $out = \ob_get_clean();
+
+        $this->assertNull($res);
+        $this->assertEquals('', $out);
+    }
 }
 
 class SimpleMessageHandlerImplementation extends SimpleMessageHandler
