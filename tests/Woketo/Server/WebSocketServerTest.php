@@ -11,6 +11,7 @@
 namespace Test\Woketo\Server;
 
 
+use Evenement\EventEmitterTrait;
 use Nekland\Woketo\Core\AbstractConnection;
 use Nekland\Woketo\Exception\ConfigException;
 use Nekland\Woketo\Exception\RuntimeException;
@@ -80,6 +81,31 @@ class WebSocketServerTest extends TestCase
         $socket->callCb($co = new ServerReactConnectionMock());
 
         $co->emit('data', [self::getHandshake()]);
+        $this->assertTrue($handler->called);
+    }
+
+    public function testItCallTheDisconnectionMethodOfHandler()
+    {
+        $handler = new class extends TextMessageHandler {
+            public $called = false;
+            public function onMessage(string $data, AbstractConnection $connection) {}
+            public function onConnection(AbstractConnection $connection) {}
+
+            public function onDisconnect(AbstractConnection $connection)
+            {
+                $this->called = true;
+            }
+        };
+
+        $server = new WebSocketServer(1000, '127.0.0.1', ['prod' => false]);
+        $server->setMessageHandler($handler);
+        $server->setLoop($this->prophesize(LoopInterface::class)->reveal());
+        $server->setSocketServer($socket = new FakeSocketServerForTestMethodHandlerConnection());
+        $server->setLogger(new NullLogger());
+        $server->start();
+        $socket->callCb($co = new ServerReactConnectionMock());
+        $co->emit('data', [self::getHandshake()]);
+        $co->emit('end');
         $this->assertTrue($handler->called);
     }
 
@@ -275,31 +301,9 @@ class FakeSocketServerForTestMethodHandlerConnection implements ServerInterface
 
 class ServerReactConnectionMock implements ConnectionInterface
 {
-    public function __construct()
-    {
-    }
-
-    private $on = [];
-
-    public function on($event, callable $listener)
-    {
-        $this->on[$event] = $listener;
-    }
-
-    public function emit($event, array $arguments = [])
-    {
-        call_user_func_array($this->on[$event], $arguments);
-    }
+    use EventEmitterTrait;
 
     public function getRemoteAddress() {}
-
-    public function once($event, callable $listener) {}
-
-    public function removeListener($event, callable $listener) {}
-
-    public function removeAllListeners($event = null) {}
-
-    public function listeners($event = null) {}
 
     public function isReadable(){}
 

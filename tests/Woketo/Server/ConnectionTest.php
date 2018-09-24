@@ -11,6 +11,7 @@
 
 namespace Test\Woketo\Server;
 
+use Evenement\EventEmitterTrait;
 use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
@@ -88,6 +89,26 @@ class ConnectionTest extends TestCase
         $reactMock->emit('data', [$binaryFrame]);
     }
 
+    public function testItCallOnDisconnectOnHandlerWhenDisconnect()
+    {
+        // Mocks
+        $reactMock = new ReactConnectionMock();
+        $handler = $this->prophesize(MessageHandlerInterface::class);
+        $loop = $this->prophesize(LoopInterface::class);
+        /** @var MessageProcessor $processor */
+        $processor = $this->prophesize(MessageProcessor::class);
+        $handshakeProcessor = $this->prophesize(ServerHandshake::class);
+
+        // Init
+        $connection = new Connection($reactMock, function () use ($handler) {return $handler->reveal();}, $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
+        $server = new ReactConnectionMock();
+        $server->emit('connection', [$connection]);
+
+
+        $handler->onDisconnect(Argument::type(Connection::class))->shouldBeCalled();
+        $reactMock->emit('end');
+    }
+
     private function getHandshake()
     {
         return "GET /foo HTTP/1.1\r\n"
@@ -109,31 +130,9 @@ class ConnectionTest extends TestCase
 
 class ReactConnectionMock implements ConnectionInterface
 {
-    public function __construct()
-    {
-    }
-
-    private $on = [];
-
-    public function on($event, callable $listener)
-    {
-        $this->on[$event] = $listener;
-    }
-
-    public function emit($event, array $arguments = [])
-    {
-        call_user_func_array($this->on[$event], $arguments);
-    }
+    use EventEmitterTrait;
 
     public function getRemoteAddress() {}
-
-    public function once($event, callable $listener) {}
-
-    public function removeListener($event, callable $listener) {}
-
-    public function removeAllListeners($event = null) {}
-
-    public function listeners($event = null) {}
 
     public function isReadable(){}
 
