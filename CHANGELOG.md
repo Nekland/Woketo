@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [Unreleased]
+
+## [2.2.0] - 2018-10-04
 ### Added
 - `onDisconnect` method could be implemented in a MessageHandler. This method is called when the connection between client and server is resume
 ### Changed
