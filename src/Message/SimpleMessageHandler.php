@@ -25,4 +25,9 @@ abstract class SimpleMessageHandler implements MessageHandlerInterface
     {
         echo 'An error occurred : ' . $e->getMessage();
     }
+
+    public function onDisconnect(AbstractConnection $connection)
+    {
+        // Doing nothing
+    }
 }

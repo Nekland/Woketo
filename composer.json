@@ -2,6 +2,7 @@
     "name": "nekland/woketo",
     "license": "MIT",
     "type": "library",
+    "description": "A WebSocket library for PHP",
     "autoload": {
         "psr-4": {
             "Nekland\\Woketo\\": "src/"

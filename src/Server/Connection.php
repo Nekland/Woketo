@@ -43,6 +43,9 @@ class Connection extends AbstractConnection
         $this->stream->on('data', function ($data) {
             $this->processData($data);
         });
+        $this->stream->once('end', function() {
+            $this->getHandler()->onDisconnect($this);
+        });
         $this->stream->on('error', function ($data) {
             $this->error($data);
         });
@@ -64,7 +67,7 @@ class Connection extends AbstractConnection
             $this->getHandler()->onError($e, $this);
         } catch (NoHandlerException $e) {
             $this->getLogger()->info(sprintf('No handler found for uri %s. Connection closed.', $this->uri));
-            $this->close();
+            $this->close(Frame::CLOSE_WRONG_DATA);
         }
     }
 

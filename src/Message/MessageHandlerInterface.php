@@ -16,7 +16,7 @@ use Nekland\Woketo\Exception\WebsocketException;
 /**
  * Interface MessageHandlerInterface
  *
- * If there is only one message handler object (that *you* instanciate) you can guess what is the current client using the spl hash of the connection.
+ * If there is only one message handler object (that *you* instantiate) you can guess what is the current client using the spl hash of the connection.
  */
 interface MessageHandlerInterface
 {
@@ -47,6 +47,14 @@ interface MessageHandlerInterface
      * This callback is call when there is an error on the websocket protocol communication.
      *
      * @param WebsocketException $e
+     * @param AbstractConnection $connection
      */
     public function onError(WebsocketException $e, AbstractConnection $connection);
+
+    /**
+     * Is called when the connection is closed by the client
+     *
+     * @param AbstractConnection $connection
+     */
+    public function onDisconnect(AbstractConnection $connection);
 }

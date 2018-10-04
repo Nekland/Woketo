@@ -31,6 +31,10 @@ class EchoServer implements \Nekland\Woketo\Message\MessageHandlerInterface
     {
         echo '(' . get_class($e) . ') ' . $e->getMessage() . "\n";
     }
+
+    public function onDisconnect(\Nekland\Woketo\Core\AbstractConnection $connection)
+    {
+    }
 }
 
 $foo->setMessageHandler(new EchoServer());
