@@ -20,10 +20,8 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\SimpleLogger;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
-use React\Socket\Connection;
 use React\Socket\ConnectionInterface;
 
 abstract class AbstractConnection

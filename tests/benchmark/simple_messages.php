@@ -5,6 +5,8 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class SendMessagesAndWatchResponse implements \Nekland\Woketo\Message\MessageHandlerInterface
 {
+    private $finished;
+    private $c;
     private $errors;
     private $expectedResponses;
     private $times;
@@ -12,10 +14,12 @@ class SendMessagesAndWatchResponse implements \Nekland\Woketo\Message\MessageHan
 
     public function __construct(int $times, $messages)
     {
+        $this->finished = false;
         $this->errors = 0;
         $this->expectedResponses = [];
         $this->times = $times;
         $this->messages = $messages;
+        $this->c = 0;
     }
 
     public function onConnection(\Nekland\Woketo\Core\AbstractConnection $connection)
@@ -26,14 +30,23 @@ class SendMessagesAndWatchResponse implements \Nekland\Woketo\Message\MessageHan
             foreach ($this->messages as $message) {
                 $this->expectedResponses[] = $message['response'];
                 $connection->write($message['message']);
+                $this->c++;
             }
         }
 
-        $connection->close();
+        $this->finished = true;
+
+        $connection->getLoop()->addPeriodicTimer(10, function () use ($connection) {
+            echo "TIMEOUT (something went wrong)\n";
+            $connection->close();
+            exit;
+        });
+
     }
 
     public function onMessage(string $data, \Nekland\Woketo\Core\AbstractConnection $connection)
     {
+        $this->c--;
         if (reset($this->expectedResponses) !== $data) {
             $this->errors++;
             if (in_array($data, $this->expectedResponses)) {
@@ -43,6 +56,11 @@ class SendMessagesAndWatchResponse implements \Nekland\Woketo\Message\MessageHan
             }
         } else {
             array_shift($this->expectedResponses);
+        }
+
+        if ($this->finished && $this->c === 0) {
+            $connection->close();
+            $connection->getLoop()->stop();
         }
     }
 
@@ -84,7 +102,7 @@ require_once __DIR__.'/inc/init.php';
 $start = microtime(true);
 
 $client = new \Nekland\Woketo\Client\WebSocketClient('ws://127.0.0.1:' . $port, []);
-$client->start(new SendMessagesAndWatchResponse($times, $data));
+$client->start($handler = new SendMessagesAndWatchResponse($times, $data));
 
 
 echo "\nTime that $tool took to handle $times the messages list:\n" . (microtime(true) - $start) . "s\n";
