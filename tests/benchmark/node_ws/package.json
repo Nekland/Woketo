@@ -1,0 +1,9 @@
+{
+    "name": "woketo-ws-perf-test",
+    "description": "This project test performances of node/ws",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "ws": "~1.1.1"
+    }
+}
