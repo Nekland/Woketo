@@ -20,6 +20,7 @@ use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\SimpleLogger;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use React\Socket\ConnectionInterface;
@@ -59,7 +60,7 @@ abstract class AbstractConnection
     protected $uri;
 
     /**
-     * @var MessageHandlerInterface|\Closure
+     * @var MessageHandlerInterface|callable
      */
     protected $handler;
 
@@ -83,6 +84,7 @@ abstract class AbstractConnection
         $this->handshake = $handshake;
         $this->messageProcessor = $messageProcessor;
         $this->loop = $loop;
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -140,7 +142,7 @@ abstract class AbstractConnection
      */
     protected function getHandler() : MessageHandlerInterface
     {
-        if ($this->handler instanceof \Closure) {
+        if (!$this->handler instanceof MessageHandlerInterface) {
             $handler = $this->handler;
             $handler = $handler($this->uri, $this);
 

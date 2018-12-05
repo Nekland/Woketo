@@ -27,7 +27,7 @@ class Connection extends AbstractConnection
 {
     public function __construct(
         ConnectionInterface $socketStream,
-        \Closure $messageHandler,
+        callable $messageHandler,
         LoopInterface $loop,
         MessageProcessor $messageProcessor,
         ServerHandshake $handshake = null
@@ -44,6 +44,10 @@ class Connection extends AbstractConnection
             $this->processData($data);
         });
         $this->stream->once('end', function() {
+            if (!$this->handshakeDone) {
+                $this->logger->info('Disconnected but websocket didn\'t start.');
+                return;
+            }
             $this->getHandler()->onDisconnect($this);
         });
         $this->stream->on('error', function ($data) {

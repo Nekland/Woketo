@@ -101,12 +101,32 @@ class ConnectionTest extends TestCase
 
         // Init
         $connection = new Connection($reactMock, function () use ($handler) {return $handler->reveal();}, $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
-        $server = new ReactConnectionMock();
-        $server->emit('connection', [$connection]);
+        $handshake = $this->getHandshake();
+        $reactMock->emit('data', [$handshake]);
 
 
         $handler->onDisconnect(Argument::type(Connection::class))->shouldBeCalled();
         $reactMock->emit('end');
+    }
+
+    public function testEarlyDisconnection()
+    {
+        $handler = $this->prophesize(MessageHandlerInterface::class);
+        $mock = $this->createPartialMock(\stdClass::class, ['__invoke']);
+        $mock
+            ->expects(self::never())
+            ->method('__invoke')
+            ->with('*', $this->anything())
+            ->will($this->returnValue($handler->reveal()));
+
+        $reactMock = new ReactConnectionMock();
+        $loop = $this->prophesize(LoopInterface::class);
+        $processor = $this->prophesize(MessageProcessor::class);
+        $handshakeProcessor = $this->prophesize(ServerHandshake::class);
+
+        $connection = new Connection($reactMock, $mock, $loop->reveal(), $processor->reveal(), $handshakeProcessor->reveal());
+
+        $reactMock->emit('end', []);
     }
 
     private function getHandshake()
