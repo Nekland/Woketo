@@ -117,19 +117,24 @@ class MyMessageHandler implements MessageHandlerInterface
     {
         // This method is called when an error occurs
     }
+
+    public function onDisconnect(AbstractConnection $connection)
+    {
+        // This method is called on server disconnection
+    }
 }
 ```
 
 You can then run your client:
 
 ```php
-$client = new WebSocketClient('ws://127.0.0.1:9000/foobar', []);
+$client = new WebSocketClient('wss://echo.websocket.org:443/echo', []);
 $client->start(new MyMessageHandler);
 ```
 
 
 The `WebSocketClient` instantiation takes the following parameters:
-- `"ws://127.0.0.1:9000/foobar""`: a WebSocket URL: the protocol (ws or wss), the host (127.0.0.1), the port (9000), the URI (foobar)
+- `"wss://echo.websocket.org:443/echo"`: a WebSocket URL: the protocol (ws or wss), the host (echo.websocket.org), the port (443), the URI (echo)
 - `[]`: an (optional) array of configuration option documented in the [configuration reference](#client-configuration)
 
 
