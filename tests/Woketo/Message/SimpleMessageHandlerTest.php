@@ -20,7 +20,7 @@ class SimpleMessageHandlerTest extends TestCase
 {
     private $instance;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->instance = new SimpleMessageHandlerImplementation();
     }
@@ -41,7 +41,7 @@ class SimpleMessageHandlerTest extends TestCase
         $this->instance->onError(new WebsocketException('foobar'), $this->prophesize(Connection::class)->reveal());
         $out = \ob_get_clean();
 
-        $this->assertContains('foobar', $out);
+        $this->assertStringContainsString('foobar', $out);
     }
 
     public function testItDoNothingOnDisconnection()

@@ -23,7 +23,7 @@ class ResponseTest extends TestCase
      */
     private $stream;
 
-    public function setUp()
+    public function setUp(): void
     {
 
         $this->stream = $this->prophesize('React\Socket\ConnectionInterface');

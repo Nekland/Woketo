@@ -130,7 +130,7 @@ class WebSocketServerTest extends TestCase
         $fakeSocketServer->sendHandshake("GET $uriToGet HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13");
 
         $content = \ob_get_clean();
-        $this->assertContains($print, $content);
+        $this->assertStringContainsString($print, $content);
 
     }
 

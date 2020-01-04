@@ -27,7 +27,7 @@ class MessageProcessorTest extends TestCase
     private $socket;
     private $frameFactory;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

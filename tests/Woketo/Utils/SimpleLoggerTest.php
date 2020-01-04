@@ -26,8 +26,8 @@ class SimpleLoggerTest extends TestCase
 
         $res = \ob_get_clean();
 
-        $this->assertContains('God, something went wrong !', $res);
-        $this->assertNotContains('Just some information.', $res);
+        $this->assertStringContainsString('God, something went wrong !', $res);
+        $this->assertStringNotContainsString('Just some information.', $res);
     }
 
     public function testItEchoesEverythingInDebugMode()
@@ -39,7 +39,7 @@ class SimpleLoggerTest extends TestCase
         $logger->debug('Normal log');
         $res = \ob_get_clean();
 
-        $this->assertContains('Oops!', $res);
-        $this->assertContains('Normal log', $res);
+        $this->assertStringContainsString('Oops!', $res);
+        $this->assertStringContainsString('Normal log', $res);
     }
 }

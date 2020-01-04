@@ -24,7 +24,7 @@ class FrameFactoryTest extends TestCase
      */
     private $factory;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
