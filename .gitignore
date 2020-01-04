@@ -5,3 +5,4 @@ reports/
 fuzzingclient.json
 fuzzingserver.json
 node_modules
+.phpunit.result.cache

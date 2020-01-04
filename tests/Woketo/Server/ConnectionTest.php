@@ -112,12 +112,11 @@ class ConnectionTest extends TestCase
     public function testEarlyDisconnection()
     {
         $handler = $this->prophesize(MessageHandlerInterface::class);
-        $mock = $this->createPartialMock(\stdClass::class, ['__invoke']);
-        $mock
-            ->expects(self::never())
-            ->method('__invoke')
-            ->with('*', $this->anything())
-            ->will($this->returnValue($handler->reveal()));
+        $handler->onDisconnect(Argument::type(Connection::class))->shouldNotBeCalled();
+
+        $mock = function () use ($handler) {
+            return $handler->reveal();
+        };
 
         $reactMock = new ReactConnectionMock();
         $loop = $this->prophesize(LoopInterface::class);

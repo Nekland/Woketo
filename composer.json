@@ -22,7 +22,7 @@
         "react/dns": "^0.4.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.0"
+        "phpunit/phpunit": "^8.0"
     },
     "config": {
         "bin-dir": "bin"

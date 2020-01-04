@@ -28,11 +28,6 @@ use PHPUnit\Framework\TestCase;
  */
 class FrameTest extends TestCase
 {
-    public function setUp()
-    {
-        parent::setUp();
-    }
-
     public function testUnmaskedFrameContainingHello()
     {
         $helloUnmaskedFrame = new Frame(
