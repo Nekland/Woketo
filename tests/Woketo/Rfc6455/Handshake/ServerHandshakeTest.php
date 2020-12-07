@@ -16,9 +16,11 @@ use Nekland\Woketo\Http\Request;
 use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\Handshake\ServerHandshake;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ServerHandshakeTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItSignWebSocket()
     {
         $handshake = new ServerHandshake();

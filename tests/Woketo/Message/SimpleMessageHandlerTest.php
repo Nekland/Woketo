@@ -15,9 +15,11 @@ use Nekland\Woketo\Exception\WebsocketException;
 use Nekland\Woketo\Message\SimpleMessageHandler;
 use Nekland\Woketo\Server\Connection;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class SimpleMessageHandlerTest extends TestCase
 {
+    use ProphecyTrait;
     private $instance;
 
     public function setUp(): void

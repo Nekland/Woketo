@@ -16,9 +16,11 @@ use Nekland\Woketo\Exception\UnsupportedException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\Connection;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class TextMessageHandlerTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItThrowsExceptionOnBinary()
     {
         $handler = new TextMessageHandlerImplementation();
