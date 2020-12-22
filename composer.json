@@ -3,6 +3,9 @@
     "license": "MIT",
     "type": "library",
     "description": "A WebSocket library for PHP",
+    "scripts": {
+        "tests": "phpunit"
+    },
     "autoload": {
         "psr-4": {
             "Nekland\\Woketo\\": "src/"
@@ -14,7 +17,7 @@
         }
     },
     "require": {
-        "php": "^7.0",
+        "php": ">=7.0",
         "react/event-loop": "^1.0.0",
         "react/socket": "^1.0.0",
         "nekland/tools": "^1.0 || ^2.0",
