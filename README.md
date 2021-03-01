@@ -1,6 +1,9 @@
 Woketo
 ======
 
+⚠️ Due to the lack of usage (barely nobody use it), this I will not make the effort to make it compatible with PHP 8. Therefore this library is deprecated and you should not use it. ⚠️
+
+
 A PHP WebSocket library. With following features:
 
 * **Server**
