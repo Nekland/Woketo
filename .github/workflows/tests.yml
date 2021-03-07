@@ -1,0 +1,88 @@
+name: Test suite
+
+on:
+    push:
+        branches: [ master ]
+    pull_request:
+        branches: [ master ]
+    schedule:
+        - cron:  '0 0 * * *'
+
+jobs:
+    unit-test:
+        name: Unit tests
+        strategy:
+            matrix:
+                php: [ 7.4, 8.0 ]
+                os: [ ubuntu-latest ]
+                include:
+                    -   os: [ ubuntu-latest ]
+                        php: 8.1
+                        composer-flag: "'--ignore-platform-reqs'"
+
+                    -   os: [ ubuntu-latest ]
+                        php: 7.3
+                        composer-flag: "'--prefer-lowest'"
+
+        runs-on: ${{ matrix.os }}
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+
+            -   uses: actions/cache@v2
+                id: cache-composer
+                with:
+                    path: ~/.composer/cache
+                    key: composer-php-${{ matrix.php }}-${{ github.sha }}
+                    restore-keys: composer-php-${{ matrix.php }}-
+
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-progress --no-suggest ${{ matrix.composer-flag }}
+
+            # This part is commented for now but let's how being able to uncomment it soon!
+#            -   name: Run PHP CS Fixer
+#                run: make test.phpcs
+
+            -   name: Run PHPUnit tests
+                run: make test.phpunit
+
+    functional-test:
+        name: Functionnal tests
+        strategy:
+            matrix:
+                php: [ 7.4, 8.0 ]
+                os: [ ubuntu-latest ]
+                include:
+                    -   os: [ ubuntu-latest ]
+                        php: 8.1
+                        composer-flag: "'--ignore-platform-reqs'"
+
+                    -   os: [ ubuntu-latest ]
+                        php: 7.3
+                        composer-flag: "'--prefer-lowest'"
+
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+
+            -   uses: actions/cache@v2
+                id: cache-composer
+                with:
+                    path: ~/.composer/cache
+                    key: composer-php-${{ matrix.php }}-${{ github.sha }}
+                    restore-keys: composer-php-${{ matrix.php }}-
+
+
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-progress --no-suggest ${{ matrix.composer-flag }}
+
+            -   name: Run Behat tests
+                run: make test.behat

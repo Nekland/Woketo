@@ -25,6 +25,11 @@ use React\Socket\ConnectionInterface;
 
 class Connection extends AbstractConnection
 {
+    /**
+     * @var string
+     */
+    private $ip;
+
     public function __construct(
         ConnectionInterface $socketStream,
         callable $messageHandler,
@@ -36,6 +41,7 @@ class Connection extends AbstractConnection
         $this->stream = $socketStream;
         $this->initListeners();
         $this->handler = $messageHandler;
+        $this->ip = $this->stream->getRemoteAddress();
     }
 
     private function initListeners()
@@ -158,6 +164,6 @@ class Connection extends AbstractConnection
      */
     public function getIp()
     {
-        return $this->stream->getRemoteAddress();
+        return $this->ip;
     }
 }

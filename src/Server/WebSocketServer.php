@@ -177,8 +177,8 @@ class WebSocketServer
      */
     private function onDisconnect(Connection $connection)
     {
-        $this->removeConnection($connection);
         $connection->getLogger()->info(sprintf('Ip "%s" left connection', $connection->getIp()));
+        $this->removeConnection($connection);
     }
 
     /**

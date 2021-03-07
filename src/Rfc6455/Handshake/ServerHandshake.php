@@ -38,7 +38,7 @@ class ServerHandshake implements HandshakeInterface
 
     /**
      * https://tools.ietf.org/html/rfc6455#section-4.2
-     * 
+     *
      * @param AbstractHttpMessage $request
      * @param string|null         $key
      * @return bool
@@ -62,7 +62,7 @@ class ServerHandshake implements HandshakeInterface
 
         if ($request->getMethod() !== 'GET') {
             throw new WebsocketException(
-                \sprintf('Wrong http method, GET expected, "%" received.', $request->getMethod())
+                \sprintf('Wrong http method, GET expected, "%s" received.', $request->getMethod())
             );
         }
 
