@@ -23,8 +23,7 @@
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpunit/phpunit": "^9.1",
-        "ext-soap": "*"
+        "phpunit/phpunit": "^9.1"
     },
     "config": {
         "bin-dir": "bin"
