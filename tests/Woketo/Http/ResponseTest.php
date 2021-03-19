@@ -15,9 +15,11 @@ use Nekland\Woketo\Exception\Http\HttpException;
 use Nekland\Woketo\Http\Response;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ResponseTest extends TestCase
 {
+    use ProphecyTrait;
     /**
      * @var \React\Stream\DuplexStreamInterface
      */

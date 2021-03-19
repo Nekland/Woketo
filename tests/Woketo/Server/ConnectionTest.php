@@ -21,12 +21,14 @@ use Nekland\Woketo\Server\Connection;
 use Nekland\Woketo\Utils\BitManipulation;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Stream\WritableStreamInterface;
 
 class ConnectionTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItSupportsTextMessage()
     {
         // Data

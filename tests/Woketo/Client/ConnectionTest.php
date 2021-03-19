@@ -9,6 +9,7 @@ use Nekland\Woketo\Message\MessageHandlerInterface;
 use Nekland\Woketo\Rfc6455\MessageProcessor;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\Promise\Promise;
@@ -24,6 +25,8 @@ use React\Socket\ConnectionInterface;
  */
 class ConnectionTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testItProcessHandshake()
     {
         $socket = $this->prophesize(ConnectionInterface::class);

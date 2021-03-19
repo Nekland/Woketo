@@ -14,11 +14,13 @@ namespace Test\Woketo\Client;
 
 use Nekland\Woketo\Client\ConnectorFactory;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use React\EventLoop\LoopInterface;
 use React\Socket\TimeoutConnector;
 
 class ConnectorFactoryTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItBuildATimeoutConnector()
     {
         $loop = $this->prophesize(LoopInterface::class);

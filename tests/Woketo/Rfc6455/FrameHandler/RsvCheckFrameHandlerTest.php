@@ -19,10 +19,12 @@ use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use React\Socket\ConnectionInterface;
 
 class RsvCheckFrameHandlerTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItCloseFrameOnRsvInvalid()
     {
         $frame = new Frame();
