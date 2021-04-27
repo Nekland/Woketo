@@ -20,10 +20,12 @@ use Nekland\Woketo\Rfc6455\MessageProcessor;
 use Nekland\Woketo\Utils\BitManipulation;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use React\Socket\ConnectionInterface;
 
 class MessageProcessorTest extends TestCase
 {
+    use ProphecyTrait;
     private $socket;
     private $frameFactory;
 

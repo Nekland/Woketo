@@ -18,6 +18,7 @@ use Nekland\Woketo\Exception\RuntimeException;
 use Nekland\Woketo\Message\TextMessageHandler;
 use Nekland\Woketo\Server\WebSocketServer;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\NullLogger;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -27,6 +28,7 @@ use React\Stream\WritableStreamInterface;
 
 class WebSocketServerTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItInstanciateWithoutConfiguration()
     {
         $server = new WebSocketServer(1000);

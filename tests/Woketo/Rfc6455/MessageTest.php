@@ -16,9 +16,11 @@ use Nekland\Woketo\Rfc6455\Frame;
 use Nekland\Woketo\Rfc6455\Message;
 use Nekland\Woketo\Utils\BitManipulation;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class MessageTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItStackFramesAndReturnCompleteMessage()
     {
         /** @var Frame $frame1 */

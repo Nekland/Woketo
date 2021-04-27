@@ -17,9 +17,11 @@ use Nekland\Woketo\Http\Response;
 use Nekland\Woketo\Rfc6455\Handshake\ClientHandshake;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class ClientHandshakeTest extends TestCase
 {
+    use ProphecyTrait;
     public function testItSignWith16BytesKeys()
     {
         $handshake = new ClientHandshake();
