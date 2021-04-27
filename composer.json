@@ -27,5 +27,6 @@
     },
     "config": {
         "bin-dir": "bin"
-    }
+    },
+    "abandoned": true
 }
